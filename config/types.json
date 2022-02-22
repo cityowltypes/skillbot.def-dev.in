@@ -75,7 +75,7 @@
         "headmeta_title": "title",
         "name": "chatbot",
         "plural": "chatbots",
-        "disallow_editing": false,
+        "disallow_editing": true,
         "modules": [
             {
                 "input_slug": "title",
@@ -243,6 +243,57 @@
                 "input_slug": "response_options",
                 "input_type": "multi_text",
                 "input_placeholder": "Response options of the corresponding question"
+            }
+        ]
+    },
+    "response": {
+        "type": "content",
+        "slug": "response",
+        "headmeta_title_prepend": "",
+        "headmeta_title_append": [
+            {
+                "type": "webapp",
+                "slug": "headmeta_title"
+            }
+        ],
+        "headmeta_title_glue": "&mdash;",
+        "headmeta_title": "title",
+        "name": "response",
+        "plural": "responses",
+        "disallow_editing": true,
+        "modules": [
+            {
+                "input_slug": "title",
+                "input_primary": true,
+                "input_type": "text",
+                "input_placeholder": "User ID + Chatbot Slug + Form Slug",
+                "input_unique": true,
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
+            },
+            {
+                "input_slug": "responses",
+                "input_type": "textarea",
+                "input_placeholder": "Responses in JSON",
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
+            },
+            {
+                "input_slug": "responses_en",
+                "input_type": "textarea",
+                "input_placeholder": "Responses (english) in JSON"
+            },
+            {
+                "input_slug": "form",
+                "input_type": "number",
+                "input_placeholder": "Form slug"
+            },
+            {
+                "input_slug": "user_id",
+                "input_type": "text",
+                "input_placeholder": "User ID"
             }
         ]
     }
