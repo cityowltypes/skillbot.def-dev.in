@@ -88,6 +88,12 @@
                 "list_sortable": true
             },
             {
+                "input_slug": "intro_message",
+                "input_type" : "text",
+                "input_placeholder" : "Introduction message",
+                "list_field": true
+            },
+            {
                 "input_slug": "learner_registration_form_id",
                 "input_type": "text",
                 "input_placeholder": "Learner Registration Form ID"
