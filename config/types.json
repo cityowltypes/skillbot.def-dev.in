@@ -90,23 +90,28 @@
             {
                 "input_slug": "intro_message",
                 "input_type" : "text",
-                "input_placeholder" : "Introduction message",
-                "list_field": true
+                "input_placeholder" : "Introduction message"
+            },
+            {
+                "input_slug": "end_message",
+                "input_type" : "text",
+                "input_placeholder" : "End message"
             },
             {
                 "input_slug": "learner_registration_form_id",
                 "input_type": "text",
-                "input_placeholder": "Learner Registration Form ID"
+                "input_placeholder": "Learner Registration Form ID",
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
             },
             {
-                "input_slug": "module_ids",
+                "input_slug": "module_and_form_ids",
                 "input_type": "text",
-                "input_placeholder": "Module IDs (comma separated)"
-            },
-            {
-                "input_slug": "module_assessment_form_ids",
-                "input_type": "text",
-                "input_placeholder": "Module Assessment Form IDs (comma separated)"
+                "input_placeholder": "Module and form IDs (rephrase)",
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
             },
             {
                 "input_slug": "files",
@@ -142,14 +147,24 @@
                 "list_sortable": true
             },
             {
-                "input_slug": "level_ids",
-                "input_type": "text",
-                "input_placeholder": "Level IDs (comma separated)"
+                "input_slug": "intro_message",
+                "input_type" : "text",
+                "input_placeholder" : "Introduction message",
+                "list_field": false
             },
             {
-                "input_slug": "level_assessment_form_ids",
+                "input_slug": "end_message",
+                "input_type" : "text",
+                "input_placeholder" : "End message",
+                "list_field": false
+            },
+            {
+                "input_slug": "level_and_form_ids",
                 "input_type": "text",
-                "input_placeholder": "Level Assessment Form IDs (comma separated)"
+                "input_placeholder": "Level and assessment form IDs (rephrase)",
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
             },
             {
                 "input_slug": "files",
@@ -185,9 +200,24 @@
                 "list_sortable": true
             },
             {
+                "input_slug": "intro_message",
+                "input_type" : "text",
+                "input_placeholder" : "Introduction message",
+                "list_field": false
+            },
+            {
+                "input_slug": "end_message",
+                "input_type" : "text",
+                "input_placeholder" : "End message",
+                "list_field": false
+            },
+            {
                 "input_slug": "chapter_ids",
                 "input_type": "text",
-                "input_placeholder": "Chapter IDs (comma separated)"
+                "input_placeholder": "Chapter IDs (comma separated)",
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
             },
             {
                 "input_slug": "files",
@@ -259,6 +289,18 @@
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true
+            },
+            {
+                "input_slug": "intro_message",
+                "input_type" : "text",
+                "input_placeholder" : "Introduction message",
+                "list_field": false
+            },
+            {
+                "input_slug": "end_message",
+                "input_type" : "text",
+                "input_placeholder" : "End message",
+                "list_field": false
             },
             {
                 "input_slug": "questions",
