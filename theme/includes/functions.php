@@ -145,4 +145,28 @@ class Functions {
 
     }
 
+    public function rephrase ($rephrase_string){
+        if (strstr($rephrase_string, '##')) {
+            $rephrased_text = explode('##', $rephrase_string);
+            foreach ($rephrased_text as $temp_val) {
+                $rephrased_subtext = explode('::', $temp_val);
+                print_r($rephrased_subtext);
+            }
+        }
+        return;
+    }
+    public function reph1 ($str){
+        $a = explode('##',$str);
+        unset($a[0]);
+        //print_r($a);
+        $arr = array();
+        foreach($a as $key=>$i){
+            $m = explode('::', $i);
+            $n = $m[0];
+            $arr[$key] = $m;
+        }
+        //print_r($arr);
+        return $arr;
+
+    }
 }
