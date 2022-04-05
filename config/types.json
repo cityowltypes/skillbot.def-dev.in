@@ -88,6 +88,11 @@
                 "list_sortable": true
             },
             {
+                "input_slug": "api_token",
+                "input_type" : "text",
+                "input_placeholder" : "API token"
+            },
+            {
                 "input_slug": "intro_message",
                 "input_type" : "text",
                 "input_placeholder" : "Introduction message"
