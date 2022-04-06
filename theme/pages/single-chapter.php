@@ -1,10 +1,10 @@
 <?php include_once __DIR__ . '/_header.php'?>
 <pre>
 <?php
-$heads = $functions->reph1($postdata['title']);
+$heads = $functions->derephrase($postdata['title']);
 $messages = array();
 foreach($postdata['messages'] as $i=>$m){
-    $messages[$i] = $functions->reph1($m);
+    $messages[$i] = $functions->derephrase($m);
 }
 ?>
 </pre>

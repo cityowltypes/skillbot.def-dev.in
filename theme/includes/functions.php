@@ -155,7 +155,7 @@ class Functions {
         }
         return;
     }
-    public function reph1 ($str){
+    public function derephrase ($str){
         $a = explode('##',$str);
         unset($a[0]);
         //print_r($a);
@@ -169,4 +169,5 @@ class Functions {
         return $arr;
 
     }
+
 }

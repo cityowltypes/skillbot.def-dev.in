@@ -1,14 +1,14 @@
 <?php include_once __DIR__ . '/_header.php'?>
 <pre>
 <?php
-$heads = $functions->reph1($postdata['title']);
+$heads = $functions->derephrase($postdata['title']);
 $questions = array();
 foreach($postdata['questions'] as $i=>$m){
-    $questions[$i] = $functions->reph1($m);
+    $questions[$i] = $functions->derephrase($m);
 }
 $responses = array();
 foreach($postdata['response_options'] as $i=>$m){
-    $responses[$i] = $functions->reph1($m);
+    $responses[$i] = $functions->derephrase($m);
 }
 print_r($responses);
 ?>
