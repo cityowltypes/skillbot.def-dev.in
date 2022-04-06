@@ -374,5 +374,51 @@
                 "input_placeholder": "User ID"
             }
         ]
+    },
+    "sent": {
+        "type": "content",
+        "slug": "sent",
+        "headmeta_title_prepend": "",
+        "headmeta_title_append": [
+            {
+                "type": "webapp",
+                "slug": "headmeta_title"
+            }
+        ],
+        "headmeta_title_glue": "&mdash;",
+        "headmeta_title": "title",
+        "name": "Sent",
+        "plural": "Sent",
+        "disallow_editing": false,
+        "modules": [
+            {
+                "input_slug": "chat_id",
+                "input_primary": true,
+                "input_type": "text",
+                "input_placeholder": "User ID + Chatbot Slug",
+                "input_unique": false,
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
+            },
+            {
+                "input_slug": "response",
+                "input_type": "text",
+                "input_placeholder": "Response",
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
+            },
+            {
+                "input_slug": "response_en",
+                "input_type": "textarea",
+                "input_placeholder": "Responses (english)"
+            },
+            {
+                "input_slug": "message_id",
+                "input_type": "text",
+                "input_placeholder": "Message ID"
+            }
+        ]
     }
 }
