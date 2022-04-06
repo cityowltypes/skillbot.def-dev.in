@@ -5,9 +5,9 @@ namespace Wildfire\Theme;
 Call other classes from Wildfire\Core.
 Uncomment MySQL or Admin classes if you use their functions.
  */
-//use Wildfire\Core\MySQL as MySQL;
+use Wildfire\Core\MySQL as MySQL;
 //use Wildfire\Core\Admin as Admin;
-//use Wildfire\Core\Dash as Dash;
+use Wildfire\Core\Dash as Dash;
 
 class Functions {
 
@@ -168,6 +168,31 @@ class Functions {
         //print_r($arr);
         return $arr;
 
+    }
+
+    public function get_last_message_sent($user){
+        $dash = new Dash();
+        $sql = new MySQL();
+        $chat_id = $user['user_id'].'_'.$user['slug'];
+        $query = $sql->executeSQL("SELECT `content` FROM `data` WHERE `content_privacy`='public' AND `content`->'$.type' = 'sent' AND `content`->'$.chat_id' = '".$chat_id."' ORDER BY `updated_on` DESC LIMIT 1;");
+        $query = json_decode($query[0]['content'], true);
+        return $query;
+
+    }
+
+    public function set_message($user,$last_message = NULL, $response){
+        $dash = new Dash();
+        $sql = new MySQL();
+        if($last_message != NULL){
+            $dash->pushAttribute($last_message['id'], 'response', $response);
+        }
+        else{
+            $arr = array();
+            $arr['type'] = 'sent';
+            $arr['chat_id'] = $user['user_id'].'_'.$user['slug'];
+            $arr['response'] = $response;
+            //$arr['']
+        }
     }
 
 }

@@ -11,11 +11,11 @@ $dash = new \Wildfire\Core\Dash();
 $functions = new \Wildfire\Theme\Functions();
 $api = new Api;
 
-$arr = array();
 
-$arr['content'] = $api->body();
-$decoded = json_decode($json, true);
-$dash->pushObject($arr);
+
+$response = $api->body();
+$response = $response['message'];
+$user = ['user_id'=>$response['from']['id'], 'slug'=>$slug];
 $config = [
     // Your driver-specific configuration
      "telegram" => [
@@ -28,23 +28,18 @@ DriverManager::loadDriver(\BotMan\Drivers\Telegram\TelegramDriver::class);
 
 // Create an instance
 $botman = BotManFactory::create($config);
-//print_r($botman->getUser());
-// Give the bot something to listen for.
-$botman->hears('hi', function (BotMan $bot) {
-    //$kb = new Keyboard;
-    //$bt1 = new KeyboardButton('btn1');
-    //$bt2 = new KeyboardButton('btn2');
-    $kb=Keyboard::create()
-                ->type(Keyboard::TYPE_KEYBOARD)
-                ->oneTimeKeyboard()
-                ->resizeKeyboard()
-                ->addRow(KeyboardButton::create('Contratulations!'), KeyboardButton::create('Try again :('))
-                ->addRow(KeyboardButton::create('Contratulations!'), KeyboardButton::create('Try again :('))
-                ->toArray();
-    $bot->reply('Hello yourself.', $kb);
-});
 
-// Start listening
-$botman->listen();
+
+$last_message = $functions->get_last_message_sent($user);
+/*
+
+//$user['last_message'] = $last_message;
+if(!empty($last_message)){
+    $functions->set_message($user, $last_message, $response['text']);
+}
+$next_message = $functions->get_next_message($user);
+$functions->send_message($user, $next_message);
+$set_last_message_sent($user, $next_message);
+*/
 ?>
 

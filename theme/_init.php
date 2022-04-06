@@ -10,3 +10,6 @@ $currentUser = $auth->getCurrentUser();
 
 include_once __DIR__ . '/includes/functions.php';
 $functions = new \Wildfire\Theme\Functions();
+
+//include_once __DIR__ . '/includes/telegram.php';
+//$functions = new \Wildfire\Theme\Telegram();
