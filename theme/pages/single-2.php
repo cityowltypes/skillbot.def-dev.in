@@ -5,8 +5,17 @@ use BotMan\BotMan\Drivers\DriverManager;
 use BotMan\Drivers\Telegram\Extensions;
 use BotMan\Drivers\Telegram\Extensions\Keyboard;
 use BotMan\Drivers\Telegram\Extensions\KeyboardButton;
+use \Wildfire\Api;
 
+$dash = new \Wildfire\Core\Dash();
+$functions = new \Wildfire\Theme\Functions();
+$api = new Api;
 
+$arr = array();
+
+$arr['content'] = $api->body();
+$decoded = json_decode($json, true);
+$dash->pushObject($arr);
 $config = [
     // Your driver-specific configuration
      "telegram" => [
@@ -19,7 +28,7 @@ DriverManager::loadDriver(\BotMan\Drivers\Telegram\TelegramDriver::class);
 
 // Create an instance
 $botman = BotManFactory::create($config);
-
+//print_r($botman->getUser());
 // Give the bot something to listen for.
 $botman->hears('hi', function (BotMan $bot) {
     //$kb = new Keyboard;
@@ -29,6 +38,7 @@ $botman->hears('hi', function (BotMan $bot) {
                 ->type(Keyboard::TYPE_KEYBOARD)
                 ->oneTimeKeyboard()
                 ->resizeKeyboard()
+                ->addRow(KeyboardButton::create('Contratulations!'), KeyboardButton::create('Try again :('))
                 ->addRow(KeyboardButton::create('Contratulations!'), KeyboardButton::create('Try again :('))
                 ->toArray();
     $bot->reply('Hello yourself.', $kb);
