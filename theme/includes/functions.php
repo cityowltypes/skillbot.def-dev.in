@@ -8,6 +8,12 @@ Uncomment MySQL or Admin classes if you use their functions.
 use Wildfire\Core\MySQL as MySQL;
 //use Wildfire\Core\Admin as Admin;
 use Wildfire\Core\Dash as Dash;
+use BotMan\BotMan\BotMan;
+use BotMan\BotMan\BotManFactory;
+use BotMan\BotMan\Drivers\DriverManager;
+use BotMan\Drivers\Telegram\Extensions;
+use BotMan\Drivers\Telegram\Extensions\Keyboard;
+use BotMan\Drivers\Telegram\Extensions\KeyboardButton;
 
 class Functions {
 
@@ -169,30 +175,35 @@ class Functions {
         return $arr;
 
     }
-
-    public function get_last_message_sent($user){
-        $dash = new Dash();
-        $sql = new MySQL();
-        $chat_id = $user['user_id'].'_'.$user['slug'];
-        $query = $sql->executeSQL("SELECT `content` FROM `data` WHERE `content_privacy`='public' AND `content`->'$.type' = 'sent' AND `content`->'$.chat_id' = '".$chat_id."' ORDER BY `updated_on` DESC LIMIT 1;");
-        $query = json_decode($query[0]['content'], true);
-        return $query;
-
-    }
-
-    public function set_message($user,$last_message = NULL, $response){
-        $dash = new Dash();
-        $sql = new MySQL();
-        if($last_message != NULL){
-            $dash->pushAttribute($last_message['id'], 'response', $response);
+    public function associate_key($key){
+        $arr = explode('_', $key);
+        $as_key = array();
+        for($i=0; $i<7; $i++){
+            switch ($i){
+                case 0:
+                    $as_key['chatbot'] = $arr[0];
+                    break;
+                case 1:
+                    $as_key['module'] = $arr[1];
+                    break;
+                case 2:
+                    $as_key['level'] = $arr[2];
+                    break;
+                case 3:
+                    $as_key['chapter'] = $arr[3];
+                    break;
+                case 4:
+                    $as_key['form'] = $arr[4];
+                    break;
+                case 5:
+                    $as_key['message'] = $arr[5];
+                    break;
+                case 6:
+                    $as_key['field'] = $arr[6];
+                    break;
+            }
         }
-        else{
-            $arr = array();
-            $arr['type'] = 'sent';
-            $arr['chat_id'] = $user['user_id'].'_'.$user['slug'];
-            $arr['response'] = $response;
-            //$arr['']
-        }
+        return $as_key;
     }
 
 }
