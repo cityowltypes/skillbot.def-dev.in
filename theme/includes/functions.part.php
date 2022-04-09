@@ -8,27 +8,6 @@ use \Wildfire\Core\Console;
 class Messages extends Functions
 {
     /**
-     * Function to expand and create associative array of the response key
-     *
-     * @param string $key it gives info of exact parent of response
-     *
-     * @return array
-     */
-    public function associate_key($key)
-    {
-        $arr = explode('_', $key);
-        $as_key = array();
-        $key_index_names = ['chatbot', 'module', 'level', 'chapter', 'form',
-        'message', 'field'];
-
-        foreach ($arr as $key => $value) {
-            $as_key[$key_index_names[$key]] = $value;
-        }
-
-        return $as_key;
-    }
-
-    /**
      * Get key of last message
      * key = {chatbot_id}_{module_id}_{level_id}_{chapter_id}_{form_id}_{message_id}_{field_key};
      *

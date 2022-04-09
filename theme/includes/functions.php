@@ -175,35 +175,25 @@ class Functions {
         return $arr;
 
     }
-    public function associate_key($key){
+
+    /**
+     * Function to expand and create associative array of the response key
+     *
+     * @param string $key it gives info of exact parent of response
+     *
+     * @return array
+     */
+    public function associate_key(string $key)
+    {
         $arr = explode('_', $key);
         $as_key = array();
-        for($i=0; $i<7; $i++){
-            switch ($i){
-                case 0:
-                    $as_key['chatbot'] = $arr[0];
-                    break;
-                case 1:
-                    $as_key['module'] = $arr[1];
-                    break;
-                case 2:
-                    $as_key['level'] = $arr[2];
-                    break;
-                case 3:
-                    $as_key['chapter'] = $arr[3];
-                    break;
-                case 4:
-                    $as_key['form'] = $arr[4];
-                    break;
-                case 5:
-                    $as_key['message'] = $arr[5];
-                    break;
-                case 6:
-                    $as_key['field'] = $arr[6];
-                    break;
-            }
+        $key_index_names = ['chatbot', 'module', 'level', 'chapter', 'form',
+        'message', 'field'];
+
+        foreach ($arr as $key => $value) {
+            $as_key[$key_index_names[$key]] = $value;
         }
+
         return $as_key;
     }
-
 }
