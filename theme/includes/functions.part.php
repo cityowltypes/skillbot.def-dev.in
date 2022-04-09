@@ -19,22 +19,40 @@ class Messages extends Functions
     public function get_last_message_sent(int $user_id, int $chatbot_id)
     {
         $sql = new MySQL;
+        $dash = new Dash();
 
         $data = $sql->executeSQL(
             "select * from data
             where type='response' and
                 content->>'$.user_id'={$user_id} and
                 content->>'$.chatbot_id'={$chatbot_id}
-            orer by id desc
+            order by id desc
             limit 1"
         );
+
+        if (!$data) {
+            return false;
+        }
+
+        $_id = $data[0]['id'];
+
+        $data = $dash->doContentCleanup($data);
+        if ($data) {
+            $data = $data[$_id];
+        }
+
+        if ($data['last_key'] ?? null) {
+            return $data['last_key'];
+        }
+
+        return false;
     }
 
     /**
      * Sets value for a particular key, when a message is sent
      *
      * @param integer     $user_id    user_id/telegram id of user
-     * @param integer     $chatbot_id chatbot_id/slug
+     * @param integer     $chatbot_id chatbot_id
      * @param string      $key        key which will be used to identify messages
      * @param string|null $value      user's response for an instance of chat
      *
@@ -104,6 +122,9 @@ class Messages extends Functions
             // this needs to be replaced with language detector
             $content['responses_en'][$key] = trim($messages[1][$index]);
         }
+
+        // set last key on response
+        $content['last_key'] = $key;
 
         if ($res) {
             $content = json_encode($content);
