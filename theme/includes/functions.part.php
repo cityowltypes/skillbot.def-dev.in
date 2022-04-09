@@ -14,7 +14,7 @@ class Messages extends Functions
      * @param integer $user_id    user id of telegram user
      * @param integer $chatbot_id numeric id of chatbot
      *
-     * @return void
+     * @return string|false
      */
     public function get_last_message_sent(int $user_id, int $chatbot_id)
     {
