@@ -138,4 +138,32 @@ class Messages extends Functions
 
         return true;
     }
+
+    public function get_next_message_key(string $key)
+    {
+        $dash = new Dash();
+
+        $keys = $this->associate_key($key);
+
+        Console::json($keys, 1);
+
+        // fetch form for this key
+        // focusing first on messages existing
+        if ($keys['form']) {
+            $form = $dash->getObject($keys['form']);
+
+            if ($form['questions'][++$keys['message']]) {
+                $text = $form['questions'][$keys['message']];
+                $key = implode("_", $keys);
+                return [
+                    'key' => $key,
+                    'value' => $text
+                ];
+            }
+        }
+
+        // code will reach here if latest message doesn't exist
+
+        return $keys;
+    }
 }
