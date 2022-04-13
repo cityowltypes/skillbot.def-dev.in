@@ -24,12 +24,13 @@ $response = $api->body();
 $response = $response['message'];
 $user = ['user_id'=>$response['from']['id'], 'slug'=>$slug];
 
+$chatbot = $dash->getObject(['type'=>'chatbot', 'slug'=>$slug]);
 
 
 $config = [
     // Your driver-specific configuration
      "telegram" => [
-        "token" => "5118144192:AAH-koRFGMHOX1shd29wZWh2CMH08Tji4zw"
+        "token" => $chatbot['api_token']
      ]
 ];
 
