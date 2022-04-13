@@ -93,22 +93,27 @@
                 "input_placeholder" : "API token"
             },
             {
-                "input_slug": "intro_message",
+                "input_slug": "chatbot_handle",
                 "input_type" : "text",
-                "input_placeholder" : "Introduction message"
-            },
-            {
-                "input_slug": "end_message",
-                "input_type" : "text",
-                "input_placeholder" : "End message"
-            },
-            {
-                "input_slug": "learner_registration_form_id",
-                "input_type": "text",
-                "input_placeholder": "Learner Registration Form ID",
+                "input_placeholder" : "Chatbot handle",
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true
+            },
+            {
+                "input_slug": "languages",
+                "input_type" : "text",
+                "input_placeholder" : "Supported languages"
+            },
+            {
+                "input_slug": "intro",
+                "input_type" : "text",
+                "input_placeholder" : "Intro message"
+            },
+            {
+                "input_slug": "outro",
+                "input_type" : "text",
+                "input_placeholder" : "Outro message"
             },
             {
                 "input_slug": "module_and_form_ids",
