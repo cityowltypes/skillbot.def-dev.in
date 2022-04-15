@@ -8,12 +8,15 @@ Uncomment MySQL or Admin classes if you use their functions.
 use Wildfire\Core\MySQL as MySQL;
 //use Wildfire\Core\Admin as Admin;
 use Wildfire\Core\Dash as Dash;
+
 use BotMan\BotMan\BotMan;
 use BotMan\BotMan\BotManFactory;
 use BotMan\BotMan\Drivers\DriverManager;
 use BotMan\Drivers\Telegram\Extensions;
 use BotMan\Drivers\Telegram\Extensions\Keyboard;
 use BotMan\Drivers\Telegram\Extensions\KeyboardButton;
+use BotMan\BotMan\Messages\Attachments\Image;
+use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
 
 class Functions {
 
@@ -195,5 +198,97 @@ class Functions {
         }
 
         return $as_key;
+    }
+
+    public function log_response($response, $chatbot_slug, $channel='telegram') {
+        $dash = new Dash;
+
+        $obj = array();
+
+        if ($channel=='telegram') {
+            $obj['title'] = $chatbot_slug.' '.$response['from']['id'];
+            $obj['type']='response_log';
+            $obj['content_privacy']='private';
+            $obj['response']=$response;
+            $obj['chatbot']=$chatbot_slug;
+            $obj['telegram_user_id']=$response['from']['id'];
+        }
+
+        return $dash->pushObject($obj);
+
+    }
+
+    public function send_message ( 
+                $message, 
+                $api_token='', 
+                $channel='telegram' ) {
+
+        if ($channel=='telegram') {
+            $config = [
+                // Your driver-specific configuration
+                 "telegram" => [
+                    "token" => $api_token
+                 ]
+            ];
+
+            // Load the driver(s) you want to use
+            DriverManager::loadDriver(\BotMan\Drivers\Telegram\TelegramDriver::class);
+            // Create an instance
+            $botman = BotManFactory::create($config);
+
+            $botman->custom_msg = $message;
+            $botman->hears('', function ($bot) {
+                $kb = Keyboard::create()
+                        ->type(Keyboard::TYPE_KEYBOARD)
+                        ->oneTimeKeyboard()
+                        ->resizeKeyboard();
+                foreach ($bot->custom_msg['response'] as $response){
+                    $kb = $kb->addRow(KeyboardButton::create($response));
+                }
+                
+                $kb = $kb->toArray();
+                if ($bot->custom_msg['is_image'] == true) {
+                    $attachment = new Image($bot->custom_msg['image']);
+                    
+                // Build message object
+                    $message = OutgoingMessage::create('')
+                        ->withAttachment($attachment);
+                }
+                else{
+                    $message = $bot->custom_msg['message'];
+                }
+                $bot->reply($message, $kb);
+
+            });
+
+            return $botman->listen();
+        }
+
+        else {
+            return false;
+        }
+    }
+
+
+    public function format_languages_available($postdata) {
+
+        $language_array = array_values(
+                            array_filter ( 
+                                array_map( 'trim', 
+                                    explode('##', $postdata['languages']))
+                            )
+                        );
+
+        foreach ($language_array as $language) {
+                $language_temp = array_values(
+                        array_filter ( 
+                            array_map( 'trim', 
+                                explode('::', $language))
+                        )
+                    );
+                $languages_available[$language_temp[0]] = $language_temp[1];
+        }
+
+        return array_map('ucfirst', array_map('strtolower', array_values($languages_available)));
     }
 }
