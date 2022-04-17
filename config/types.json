@@ -106,14 +106,14 @@
                 "input_placeholder" : "Supported languages"
             },
             {
-                "input_slug": "intro",
+                "input_slug": "intro_message",
                 "input_type" : "text",
                 "input_placeholder" : "Intro message"
             },
             {
-                "input_slug": "outro",
+                "input_slug": "end_message",
                 "input_type" : "text",
-                "input_placeholder" : "Outro message"
+                "input_placeholder" : "End message"
             },
             {
                 "input_slug": "module_and_form_ids",
@@ -349,129 +349,16 @@
                 "input_slug": "title",
                 "input_primary": true,
                 "input_type": "text",
-                "input_placeholder": "User ID + Chatbot Slug + Form Slug",
+                "input_placeholder": "User ID + Chatbot Slug",
                 "input_unique": true,
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true
             },
             {
-                "input_slug": "responses",
-                "input_type": "textarea",
-                "input_placeholder": "Responses in JSON",
-                "list_field": true,
-                "list_searchable": true,
-                "list_sortable": true
-            },
-            {
-                "input_slug": "responses_en",
-                "input_type": "textarea",
-                "input_placeholder": "Responses (english) in JSON"
-            },
-            {
-                "input_slug": "form",
-                "input_type": "number",
-                "input_placeholder": "Form slug"
-            },
-            {
-                "input_slug": "user_id",
-                "input_type": "text",
-                "input_placeholder": "User ID"
-            }
-        ]
-    },
-    "sent": {
-        "type": "content",
-        "slug": "sent",
-        "headmeta_title_prepend": "",
-        "headmeta_title_append": [
-            {
-                "type": "webapp",
-                "slug": "headmeta_title"
-            }
-        ],
-        "headmeta_title_glue": "&mdash;",
-        "headmeta_title": "title",
-        "name": "Sent",
-        "plural": "Sent",
-        "disallow_editing": false,
-        "modules": [
-            {
-                "input_slug": "chat_id",
-                "input_primary": true,
-                "input_type": "text",
-                "input_placeholder": "Telegram User ID + Chatbot Slug",
-                "input_unique": false,
-                "list_field": true,
-                "list_searchable": true,
-                "list_sortable": true
-            },
-            {
-                "input_slug": "response",
-                "input_type": "text",
-                "input_placeholder": "Response",
-                "list_field": true,
-                "list_searchable": true,
-                "list_sortable": true
-            },
-            {
-                "input_slug": "response_en",
-                "input_type": "textarea",
-                "input_placeholder": "Responses (english)"
-            },
-            {
-                "input_slug": "message_id",
-                "input_type": "text",
-                "input_placeholder": "Message ID"
-            }
-        ]
-    },
-    "response_log": {
-        "type": "content",
-        "slug": "response_log",
-        "headmeta_title_prepend": "",
-        "headmeta_title_append": [
-            {
-                "type": "webapp",
-                "slug": "headmeta_title"
-            }
-        ],
-        "headmeta_title_glue": "&mdash;",
-        "headmeta_title": "title",
-        "name": "response log",
-        "plural": "response logs",
-        "disallow_editing": true,
-        "modules": [
-            {
-                "input_slug": "title",
-                "input_primary": true,
-                "input_type": "text",
-                "input_placeholder": "Telegram User ID + Chatbot Slug",
-                "input_unique": false,
-                "list_field": true,
-                "list_searchable": true,
-                "list_sortable": true
-            },
-            {
-                "input_slug": "response",
-                "input_type": "textarea",
-                "input_placeholder": "Response in JSON"
-            },
-            {
                 "input_slug": "telegram_user_id",
                 "input_type": "text",
-                "input_placeholder": "Telegram User ID",
-                "list_field": true,
-                "list_searchable": true,
-                "list_sortable": true
-            },
-            {
-                "input_slug": "chatbot",
-                "input_type": "select",
-                "input_placeholder": "Chatbot slug",
-                "list_field": true,
-                "list_searchable": true,
-                "list_sortable": true
+                "input_placeholder": "User ID"
             }
         ]
     }

@@ -20,77 +20,6 @@ use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
 
 class Functions {
 
-    public static function gst_states() {
-        $gst_state = array();
-        $gst_state['35'] = 'Andaman and Nicobar Islands';
-        $gst_state['37'] = 'Andhra Pradesh';
-        $gst_state['12'] = 'Arunachal Pradesh';
-        $gst_state['18'] = 'Assam';
-        $gst_state['10'] = 'Bihar';
-        $gst_state['4'] = 'Chandigarh';
-        $gst_state['22'] = 'Chattisgarh';
-        $gst_state['26'] = 'Dadra & Nagar Haveli and Daman & Diu';
-        $gst_state['7'] = 'Delhi';
-        $gst_state['30'] = 'Goa';
-        $gst_state['24'] = 'Gujarat';
-        $gst_state['6'] = 'Haryana';
-        $gst_state['2'] = 'Himachal Pradesh';
-        $gst_state['1'] = 'Jammu and Kashmir';
-        $gst_state['20'] = 'Jharkhand';
-        $gst_state['29'] = 'Karnataka';
-        $gst_state['32'] = 'Kerala';
-        $gst_state['38'] = 'Ladakh';
-        $gst_state['31'] = 'Lakshadweep Islands';
-        $gst_state['23'] = 'Madhya Pradesh';
-        $gst_state['27'] = 'Maharashtra';
-        $gst_state['14'] = 'Manipur';
-        $gst_state['17'] = 'Meghalaya';
-        $gst_state['15'] = 'Mizoram';
-        $gst_state['13'] = 'Nagaland';
-        $gst_state['21'] = 'Odisha';
-        $gst_state['97'] = 'Other Territory';
-        $gst_state['34'] = 'Pondicherry';
-        $gst_state['3'] = 'Punjab';
-        $gst_state['8'] = 'Rajasthan';
-        $gst_state['11'] = 'Sikkim';
-        $gst_state['33'] = 'Tamil Nadu';
-        $gst_state['36'] = 'Telangana';
-        $gst_state['16'] = 'Tripura';
-        $gst_state['9'] = 'Uttar Pradesh';
-        $gst_state['5'] = 'Uttarakhand';
-        $gst_state['19'] = 'West Bengal';
-        return $gst_state;
-    }
-
-    public function csv_to_array($url) {
-        $path = str_replace(BASE_URL, ABSOLUTE_PATH, urldecode($url));
-
-        $csv = array_map('str_getcsv', file($path));
-        $headers = $csv[0];
-        unset($csv[0]);
-        $rowsWithKeys = [];
-        foreach ($csv as $row) {
-            $newRow = [];
-            foreach ($headers as $k => $key) {
-                $newRow[$key] = $row[$k];
-            }
-            $rowsWithKeys[] = $newRow;
-        }
-        return $rowsWithKeys;
-    }
-
-
-    public function get_video_embed_url($url) {
-        if ($vid = $this->get_youtube_id($url)) {
-            return 'https://www.youtube.com/embed/' . $vid . '?autoplay=1&cc_load_policy=1';
-        } else if ($vid = $this->get_vimeo_id($url)) {
-            return 'https://player.vimeo.com/video/' . $vid . '?autoplay=1&cc_load_policy=1';
-        } else {
-            return 0;
-        }
-
-    }
-
     public function get_youtube_id($link) {
 
         $regexstr = '~
@@ -129,99 +58,106 @@ class Functions {
 
     }
 
-    public function get_vimeo_id($link) {
+    public function derephrase($rephrase_string, $use_handle_slug=0, $handle_slug_preset_array=[]) {
 
-        $regexstr = '~
-            # Match Vimeo link and embed code
-            (?:<iframe [^>]*src=")?     # If iframe match up to first quote of src
-            (?:                         # Group vimeo url
-                https?:\/\/             # Either http or https
-                (?:[\w]+\.)*            # Optional subdomains
-                vimeo\.com              # Match vimeo.com
-                (?:[\/\w]*\/videos?)?   # Optional video sub directory this handles groups links also
-                \/                      # Slash before Id
-                ([0-9]+)                # $1: VIDEO_ID is numeric
-                [^\s]*                  # Not a space
-            )                           # End group
-            "?                          # Match end quote if part of src
-            (?:[^>]*></iframe>)?        # Match the end of the iframe
-            (?:<p>.*</p>)?              # Match any title information stuff
-            ~ix';
-
-        preg_match($regexstr, $link, $matches);
-
-        return $matches[1];
-
-    }
-
-    public function rephrase ($rephrase_string){
         if (strstr($rephrase_string, '##')) {
-            $rephrased_text = explode('##', $rephrase_string);
-            foreach ($rephrased_text as $temp_val) {
-                $rephrased_subtext = explode('::', $temp_val);
-                print_r($rephrased_subtext);
+            $reph_array = array_values(
+                                array_filter ( 
+                                    array_map( 'trim', 
+                                        explode('##', $rephrase_string))
+                                )
+                            );
+
+            $i=0;
+            foreach ($reph_array as $reph) {
+                if (strstr($reph, '::')) {
+                    $reph_temp = array_values(
+                            array_filter ( 
+                                array_map( 'trim', 
+                                    explode('::', $reph))
+                            )
+                        );
+                    
+                    if ($use_handle_slug) {
+                        if ($handle_slug_preset_array)
+                            $handle = $handle_slug_preset_array[$i];
+                        else {
+                            $handle = $reph_temp[0];
+                            array_shift($reph_temp);
+                        }
+                    }
+                    else
+                        $handle = $i;
+
+                    if (count($reph_temp)>1) {
+                        foreach ($reph_temp as $rtemp) {
+                            $reph_available[$handle][] = $rtemp;
+                        }
+                    } else {
+                        $reph_available[$handle] = $reph_temp[0];
+                    }
+                }
+                else {
+                    $reph_available[$i] = $reph;
+                }
+
+                $i++;
             }
+
+            return $reph_available;
         }
-        return;
-    }
-    public function derephrase ($str){
-        $a = explode('##',$str);
-        unset($a[0]);
-        //print_r($a);
-        $arr = array();
-        foreach($a as $key=>$i){
-            $m = explode('::', $i);
-            $n = $m[0];
-            $arr[$key] = $m;
-        }
-        //print_r($arr);
-        return $arr;
+        else 
+            return array($rephrase_string);
 
     }
 
-    /**
-     * Function to expand and create associative array of the response key
-     *
-     * @param string $key it gives info of exact parent of response
-     *
-     * @return array
-     */
-    public function associate_key(string $key)
-    {
-        $arr = explode('_', $key);
-        $as_key = array();
-        $key_index_names = ['chatbot', 'module', 'level', 'chapter', 'form',
-        'message', 'field'];
-
-        foreach ($arr as $key => $value) {
-            $as_key[$key_index_names[$key]] = $value;
-        }
-
-        return $as_key;
+    public function get_response_id($chatbot_slug, $telegram_user_id) {
+        $sql = new MySQL;
+        return $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = ".$telegram_user_id." AND `content`->'$.chatbot' = '$chatbot_slug' AND `content`->'$.type' = 'response'")[0]['id'];
     }
 
-    public function log_response($response, $chatbot_slug, $channel='telegram') {
+    public function save_response($chatbot_slug, $telegram_user_id, $last_message_identifier='', $response=[]) {
         $dash = new Dash;
 
         $obj = array();
+        
+        $response_id = $this->get_response_id($chatbot_slug, $telegram_user_id);
 
-        if ($channel=='telegram') {
-            $obj['title'] = $chatbot_slug.' '.$response['from']['id'];
-            $obj['type']='response_log';
+        if ($response_id && $last_message_identifier) {
+            $this->save_response_attr($response_id, $last_message_identifier, $response['text']);
+        }
+        else {
+            $obj['title'] = $chatbot_slug.' '.$telegram_user_id;
+            $obj['type']='response';
             $obj['content_privacy']='private';
-            $obj['response']=$response;
+    
+            if ($response)
+                $obj['last_response']=$response;
+    
             $obj['chatbot']=$chatbot_slug;
-            $obj['telegram_user_id']=$response['from']['id'];
+            $obj['telegram_user_id']=$telegram_user_id;
+            $response_id = $dash->pushObject($obj);
         }
 
-        return $dash->pushObject($obj);
+        return $response_id;
 
     }
 
-    public function send_message ( 
-                $message, 
-                $api_token='', 
-                $channel='telegram' ) {
+    public function save_response_attr($response_id, $last_message_identifier='', $response='') {
+        $dash = new Dash;
+        
+        $dash->pushAttribute($response_id, 'last_message_identifier', $last_message_identifier);
+
+        if ($response)
+            $id = $dash->pushAttribute($response_id, $last_message_identifier, $response);
+        else
+            $id = $dash->pushAttribute($response_id, $last_message_identifier, '##');
+
+        return $id;
+
+    }
+
+    public function send_message($message, $api_token='', $channel='telegram') {
 
         if ($channel=='telegram') {
             $config = [
@@ -261,7 +197,9 @@ class Functions {
 
             });
 
-            return $botman->listen();
+            $botman->listen();
+
+            return true;
         }
 
         else {
@@ -269,26 +207,195 @@ class Functions {
         }
     }
 
+    public function get_next_message_identifier($chatbot_id, $last_message_identifier, $language='en', $previous_response='', $response_id=0) {
+        $dash = new Dash;
 
-    public function format_languages_available($postdata) {
+        $last_message_response_options = json_decode($dash->getAttribute($response_id, 'last_message_response_options'), true);
+        $last_message_response_key = array_search($previous_response, $last_message_response_options);
 
-        $language_array = array_values(
-                            array_filter ( 
-                                array_map( 'trim', 
-                                    explode('##', $postdata['languages']))
-                            )
-                        );
+        if (!$last_message_identifier)
+            $last_message_identifier = 'lang';
 
-        foreach ($language_array as $language) {
-                $language_temp = array_values(
-                        array_filter ( 
-                            array_map( 'trim', 
-                                explode('::', $language))
-                        )
-                    );
-                $languages_available[$language_temp[0]] = $language_temp[1];
+        if ($last_message_response_key) {
+            if ($last_message_response_key == 'lang')
+                return 'lang';
+            else if ($last_message_identifier == 'lang')
+                return $chatbot_id.'##intro_message';
+            else if ($last_message_identifier == $chatbot_id.'##intro_message' || $last_message_response_key == 'menu')
+                return 'menu';
+            else 
+                return 'id##'.$last_message_response_key;
+        }
+        else
+            return $last_message_identifier;
+    }
+
+    public function get_message($message_identifier, $chatbot_id, $language='en') {
+        $dash = new Dash;
+        $language = trim(strtolower($language));
+        $telegram_message = array();
+
+        $chatbot = $dash->getObject($chatbot_id);
+
+        if ($message_identifier == 'lang') {
+            $telegram_message['message'] = 'Choose language';
+            $telegram_message['response'] = $this->derephrase($chatbot['languages'], 1);
         }
 
-        return array_map('ucfirst', array_map('strtolower', array_values($languages_available)));
+        else if ($message_identifier == $chatbot_id.'##intro_message') {
+            $telegram_message['message'] = $this->derephrase($chatbot['intro_message'])[0];
+            $telegram_message['response'] = array('menu'=>'Main Menu');
+        }
+
+        else if ($message_identifier == 'menu') {
+            $telegram_message['message'] = 'Main menu';
+            
+            $menu_items = $this->derephrase($chatbot['module_and_form_ids'], 1);
+            $arr = array();
+
+            foreach ($menu_items as $module_id=>$assessment_form_id) {
+                if (!$module_id || $module_id=='0') {
+                    $temp = $dash->getAttribute($assessment_form_id, 'title');
+                    $arr[$assessment_form_id] = $this->derephrase($temp)[0];
+                }
+                else {
+                    $temp = $dash->getAttribute($module_id, 'title');
+                    $arr[$module_id] = $this->derephrase($temp)[0];
+                }
+            }
+
+            $telegram_message['response'] = $arr;
+            $telegram_message['response']['lang'] = '<change language>';
+        }
+
+        else if (substr($message_identifier, 0, 4)=='id##') {
+            $chain_of_ids = $this->derephrase($message_identifier);
+            $message = $dash->getObject($chain_of_ids[1]);
+            $telegram_message['message'] = $message['title'];
+            $telegram_message['response']['next'] = 'Next Slide';
+            $telegram_message['response']['prev'] = 'Prev Slide';
+            $telegram_message['response']['menu'] = '<back to menu>';
+            $telegram_message['response']['lang'] = '<change language>';
+        }
+
+        else {
+            $telegram_message['message'] = 'Invalid response identifier - '.$message_identifier;
+            $telegram_message['response'] = array('menu');
+        }
+
+        return $telegram_message;
+    }
+
+    public function get_message_array($message_identifier) {
+        $dash = new Dash;
+        $chain_of_ids = $this->derephrase($message_identifier);
+        $obj = $dash->getObject($chain_of_ids[1]);
+
+        if ($obj['type']=='chatbot') {
+            if ($obj['intro_message']) {
+                $list_of_messages['intro_message'] = $obj['intro_message'];
+            }
+            
+            $items = $this->derephrase($obj['module_and_form_ids'], 1);
+
+            foreach ($items as $module_id=>$assessment_form_id) {
+                if ($module_id) {
+                    if ($title = trim($dash->getAttribute($module_id, 'title'))) {
+                        $list_of_messages['id##'.$module_id] = $title;
+                    }
+                }
+                else if ($assessment_form_id) {
+                    if ($title = trim($dash->getAttribute($assessment_form_id, 'title'))) {
+                        $list_of_messages['id##'.$assessment_form_id] = $title;
+                    }
+                }
+            }
+
+            if ($obj['end_message']) {
+                $list_of_messages['end_message'] = $obj['end_message'];
+            }
+
+            return $list_of_messages;
+        }
+
+        if ($obj['type']=='module') {
+            if ($obj['intro_message']) {
+                $list_of_messages['intro_message'] = $obj['intro_message'];
+            }
+            
+            $items = $this->derephrase($obj['level_and_form_ids'], 1);
+
+            foreach ($items as $level_id=>$assessment_form_id) {
+                if ($level_id) {
+                    if ($title = trim($dash->getAttribute($level_id, 'title'))) {
+                        $list_of_messages['id##'.$level_id] = $title;
+                    }
+                }
+                else if ($assessment_form_id) {
+                    if ($title = trim($dash->getAttribute($assessment_form_id, 'title'))) {
+                        $list_of_messages['id##'.$assessment_form_id] = $title;
+                    }
+                }
+            }
+
+            if ($obj['end_message']) {
+                $list_of_messages['end_message'] = $obj['end_message'];
+            }
+
+            return $list_of_messages;
+        }
+
+        if ($obj['type']=='level') {
+            if ($obj['intro_message']) {
+                $list_of_messages['intro_message'] = $obj['intro_message'];
+            }
+            
+            $items = array_map('trim', explode(',', $obj['chapter_ids']));
+
+            foreach ($items as $chapter_id) {
+                if ($title = trim($dash->getAttribute($chapter_id, 'title'))) {
+                    $list_of_messages['id##'.$chapter_id] = $title;
+                }
+            }
+
+            if ($obj['end_message']) {
+                $list_of_messages['end_message'] = $obj['end_message'];
+            }
+
+            return $list_of_messages;
+        }
+
+        if ($obj['type']=='chapter') {
+
+            $i=0;
+            foreach ($obj['messages'] as $message) {
+                if (trim($message)) {
+                    $list_of_messages['id##'.$obj['id'].'##'.$i] = $message;
+                    $i++;
+                }
+            }
+
+            return $list_of_messages;
+        }
+
+        if ($obj['type']=='form') {
+
+            if ($obj['intro_message']) {
+                $list_of_messages['intro_message'] = $obj['intro_message'];
+            }
+
+            $i=0;
+            foreach ($obj['questions'] as $question) {
+                if (trim($question)) {
+                    $list_of_messages['id##'.$obj['id'].'##'.$i] = $question;
+                    $i++;
+                }
+            }
+
+            if ($obj['end_message'])
+                $list_of_messages['end_message'] = $obj['end_message'];
+
+            return $list_of_messages;
+        }
     }
 }

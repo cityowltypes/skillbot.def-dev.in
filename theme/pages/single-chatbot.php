@@ -1,29 +1,59 @@
 <?php
 include_once __DIR__ . '/../_init.php';
+$chatbot_slug = $postdata['slug'];
+$chatbot_id = $postdata['id'];
 
-//SEE IF ANY RESPONSE HAS BEEN RECEIVED FROM TELEGRAM
+//CHECK IF ANY RESPONSE HAS BEEN RECEIVED FROM TELEGRAM
 $telegram_response = (array) $api->body()['message'];
 
-//GET KEY OF LAST MESSAGE SENT
-$key_of_last_message_sent = $functions->get_last_message_sent($telegram_user_id, $slug);
+//PROCEED ONLY IF TELEGRAM HAS CONNECTED
+if ($telegram_response['from']['id'] ?? false) {
 
-//$dash->getAttribute( $dash->get_ids ( array( 'telegram_user_id'=>$telegram_user_id, 'chatbot'=>$slug ), 'AND', '=' )[0], 'identifier_of_last_message_sent' );
+	//GET TELEGRAM USER ID
+	$telegram_user_id = $telegram_response['from']['id'];
 
-if ($telegram_response) {
-	//LOG ALL RESPONSES
-	$functions->log_response($telegram_response, $slug, 'telegram');
-	$functions->save_response($telegram_response, $slug);
+	//GET KEY OF LAST MESSAGE SENT
+	$response_id = $functions->get_response_id($chatbot_slug, $telegram_user_id);
+
+	//DELETE DATA MESSAGE (FOR TESTING)
+	if ($response_id && strtolower(trim($telegram_response['text']))=='reset my chatbot data')
+		$dash->doDeleteObject($response_id);
+
+	//GET USER LANGUAGE
+	$telegram_user_lang = $dash->getAttribute($response_id , 'lang');
+	if ($telegram_user_lang=='##')
+		$telegram_user_lang = 'en';
+
+	//GET LAST SENT MESSAGE
+	$last_message_identifier = '';
+	if ($response_id)
+		$last_message_identifier = $dash->getAttribute($response_id , 'last_message_identifier');
+
+	//SAVE RESPONSE (CREATES RESPONSE ID WHEN CALLED FIRST TIME)
+	$response_id = $functions->save_response($chatbot_slug, $telegram_user_id, $last_message_identifier, $telegram_response);
+
+	//GET NEXT MESSAGE IDENTIFIER
+	$next_message_identifier = $functions->get_next_message_identifier($chatbot_id, $last_message_identifier, $telegram_user_lang, $telegram_response['text'], $response_id);
+
+	if ($next_message_identifier) {
+		
+		//PREPARE TELEGRAM MESSAGE AND RESPONSE OPTIONS
+		$telegram_message = $functions->get_message($next_message_identifier, $chatbot_id, $telegram_user_lang);
+
+		//SEND THE MESSAGE
+		if ($telegram_message['message']) {
+			$functions->send_message($telegram_message, $postdata['api_token'], 'telegram');
+
+			//SET LAST MESSAGE SENT IDENTIFIER
+			$last_message_identifier = $next_message_identifier;
+			$functions->save_response($chatbot_slug, $telegram_user_id, $last_message_identifier);
+
+			//SAVE LAST MESSAGE RESPONSE OPTIONS
+			$dash->pushAttribute($response_id, 'last_message_response_options', json_encode($telegram_message['response']));
+		}
+	}
 }
-
-//IF THIS IS THE FIRST MESSAGE OR IF THE USER WANTS TO SWITCH LANGUAGE
-//FORMAT CHATBOT LANGUAGES AS OPTIONS
-$languages_available = $functions->format_languages_available($postdata);
-
-//PREPARE THE TELEGRAM MESSAGE
-$telegram_message = array();
-$telegram_message['message'] = 'Choose language';
-$telegram_message['response'] = $languages_available;
-
-//SEND THE TELEGRAM MESSAGE
-$functions->send_message($telegram_message, $postdata['api_token'], 'telegram');
+else {
+	print_r($functions->get_message_array('id##4'));
+}
 ?>
