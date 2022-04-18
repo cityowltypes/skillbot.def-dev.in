@@ -6,54 +6,66 @@ $chatbot_id = $postdata['id'];
 //CHECK IF ANY RESPONSE HAS BEEN RECEIVED FROM TELEGRAM
 $telegram_response = (array) $api->body()['message'];
 
-//PROCEED ONLY IF TELEGRAM HAS CONNECTED
-if ($telegram_response['from']['id'] ?? false) {
-
-	//GET TELEGRAM USER ID
-	$telegram_user_id = $telegram_response['from']['id'];
+//GET TELEGRAM USER ID
+if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 
 	//GET KEY OF LAST MESSAGE SENT
-	$response_id = $functions->get_response_id($chatbot_slug, $telegram_user_id);
+	$response_id = $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = ".$telegram_user_id." AND `content`->'$.chatbot' = '".$chatbot_slug."' AND `content`->'$.type' = 'response'")[0]['id'];
 
 	//DELETE DATA MESSAGE (FOR TESTING)
-	if ($response_id && strtolower(trim($telegram_response['text']))=='reset my chatbot data')
+	if ($response_id && strtolower(trim($telegram_response['text']))=='reset my chatbot data') {
 		$dash->doDeleteObject($response_id);
+		$response_id = false;
+	}
 
-	//GET USER LANGUAGE
-	$telegram_user_lang = $dash->getAttribute($response_id , 'lang');
-	if ($telegram_user_lang=='##')
-		$telegram_user_lang = 'en';
-
-	//GET LAST SENT MESSAGE
-	$last_message_identifier = '';
-	if ($response_id)
+	if ($response_id) {
+		
+		//GET LAST SENT MESSAGE
 		$last_message_identifier = $dash->getAttribute($response_id , 'last_message_identifier');
 
-	//SAVE RESPONSE (CREATES RESPONSE ID WHEN CALLED FIRST TIME)
-	$response_id = $functions->save_response($chatbot_slug, $telegram_user_id, $last_message_identifier, $telegram_response);
+		//GET USER LANGUAGE
+		$telegram_user_lang = $dash->getAttribute($response_id , 'lang');
+		
+		//NEXT MESSAGE IDENTIFIER
+		if ($last_message_identifier == 'lang##'.$chatbot_id) {
+			$dash->pushAttribute($response_id, 'lang', $telegram_response['text']);
+			$next_message_identifier = 'id##'.$chatbot_id;
+		}
+		else {
+			$last_message_response_options = json_decode($dash->getAttribute($response_id, 'last_message_response_options'), true);
+        	$next_message_identifier = array_search($telegram_response['text'], $last_message_response_options);
+		}
 
-	//GET NEXT MESSAGE IDENTIFIER
-	$next_message_identifier = $functions->get_next_message_identifier($chatbot_id, $last_message_identifier, $telegram_user_lang, $telegram_response['text'], $response_id);
+	}
+	else  {
+		$next_message_identifier = 'lang##'.$chatbot_id;
+		$telegram_user_lang = '';
+		
+		//CREATES RESPONSE ID WHEN CALLED FIRST TIME
+        $obj = array();
+        $obj['title'] = $chatbot_slug.' '.$telegram_user_id;
+        $obj['type']='response';
+        $obj['content_privacy']='private';
+        $obj['chatbot']=$chatbot_slug;
+        $obj['telegram_user_id']=$telegram_user_id;
+        $response_id = $dash->pushObject($obj);
+	}
 
 	if ($next_message_identifier) {
 		
 		//PREPARE TELEGRAM MESSAGE AND RESPONSE OPTIONS
-		$telegram_message = $functions->get_message($next_message_identifier, $chatbot_id, $telegram_user_lang);
+		$telegram_message = $functions->get_message_array($next_message_identifier, $chatbot_id, $telegram_user_lang, $response_id, $postdata['api_token']);
 
 		//SEND THE MESSAGE
-		if ($telegram_message['message']) {
-			$functions->send_message($telegram_message, $postdata['api_token'], 'telegram');
+		if ($telegram_message['message'] ?? false) {
+			$functions->send_message($telegram_message, $postdata['api_token']);
 
-			//SET LAST MESSAGE SENT IDENTIFIER
-			$last_message_identifier = $next_message_identifier;
-			$functions->save_response($chatbot_slug, $telegram_user_id, $last_message_identifier);
-
+			//SET NEW MESSAGE IDENTIFIER, for 'last_message_identifier'
+			$dash->pushAttribute($response_id, 'last_message_identifier', $next_message_identifier);
+			$dash->pushAttribute($response_id, $next_message_identifier, '##');
 			//SAVE LAST MESSAGE RESPONSE OPTIONS
 			$dash->pushAttribute($response_id, 'last_message_response_options', json_encode($telegram_message['response']));
 		}
 	}
-}
-else {
-	print_r($functions->get_message_array('id##4'));
 }
 ?>

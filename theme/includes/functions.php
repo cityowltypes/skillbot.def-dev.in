@@ -111,189 +111,67 @@ class Functions {
 
     }
 
-    public function get_response_id($chatbot_slug, $telegram_user_id) {
-        $sql = new MySQL;
-        return $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = ".$telegram_user_id." AND `content`->'$.chatbot' = '$chatbot_slug' AND `content`->'$.type' = 'response'")[0]['id'];
-    }
+    public function send_message($message, $api_token='') {
 
-    public function save_response($chatbot_slug, $telegram_user_id, $last_message_identifier='', $response=[]) {
-        $dash = new Dash;
+        $config = [
+            // Your driver-specific configuration
+             "telegram" => [
+                "token" => $api_token
+             ]
+        ];
 
-        $obj = array();
-        
-        $response_id = $this->get_response_id($chatbot_slug, $telegram_user_id);
+        // Load the driver(s) you want to use
+        DriverManager::loadDriver(\BotMan\Drivers\Telegram\TelegramDriver::class);
+        // Create an instance
+        $botman = BotManFactory::create($config);
 
-        if ($response_id && $last_message_identifier) {
-            $this->save_response_attr($response_id, $last_message_identifier, $response['text']);
-        }
-        else {
-            $obj['title'] = $chatbot_slug.' '.$telegram_user_id;
-            $obj['type']='response';
-            $obj['content_privacy']='private';
-    
-            if ($response)
-                $obj['last_response']=$response;
-    
-            $obj['chatbot']=$chatbot_slug;
-            $obj['telegram_user_id']=$telegram_user_id;
-            $response_id = $dash->pushObject($obj);
-        }
-
-        return $response_id;
-
-    }
-
-    public function save_response_attr($response_id, $last_message_identifier='', $response='') {
-        $dash = new Dash;
-        
-        $dash->pushAttribute($response_id, 'last_message_identifier', $last_message_identifier);
-
-        if ($response)
-            $id = $dash->pushAttribute($response_id, $last_message_identifier, $response);
-        else
-            $id = $dash->pushAttribute($response_id, $last_message_identifier, '##');
-
-        return $id;
-
-    }
-
-    public function send_message($message, $api_token='', $channel='telegram') {
-
-        if ($channel=='telegram') {
-            $config = [
-                // Your driver-specific configuration
-                 "telegram" => [
-                    "token" => $api_token
-                 ]
-            ];
-
-            // Load the driver(s) you want to use
-            DriverManager::loadDriver(\BotMan\Drivers\Telegram\TelegramDriver::class);
-            // Create an instance
-            $botman = BotManFactory::create($config);
-
-            $botman->custom_msg = $message;
-            $botman->hears('', function ($bot) {
-                $kb = Keyboard::create()
-                        ->type(Keyboard::TYPE_KEYBOARD)
-                        ->oneTimeKeyboard()
-                        ->resizeKeyboard();
-                foreach ($bot->custom_msg['response'] as $response){
-                    $kb = $kb->addRow(KeyboardButton::create($response));
-                }
-                
-                $kb = $kb->toArray();
-                if ($bot->custom_msg['is_image'] == true) {
-                    $attachment = new Image($bot->custom_msg['image']);
-                    
-                // Build message object
-                    $message = OutgoingMessage::create('')
-                        ->withAttachment($attachment);
-                }
-                else{
-                    $message = $bot->custom_msg['message'];
-                }
-                $bot->reply($message, $kb);
-
-            });
-
-            $botman->listen();
-
-            return true;
-        }
-
-        else {
-            return false;
-        }
-    }
-
-    public function get_next_message_identifier($chatbot_id, $last_message_identifier, $language='en', $previous_response='', $response_id=0) {
-        $dash = new Dash;
-
-        $last_message_response_options = json_decode($dash->getAttribute($response_id, 'last_message_response_options'), true);
-        $last_message_response_key = array_search($previous_response, $last_message_response_options);
-
-        if (!$last_message_identifier)
-            $last_message_identifier = 'lang';
-
-        if ($last_message_response_key) {
-            if ($last_message_response_key == 'lang')
-                return 'lang';
-            else if ($last_message_identifier == 'lang')
-                return $chatbot_id.'##intro_message';
-            else if ($last_message_identifier == $chatbot_id.'##intro_message' || $last_message_response_key == 'menu')
-                return 'menu';
-            else 
-                return 'id##'.$last_message_response_key;
-        }
-        else
-            return $last_message_identifier;
-    }
-
-    public function get_message($message_identifier, $chatbot_id, $language='en') {
-        $dash = new Dash;
-        $language = trim(strtolower($language));
-        $telegram_message = array();
-
-        $chatbot = $dash->getObject($chatbot_id);
-
-        if ($message_identifier == 'lang') {
-            $telegram_message['message'] = 'Choose language';
-            $telegram_message['response'] = $this->derephrase($chatbot['languages'], 1);
-        }
-
-        else if ($message_identifier == $chatbot_id.'##intro_message') {
-            $telegram_message['message'] = $this->derephrase($chatbot['intro_message'])[0];
-            $telegram_message['response'] = array('menu'=>'Main Menu');
-        }
-
-        else if ($message_identifier == 'menu') {
-            $telegram_message['message'] = 'Main menu';
-            
-            $menu_items = $this->derephrase($chatbot['module_and_form_ids'], 1);
-            $arr = array();
-
-            foreach ($menu_items as $module_id=>$assessment_form_id) {
-                if (!$module_id || $module_id=='0') {
-                    $temp = $dash->getAttribute($assessment_form_id, 'title');
-                    $arr[$assessment_form_id] = $this->derephrase($temp)[0];
-                }
-                else {
-                    $temp = $dash->getAttribute($module_id, 'title');
-                    $arr[$module_id] = $this->derephrase($temp)[0];
-                }
+        $botman->custom_msg = $message;
+        $botman->hears('', function ($bot) {
+            $kb = Keyboard::create()
+                    ->type(Keyboard::TYPE_KEYBOARD)
+                    ->oneTimeKeyboard()
+                    ->resizeKeyboard();
+            foreach ($bot->custom_msg['response'] as $response){
+                $kb = $kb->addRow(KeyboardButton::create($response));
             }
+            
+            $kb = $kb->toArray();
+            if ($bot->custom_msg['is_image'] == true) {
+                $attachment = new Image($bot->custom_msg['image']);
+                
+            // Build message object
+                $message = OutgoingMessage::create('')
+                    ->withAttachment($attachment);
+            }
+            else{
+                $message = $bot->custom_msg['message'];
+            }
+            $bot->reply($message, $kb);
 
-            $telegram_message['response'] = $arr;
-            $telegram_message['response']['lang'] = '<change language>';
-        }
+        });
 
-        else if (substr($message_identifier, 0, 4)=='id##') {
-            $chain_of_ids = $this->derephrase($message_identifier);
-            $message = $dash->getObject($chain_of_ids[1]);
-            $telegram_message['message'] = $message['title'];
-            $telegram_message['response']['next'] = 'Next Slide';
-            $telegram_message['response']['prev'] = 'Prev Slide';
-            $telegram_message['response']['menu'] = '<back to menu>';
-            $telegram_message['response']['lang'] = '<change language>';
-        }
+        $botman->listen();
 
-        else {
-            $telegram_message['message'] = 'Invalid response identifier - '.$message_identifier;
-            $telegram_message['response'] = array('menu');
-        }
-
-        return $telegram_message;
+        return true;
     }
 
-    public function get_message_array($message_identifier) {
+    public function get_message_array($message_identifier, $chatbot_id, $language='en', $response_id=0, $api_token='') {
         $dash = new Dash;
+
         $chain_of_ids = $this->derephrase($message_identifier);
         $obj = $dash->getObject($chain_of_ids[1]);
 
-        if ($obj['type']=='chatbot') {
+        if ($chain_of_ids[0] == 'lang') {
+            $telegram_message['message'] = 'Choose language';
+            $telegram_message['response'] = $this->derephrase($obj['languages'], 1);
+            return $telegram_message;
+        }
+
+        else if ($obj['type']=='chatbot') {
             if ($obj['intro_message']) {
-                $list_of_messages['intro_message'] = $obj['intro_message'];
+                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[0], $api_token);
+            } else {
+                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['title'])[0], $api_token);
             }
             
             $items = $this->derephrase($obj['module_and_form_ids'], 1);
@@ -301,84 +179,87 @@ class Functions {
             foreach ($items as $module_id=>$assessment_form_id) {
                 if ($module_id) {
                     if ($title = trim($dash->getAttribute($module_id, 'title'))) {
-                        $list_of_messages['id##'.$module_id] = $title;
+                        $telegram_message['response']['id##'.$module_id] = $this->derephrase($title)[0];
                     }
                 }
                 else if ($assessment_form_id) {
                     if ($title = trim($dash->getAttribute($assessment_form_id, 'title'))) {
-                        $list_of_messages['id##'.$assessment_form_id] = $title;
+                        $telegram_message['response']['id##'.$assessment_form_id] =$this->derephrase($title)[0];
                     }
                 }
             }
 
-            if ($obj['end_message']) {
-                $list_of_messages['end_message'] = $obj['end_message'];
-            }
-
-            return $list_of_messages;
+            $telegram_message['response']['lang##'.$obj['id']] = '<change language>';
+            return $telegram_message;
         }
 
-        if ($obj['type']=='module') {
+        else if ($obj['type']=='module') {
             if ($obj['intro_message']) {
-                $list_of_messages['intro_message'] = $obj['intro_message'];
+                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[0], $api_token);
+            } else {
+                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['title'])[0], $api_token);
             }
-            
+
             $items = $this->derephrase($obj['level_and_form_ids'], 1);
 
             foreach ($items as $level_id=>$assessment_form_id) {
                 if ($level_id) {
                     if ($title = trim($dash->getAttribute($level_id, 'title'))) {
-                        $list_of_messages['id##'.$level_id] = $title;
+                        $telegram_message['response']['id##'.$level_id] = $this->derephrase($title)[0];
                     }
                 }
                 else if ($assessment_form_id) {
                     if ($title = trim($dash->getAttribute($assessment_form_id, 'title'))) {
-                        $list_of_messages['id##'.$assessment_form_id] = $title;
+                        $telegram_message['response']['id##'.$assessment_form_id] =$this->derephrase($title)[0];
                     }
                 }
             }
-
-            if ($obj['end_message']) {
-                $list_of_messages['end_message'] = $obj['end_message'];
-            }
-
-            return $list_of_messages;
+            
+            $telegram_message['response']['id##'.$chatbot_id] = '<main menu>';
+            return $telegram_message;
         }
 
-        if ($obj['type']=='level') {
+        else if ($obj['type']=='level') {
             if ($obj['intro_message']) {
-                $list_of_messages['intro_message'] = $obj['intro_message'];
+                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[0], $api_token);
+            } else {
+                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['title'])[0], $api_token);
             }
             
             $items = array_map('trim', explode(',', $obj['chapter_ids']));
 
             foreach ($items as $chapter_id) {
                 if ($title = trim($dash->getAttribute($chapter_id, 'title'))) {
-                    $list_of_messages['id##'.$chapter_id] = $title;
+                    $telegram_message['response']['id##'.$chapter_id] =$this->derephrase($title)[0];
                 }
             }
-
-            if ($obj['end_message']) {
-                $list_of_messages['end_message'] = $obj['end_message'];
-            }
-
-            return $list_of_messages;
+            
+            $telegram_message['response']['id##'.$chatbot_id] = '<main menu>';
+            $dash->pushAttribute($response_id, 'last_level_id', $obj['id']);
+            return $telegram_message;
         }
 
-        if ($obj['type']=='chapter') {
-
-            $i=0;
-            foreach ($obj['messages'] as $message) {
-                if (trim($message)) {
-                    $list_of_messages['id##'.$obj['id'].'##'.$i] = $message;
-                    $i++;
-                }
+        else if ($obj['type']=='chapter') {
+            if (count($chain_of_ids)==2) {
+                $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['title'])[0], $api_token);
+                $i=0;
+            }
+            else {
+                $i = $chain_of_ids[2];
+                $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['messages'][$i--])[0], $api_token);
+                $i++;
             }
 
-            return $list_of_messages;
+            $i++;
+            $last_level_id = $dash->getAttribute($response_id, 'last_level_id');
+
+            if (trim($telegram_message['message']))
+                $telegram_message['response']['id##'.$obj['id'].'##'.$i] = 'Next';
+            $telegram_message['response']['id##'.$last_level_id] = '<list of chapters>';
+            return $telegram_message;
         }
 
-        if ($obj['type']=='form') {
+        else if ($obj['type']=='form') {
 
             if ($obj['intro_message']) {
                 $list_of_messages['intro_message'] = $obj['intro_message'];
@@ -392,10 +273,19 @@ class Functions {
                 }
             }
 
-            if ($obj['end_message'])
-                $list_of_messages['end_message'] = $obj['end_message'];
-
             return $list_of_messages;
+        }
+    }
+
+    public function send_multi_message_return_last_one($messages, $api_token) {
+        if (is_array($messages)) {
+            $var = array_pop($messages);
+            foreach ($messages as $msg) {
+                $this->send_message(array('message'=>$msg), $api_token);
+            }
+            return $var;
+        } else {
+            return $messages;
         }
     }
 }
