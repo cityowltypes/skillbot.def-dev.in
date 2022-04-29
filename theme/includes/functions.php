@@ -20,6 +20,23 @@ use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
 
 class Functions {
 
+    public function csv_to_array($url) {
+        $path = str_replace(BASE_URL, ABSOLUTE_PATH, urldecode($url));
+
+        $csv = array_map('str_getcsv', file($path));
+        $headers = $csv[0];
+        unset($csv[0]);
+        $rowsWithKeys = [];
+        foreach ($csv as $row) {
+            $newRow = [];
+            foreach ($headers as $k => $key) {
+                $newRow[$key] = $row[$k];
+            }
+            $rowsWithKeys[] = $newRow;
+        }
+        return $rowsWithKeys;
+    }
+
     public function get_youtube_id($link) {
 
         $regexstr = '~
@@ -260,20 +277,30 @@ class Functions {
         }
 
         else if ($obj['type']=='form') {
-
-            if ($obj['intro_message']) {
-                $list_of_messages['intro_message'] = $obj['intro_message'];
+            if (count($chain_of_ids)==2) {
+                $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['title'])[0], $api_token);
+                $i=0;
+            }
+            else {
+                $i = $chain_of_ids[2];
+                $j = $i--;
+                $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['questions'][$j])[0], $api_token);
+                $i++;
             }
 
-            $i=0;
-            foreach ($obj['questions'] as $question) {
-                if (trim($question)) {
-                    $list_of_messages['id##'.$obj['id'].'##'.$i] = $question;
-                    $i++;
-                }
+            $i++;
+
+            if (trim($telegram_message['message'])) {
+                if ($this->derephrase($obj['response_options'][$j])=='-')
+                    $telegram_message['response']['id##'.$obj['id'].'##'.$i] = '';
+                else if (filter_var($this->derephrase($obj['response_options'][$j]), FILTER_VALIDATE_URL))
+                    $telegram_message['response']['id##'.$obj['id'].'##'.$i] = $this->derephrase($obj['response_options'][$j]);
+                else
+                    $telegram_message['response']['id##'.$obj['id'].'##'.$i] = 'Next';
             }
 
-            return $list_of_messages;
+            $telegram_message['response']['id##'.$chatbot_id] = '<main menu>';
+            return $telegram_message;
         }
     }
 

@@ -107,12 +107,12 @@
             },
             {
                 "input_slug": "intro_message",
-                "input_type" : "text",
+                "input_type" : "textarea",
                 "input_placeholder" : "Intro message"
             },
             {
                 "input_slug": "end_message",
-                "input_type" : "text",
+                "input_type" : "textarea",
                 "input_placeholder" : "End message"
             },
             {
@@ -158,13 +158,13 @@
             },
             {
                 "input_slug": "intro_message",
-                "input_type" : "text",
+                "input_type" : "textarea",
                 "input_placeholder" : "Introduction message",
                 "list_field": false
             },
             {
                 "input_slug": "end_message",
-                "input_type" : "text",
+                "input_type" : "textarea",
                 "input_placeholder" : "End message",
                 "list_field": false
             },
@@ -211,13 +211,13 @@
             },
             {
                 "input_slug": "intro_message",
-                "input_type" : "text",
+                "input_type" : "textarea",
                 "input_placeholder" : "Introduction message",
                 "list_field": false
             },
             {
                 "input_slug": "end_message",
-                "input_type" : "text",
+                "input_type" : "textarea",
                 "input_placeholder" : "End message",
                 "list_field": false
             },
@@ -302,13 +302,13 @@
             },
             {
                 "input_slug": "intro_message",
-                "input_type" : "text",
+                "input_type" : "textarea",
                 "input_placeholder" : "Introduction message",
                 "list_field": false
             },
             {
                 "input_slug": "end_message",
-                "input_type" : "text",
+                "input_type" : "textarea",
                 "input_placeholder" : "End message",
                 "list_field": false
             },
