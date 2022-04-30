@@ -34,6 +34,12 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 		else {
 			$last_message_response_options = json_decode($dash->getAttribute($response_id, 'last_message_response_options'), true);
         	$next_message_identifier = array_search($telegram_response['text'], $last_message_response_options);
+        	$dash->pushAttribute($response_id, implode('__', $functions->derephrase($last_message_identifier)), $telegram_response['text']);
+        	
+        	if (($next_message_identifier == NULL || $next_message_identifier == false) && $telegram_response['text']) {
+        		$next_message_identifier = array_search('👉👉👉', $last_message_response_options);
+        	}
+
 		}
 
 	}

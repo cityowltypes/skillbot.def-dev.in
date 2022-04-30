@@ -124,6 +124,21 @@
                 "list_sortable": true
             },
             {
+                "input_slug": "logos_footer",
+                "input_type": "url",
+                "input_placeholder" : "Logos on the footer"
+            },
+            {
+                "input_slug": "certificate_programme",
+                "input_type" : "text",
+                "input_placeholder" : "Programme name in certificate"
+            },
+            {
+                "input_slug": "certificate_funder",
+                "input_type" : "text",
+                "input_placeholder" : "Programme funded by"
+            },
+            {
                 "input_slug": "files",
                 "input_type": "file_uploader",
                 "input_unique": false
@@ -359,6 +374,34 @@
                 "input_slug": "telegram_user_id",
                 "input_type": "text",
                 "input_placeholder": "User ID"
+            }
+        ]
+    },
+    "tool": {
+        "type": "content",
+        "slug": "tool",
+        "headmeta_title_prepend": "",
+        "headmeta_title_append": [
+            {
+                "type": "webapp",
+                "slug": "headmeta_title"
+            }
+        ],
+        "headmeta_title_glue": "&mdash;",
+        "headmeta_title": "title",
+        "name": "tool",
+        "plural": "tools",
+        "disallow_editing": true,
+        "modules": [
+            {
+                "input_slug": "title",
+                "input_primary": true,
+                "input_type": "text",
+                "input_placeholder": "Tool title",
+                "input_unique": true,
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
             }
         ]
     }
