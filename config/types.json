@@ -333,11 +333,6 @@
                 "input_placeholder": "Questions (messages) of the form"
             },
             {
-                "input_slug": "response_options",
-                "input_type": "multi_textarea",
-                "input_placeholder": "Response options of the corresponding question"
-            },
-            {
                 "input_slug": "files",
                 "input_type": "file_uploader",
                 "input_unique": false
