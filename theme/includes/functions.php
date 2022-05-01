@@ -177,6 +177,8 @@ class Functions {
 
         $chain_of_ids = $this->derephrase($message_identifier);
         $obj = $dash->getObject($chain_of_ids[1]);
+        $chatbot = $dash->getObject($chatbot_id);
+        $response = $dash->getObject($response_id);
 
         if ($chain_of_ids[0] == 'lang') {
             $telegram_message['message'] = 'Choose language';
@@ -206,10 +208,6 @@ class Functions {
                     }
                 }
 
-                $response = $dash->getObject($response_id);
-                if (!$i && !$response['id__5__1'] && !$response['id__5__2'] && !$response['id__5__3'])
-                    break;
-
                 $i++;
             }
 
@@ -218,7 +216,17 @@ class Functions {
         }
 
         else if ($obj['type']=='module') {
+
+            $module_and_form_ids = $this->derephrase($chatbot['module_and_form_ids'], 1);
+            $assessment_form_id_for_this_module = $module_and_form_ids[$obj['id']];
+
             $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[0], $api_token);
+
+            if ($assessment_form_id_for_this_module) {
+                if ($title = trim($dash->getAttribute($assessment_form_id_for_this_module, 'title'))) {
+                    $telegram_message['response']['id##'.$assessment_form_id_for_this_module] = 'Pre-assessment';
+                }
+            }
 
             $items = $this->derephrase($obj['level_and_form_ids'], 1);
 
@@ -228,14 +236,10 @@ class Functions {
                         $telegram_message['response']['id##'.$level_id] = '👉👉👉';
                     }
                 }
-                else if ($assessment_form_id) {
-                    if ($title = trim($dash->getAttribute($assessment_form_id, 'title'))) {
-                        $telegram_message['response']['id##'.$assessment_form_id] =$this->derephrase($title)[0];
-                    }
-                }
             }
             
             $telegram_message['response']['id##'.$chatbot_id] = '🏠';
+            $dash->pushAttribute($response_id, 'last_module_id', $obj['id']);
             return $telegram_message;
         }
 
@@ -248,6 +252,13 @@ class Functions {
                 if ($title = trim($dash->getAttribute($chapter_id, 'title'))) {
                     $telegram_message['response']['id##'.$chapter_id] =$this->derephrase($title)[0];
                 }
+            }
+
+            $last_module_id = $response['last_module_id'];
+            $last_module_level_and_form_ids = $this->derephrase($dash->getAttribute($last_module_id, 'level_and_form_ids'), 1);
+            $assessment_form_id_for_this_level = $last_module_level_and_form_ids[$obj['id']];
+            if ($title = trim($dash->getAttribute($assessment_form_id_for_this_level, 'title'))) {
+                $telegram_message['response']['id##'.$assessment_form_id_for_this_level] = 'Post-assessment';
             }
             
             $telegram_message['response']['id##'.$chatbot_id] = '🏠';
@@ -271,7 +282,7 @@ class Functions {
                 $i = ($chain_of_ids[2] ?? 1) + 1;
             }
 
-            $last_level_id = $dash->getAttribute($response_id, 'last_level_id');
+            $last_level_id = $response['last_level_id'];
 
             if (trim($telegram_message['message']))
                 $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
@@ -292,11 +303,15 @@ class Functions {
         }
 
         else if ($obj['type']=='form') {
+            
             if (count($chain_of_ids) == 2) {
                 $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['title'])[0], $api_token);
                 $i = 1;
             }
-            else if ($obj['questions'][$j]) {
+
+            /*
+
+            else if ($obj['questions'][0]) {
                 $i = ($chain_of_ids[2] ?? 1) - 1;
 
                 $j = $i;
@@ -331,6 +346,7 @@ class Functions {
                 else
                     $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
             }
+            */
 
             $telegram_message['response']['id##'.$chatbot_id] = '🏠';
             return $telegram_message;
