@@ -75,7 +75,7 @@ class Functions {
 
     }
 
-    public function derephrase($rephrase_string, $use_handle_slug=0, $handle_slug_preset_array=[]) {
+    public function derephrase($rephrase_string, $use_handle_slug=0, $handle_slug_preset_array=[], $return_with_favs=0) {
 
         if (strstr($rephrase_string, '##')) {
             $reph_array = array_values(
@@ -108,7 +108,13 @@ class Functions {
 
                     if (count($reph_temp)>1) {
                         foreach ($reph_temp as $rtemp) {
-                            $reph_available[$handle][] = $rtemp;
+                            if (substr($rtemp, -2) == '**' && $return_with_favs) {
+                                $this_fav = trim(substr($rtemp, 0, -2));
+                                $favs[] = $this_fav;
+                                $reph_available[$handle][] = $this_fav;
+                            }
+                            else
+                                $reph_available[$handle][] = $rtemp;
                         }
                     } else {
                         $reph_available[$handle] = $reph_temp[0];
@@ -121,7 +127,13 @@ class Functions {
                 $i++;
             }
 
-            return $reph_available;
+            if ($return_with_favs) {
+                $rephrased['arr'] = $reph_available;
+                $rephrased['fav'] = $favs;
+                return $rephrased;
+            }
+            else
+                return $reph_available;
         }
         else 
             return array($rephrase_string);
@@ -263,6 +275,7 @@ class Functions {
             
             $telegram_message['response']['id##'.$chatbot_id] = '🏠';
             $dash->pushAttribute($response_id, 'last_level_id', $obj['id']);
+            $dash->pushAttribute($response_id, 'last_assessment_id', $assessment_form_id_for_this_level);
             return $telegram_message;
         }
 
@@ -283,6 +296,7 @@ class Functions {
             }
 
             $last_level_id = $response['last_level_id'];
+            $last_assessment_id = $response['last_assessment_id'];
 
             if (trim($telegram_message['message']))
                 $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
@@ -290,12 +304,22 @@ class Functions {
                 $items = array_map('trim', explode(',', $dash->getAttribute($last_level_id, 'chapter_ids')));
                 $k = array_search($obj['id'], $items);
                 $k = $k + 1;
-                $next_chapter_id = $items[$k];
 
-                $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($dash->getAttribute($next_chapter_id, 'title'))[0], $api_token);
+                if ($title = $dash->getAttribute($items[$k], 'title')) {
+                    $next_chapter_id = $items[$k];
+                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[0], $api_token);
+                    $telegram_message['response']['id##'.$next_chapter_id.'##'.($i ?? '1')] = '👉👉👉';
+                }
+                else if ($title = $dash->getAttribute($last_assessment_id, 'title')) {
+                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[0], $api_token);
+                    $telegram_message['response']['id##'.$last_assessment_id] = '👉👉👉';
+                }
+                else {
+                    $telegram_message['message']=$this->send_multi_message_return_last_one('Back to main menu', $api_token);
+                    $telegram_message['response']['id##'.$chatbot_id] = '👉👉👉';
+                }
+
                 $i = 1;
-
-                $telegram_message['response']['id##'.$next_chapter_id.'##'.($i ?? '1')] = '👉👉👉';
             }
 
             $telegram_message['response']['id##'.$chatbot_id] = '🏠';
@@ -303,40 +327,69 @@ class Functions {
         }
 
         else if ($obj['type']=='form') {
-            
+            $i = ($chain_of_ids[2] ?? 1) - 1;
+            $j = $i;
+
             if (count($chain_of_ids) == 2) {
-                $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['title'])[0], $api_token);
+                if ($obj['intro_message'] ?? false)
+                    $telegram_message['message']=$this->send_multi_message_return_last_one(($this->derephrase($obj['intro_message'])[0] ?? 'Let\'s begin'), $api_token);
+                else
+                    $telegram_message['message']=$this->send_multi_message_return_last_one('Let\'s begin', $api_token);
                 $i = 1;
-            }
 
-            /*
-
-            else if ($obj['questions'][0]) {
-                $i = ($chain_of_ids[2] ?? 1) - 1;
-
-                $j = $i;
-                $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['questions'][$j])[0], $api_token);
-                
-                $i = ($chain_of_ids[2] ?? 1) + 1;
-            }
-
-            if (trim($telegram_message['message'])) {
-                if ($obj['response_options'][$j] == '-')
-                    $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? 1)] = '👉👉👉';
-                else if (filter_var(($arr_url = $obj['response_options'][$j]), FILTER_VALIDATE_URL)) {
-                    if ($j == 1)
-                        $arr = array_unique(array_column($this->csv_to_array($arr_url), 'state'));
-                    else if ($j == 2)
-                        $arr = array_unique(array_column($this->csv_to_array($arr_url), 'district'));
-                    else if ($j == 3)
-                        $arr = array_unique(array_column($this->csv_to_array($arr_url), 'village'));
-                    $l = 0;
-                    foreach ($arr as $op) {
-                        $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1').'##'.$l] = $op;
-                        $l++;
-                    }
+                if (trim($telegram_message['message'])) {
+                    $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
                 }
-                else if ($arr = $this->derephrase($obj['response_options'][$j])[0]) {
+                
+                $telegram_message['response']['id##'.$chatbot_id] = '🏠';
+            }
+
+            else if ($obj['questions'][$j]) {
+                //$question['fav'][0];
+
+                $arr = $this->derephrase($obj['questions'][$j], 1, [], 1);
+                if (array_keys($arr['arr'])[0]) {
+                    $question = array_keys($arr['arr'])[0];
+                    $response_options = array_values($arr['arr'])[0];
+                }
+                else if ($arr['arr'][0]) {
+                    $question = $arr['arr'][0];
+                    $response_options = '-';
+                }
+
+                $i = ($chain_of_ids[2] ?? 1) + 1;
+
+                $telegram_message['message']=$this->send_multi_message_return_last_one($question, $api_token);
+                $k = 0;
+
+                if (is_array($response_options)) {
+                    foreach ($response_options as $val) {
+                        $telegram_message['response']['id##'.$obj['id'].'##'.$i.'##'.$k] = $val;
+                        $k++;
+                    }
+                } else if ($response_options == '-') {
+                    //$telegram_message['response']['id##'.$chatbot_id] = '';
+                    $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
+                } else if (filter_var(($arr_url = $response_options), FILTER_VALIDATE_URL)) {
+                    if ($j == 1) {
+                        $arr = array_unique(array_column($this->csv_to_array($arr_url), 'state'));
+                    }
+                    else if ($j == 2) {
+                        $arr = array_combine(array_column($this->csv_to_array($arr_url), 'district'), array_column($this->csv_to_array($arr_url), 'state'));
+                        foreach ($arr as $key => $value) {
+                            if ($value == $response['id__5__2'])
+                                $arr_final[] = $key;
+                        }
+                        $arr = $arr_final;
+                    }
+                    else if ($j == 3) {
+                        $arr = array_combine(array_column($this->csv_to_array($arr_url), 'village'), array_column($this->csv_to_array($arr_url), 'district'));
+                        foreach ($arr as $key => $value) {
+                            if ($value == $response['id__5__3'])
+                                $arr_final[] = $key;
+                        }
+                        $arr = $arr_final;
+                    }
                     $l = 0;
                     foreach ($arr as $op) {
                         $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1').'##'.$l] = $op;
@@ -344,11 +397,17 @@ class Functions {
                     }
                 }
                 else
-                    $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
+                    $telegram_message['response']['id##'.$chatbot_id] = 'Error in Re::phrase 😳';  
             }
-            */
 
-            $telegram_message['response']['id##'.$chatbot_id] = '🏠';
+            else {
+                if ($obj['end_message'] ?? false)
+                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['end_message'])[0], $api_token);
+                else
+                    $telegram_message['message']=$this->send_multi_message_return_last_one('Done', $api_token);
+                $telegram_message['response']['id##'.$chatbot_id] = '🏠';
+            }
+
             return $telegram_message;
         }
     }
