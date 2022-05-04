@@ -468,4 +468,22 @@ class Functions {
             return $messages;
         }
     }
+
+    function join_images(string $image1, string $image2, string $upload_dir): string
+    {
+        $dash = new Dash();
+
+        // filename
+        $output_file = "{$upload_dir}/" . time() . '.jpg';
+        // upload target
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+
+        // iamgemagick command to stitch the images together
+        $cmd = "convert -append {$image1} {$image2} {$output_file}";
+        $dash->do_shell_command($cmd);
+
+        return $output_file;
+    }
 }
