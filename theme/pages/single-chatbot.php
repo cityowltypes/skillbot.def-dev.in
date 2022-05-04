@@ -23,15 +23,17 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 		//GET LAST SENT MESSAGE
 		$last_message_identifier = $dash->getAttribute($response_id , 'last_message_identifier');
 
-		//GET USER LANGUAGE
-		$telegram_user_lang = $dash->getAttribute($response_id , 'lang');
 		
 		//NEXT MESSAGE IDENTIFIER
 		if ($last_message_identifier == 'lang##'.$chatbot_id) {
 			$dash->pushAttribute($response_id, 'lang', $telegram_response['text']);
+			//GET USER LANGUAGE
+			$telegram_user_lang = $dash->getAttribute($response_id , 'lang');
 			$next_message_identifier = 'id##'.$chatbot_id;
 		}
 		else {
+			//GET USER LANGUAGE
+			$telegram_user_lang = $dash->getAttribute($response_id , 'lang');
 			$last_message_response_options = json_decode($dash->getAttribute($response_id, 'last_message_response_options'), true);
         	$next_message_identifier = array_search($telegram_response['text'], $last_message_response_options);
         	

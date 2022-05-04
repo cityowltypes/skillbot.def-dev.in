@@ -184,13 +184,58 @@ class Functions {
         return true;
     }
 
-    public function get_message_array($message_identifier, $chatbot_id, $language='en', $response_id=0, $api_token='') {
+    public function get_message_array($message_identifier, $chatbot_id, $language='english', $response_id=0, $api_token='') {
         $dash = new Dash;
 
         $chain_of_ids = $this->derephrase($message_identifier);
         $obj = $dash->getObject($chain_of_ids[1]);
         $chatbot = $dash->getObject($chatbot_id);
         $response = $dash->getObject($response_id);
+        
+        if ($chatbot_id==3) {
+            if ($language=='english')
+                $lang_id = '0';
+            else if ($language=='हिन्दी')
+                $lang_id = '1';
+            else if ($language=='తెలుగు')
+                $lang_id = '2';
+            else if ($language=='मराठी')
+                $lang_id = '3';
+            else if ($language=='தமிழ்')
+                $lang_id = '4';
+            else if ($language=='বাংলা')
+                $lang_id = '5';
+            else if ($language=='ಕನ್ನಡ')
+                $lang_id = '6';
+            else if ($language=='অসমীয়া')
+                $lang_id = '7';
+            else if ($language=='മലയാളം')
+                $lang_id = '8';
+            else if ($language=='ଓଡ଼ିଆ')
+                $lang_id = '9';
+            else
+                $lang_id = '0';
+        }
+        else if ($chatbot_id==4) {
+            if ($language=='english')
+                $lang_id = '0';
+            else if ($language=='हिन्दी')
+                $lang_id = '1';
+            else if ($language=='తెలుగు')
+                $lang_id = '2';
+            else if ($language=='मराठी')
+                $lang_id = '3';
+            else if ($language=='ಕನ್ನಡ')
+                $lang_id = '4';
+            else if ($language=='বাংলা')
+                $lang_id = '5';
+            else if ($language=='ଓଡ଼ିଆ')
+                $lang_id = '6';
+            else
+                $lang_id = '0';
+        }
+        else
+            $lang_id = '0';
 
         if ($chain_of_ids[0] == 'lang') {
             $telegram_message['message'] = 'Choose language';
@@ -200,9 +245,9 @@ class Functions {
 
         else if ($obj['type']=='chatbot') {
             if ($obj['intro_message']) {
-                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[0], $api_token);
+                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[$lang_id], $api_token);
             } else {
-                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['title'])[0], $api_token);
+                $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['title'])[$lang_id], $api_token);
             }
             
             $items = $this->derephrase($obj['module_and_form_ids'], 1);
@@ -211,12 +256,12 @@ class Functions {
             foreach ($items as $module_id=>$assessment_form_id) {
                 if ($module_id) {
                     if ($title = trim($dash->getAttribute($module_id, 'title'))) {
-                        $telegram_message['response']['id##'.$module_id] = $this->derephrase($title)[0];
+                        $telegram_message['response']['id##'.$module_id] = $this->derephrase($title)[$lang_id];
                     }
                 }
                 else if ($assessment_form_id) {
                     if ($title = trim($dash->getAttribute($assessment_form_id, 'title'))) {
-                        $telegram_message['response']['id##'.$assessment_form_id] =$this->derephrase($title)[0];
+                        $telegram_message['response']['id##'.$assessment_form_id] =$this->derephrase($title)[$lang_id];
                     }
                 }
 
@@ -232,7 +277,7 @@ class Functions {
             $module_and_form_ids = $this->derephrase($chatbot['module_and_form_ids'], 1);
             $assessment_form_id_for_this_module = $module_and_form_ids[$obj['id']];
 
-            $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[0], $api_token);
+            $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[$lang_id], $api_token);
 
             if ($assessment_form_id_for_this_module) {
                 if ($title = trim($dash->getAttribute($assessment_form_id_for_this_module, 'title'))) {
@@ -256,13 +301,13 @@ class Functions {
         }
 
         else if ($obj['type']=='level') {
-            $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[0], $api_token);
+            $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[$lang_id], $api_token);
             
             $items = array_map('trim', explode(',', $obj['chapter_ids']));
 
             foreach ($items as $chapter_id) {
                 if ($title = trim($dash->getAttribute($chapter_id, 'title'))) {
-                    $telegram_message['response']['id##'.$chapter_id] =$this->derephrase($title)[0];
+                    $telegram_message['response']['id##'.$chapter_id] =$this->derephrase($title)[$lang_id];
                 }
             }
 
@@ -281,14 +326,14 @@ class Functions {
 
         else if ($obj['type']=='chapter') {
             if (count($chain_of_ids)==2) {
-                $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['title'])[0], $api_token);
+                $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['title'])[$lang_id], $api_token);
                 $i = 1;
             }
             else {
                 $i = ($chain_of_ids[2] ?? 1) - 1;
 
                 if ($this->derephrase($obj['messages'][$j]))
-                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['messages'][$i])[0], $api_token);
+                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['messages'][$i])[$lang_id], $api_token);
                 else
                     $telegram_message['message'] = '👉👉👉';
 
@@ -307,11 +352,11 @@ class Functions {
 
                 if ($title = $dash->getAttribute($items[$k], 'title')) {
                     $next_chapter_id = $items[$k];
-                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[0], $api_token);
+                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[$lang_id], $api_token);
                     $telegram_message['response']['id##'.$next_chapter_id.'##'.($i ?? '1')] = '👉👉👉';
                 }
                 else if ($title = $dash->getAttribute($last_assessment_id, 'title')) {
-                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[0], $api_token);
+                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[$lang_id], $api_token);
                     $telegram_message['response']['id##'.$last_assessment_id] = '👉👉👉';
                 }
                 else {
@@ -332,7 +377,7 @@ class Functions {
 
             if (count($chain_of_ids) == 2) {
                 if ($obj['intro_message'] ?? false)
-                    $telegram_message['message']=$this->send_multi_message_return_last_one(($this->derephrase($obj['intro_message'])[0] ?? 'Let\'s begin'), $api_token);
+                    $telegram_message['message']=$this->send_multi_message_return_last_one(($this->derephrase($obj['intro_message'])[$lang_id] ?? 'Let\'s begin'), $api_token);
                 else
                     $telegram_message['message']=$this->send_multi_message_return_last_one('Let\'s begin', $api_token);
                 $i = 1;
@@ -348,12 +393,12 @@ class Functions {
                 //$question['fav'][0];
 
                 $arr = $this->derephrase($obj['questions'][$j], 1, [], 1);
-                if (array_keys($arr['arr'])[0]) {
-                    $question = array_keys($arr['arr'])[0];
-                    $response_options = array_values($arr['arr'])[0];
+                if (array_keys($arr['arr'])[$lang_id]) {
+                    $question = array_keys($arr['arr'])[$lang_id];
+                    $response_options = array_values($arr['arr'])[$lang_id];
                 }
-                else if ($arr['arr'][0]) {
-                    $question = $arr['arr'][0];
+                else if ($arr['arr'][$lang_id]) {
+                    $question = $arr['arr'][$lang_id];
                     $response_options = '-';
                 }
 
@@ -402,7 +447,7 @@ class Functions {
 
             else {
                 if ($obj['end_message'] ?? false)
-                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['end_message'])[0], $api_token);
+                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['end_message'])[$lang_id], $api_token);
                 else
                     $telegram_message['message']=$this->send_multi_message_return_last_one('Done', $api_token);
                 $telegram_message['response']['id##'.$chatbot_id] = '🏠';
