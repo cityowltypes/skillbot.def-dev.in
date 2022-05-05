@@ -165,8 +165,12 @@ class Functions {
             }
             
             $kb = $kb->toArray();
-            if ($bot->custom_msg['is_image'] == true) {
-                $attachment = new Image($bot->custom_msg['image']);
+            $is_link = filter_var($bot->custom_msg['message'], FILTER_VALIDATE_URL);
+            if ($is_link && ($ytid = $this->get_youtube_id($bot->custom_msg['message']))) {
+                $message = 'https://youtu.be/'.$ytid;
+            }
+            else if ($is_link) {
+                $attachment = new Image($bot->custom_msg['message']);
                 
             // Build message object
                 $message = OutgoingMessage::create('')
