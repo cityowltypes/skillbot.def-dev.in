@@ -116,6 +116,16 @@
                 "input_placeholder" : "End message"
             },
             {
+                "input_slug": "pre_assessment_word",
+                "input_type" : "text",
+                "input_placeholder" : "Word for pre-assessment in languages (rephrase)"
+            },
+            {
+                "input_slug": "post_assessment_word",
+                "input_type" : "text",
+                "input_placeholder" : "Word for post-assessment in languages (rephrase)"
+            },
+            {
                 "input_slug": "module_and_form_ids",
                 "input_type": "text",
                 "input_placeholder": "Module and form IDs (rephrase)",

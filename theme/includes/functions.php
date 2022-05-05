@@ -281,7 +281,7 @@ class Functions {
 
             if ($assessment_form_id_for_this_module) {
                 if ($title = trim($dash->getAttribute($assessment_form_id_for_this_module, 'title'))) {
-                    $telegram_message['response']['id##'.$assessment_form_id_for_this_module] = 'Pre-assessment';
+                    $telegram_message['response']['id##'.$assessment_form_id_for_this_module] = ($this->derephrase($chatbot['pre_assessment_word'])[$lang_id] ?? 'Pre-assessment');
                 }
             }
 
@@ -315,7 +315,7 @@ class Functions {
             $last_module_level_and_form_ids = $this->derephrase($dash->getAttribute($last_module_id, 'level_and_form_ids'), 1);
             $assessment_form_id_for_this_level = $last_module_level_and_form_ids[$obj['id']];
             if ($title = trim($dash->getAttribute($assessment_form_id_for_this_level, 'title'))) {
-                $telegram_message['response']['id##'.$assessment_form_id_for_this_level] = 'Post-assessment';
+                $telegram_message['response']['id##'.$assessment_form_id_for_this_level] = ($this->derephrase($chatbot['post_assessment_word'])[$lang_id] ?? 'Post-assessment');
             }
             
             $telegram_message['response']['id##'.$chatbot_id] = '🏠';
