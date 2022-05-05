@@ -408,8 +408,9 @@ class Functions {
                 else if (array_keys($arr['arr'])[$lang_id]) {
                     $question = array_keys($arr['arr'])[$lang_id];
                     $response_options = array_values($arr['arr'])[$lang_id];
-                    $last_question_correct_response = array_values($arr['fav'])[$lang_id];
-                    $dash->pushAttribute($response_id, 'last_question_correct_response', $last_question_correct_response);
+                    if (array_values($arr['fav'])[$lang_id]) {
+                        $dash->pushAttribute($response_id, 'last_question_correct_response', array_values($arr['fav'])[$lang_id]);
+                    }
                 }
                 else if ($arr['arr'][$lang_id]) {
                     $question = $arr['arr'][$lang_id];
