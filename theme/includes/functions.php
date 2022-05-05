@@ -353,7 +353,7 @@ class Functions {
                 if ($title = $dash->getAttribute($items[$k], 'title')) {
                     $next_chapter_id = $items[$k];
                     $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[$lang_id], $api_token);
-                    $telegram_message['response']['id##'.$next_chapter_id.'##'.($i ?? '1')] = '👉👉👉';
+                    $telegram_message['response']['id##'.$next_chapter_id.'##1'] = '👉👉👉';
                 }
                 else if ($title = $dash->getAttribute($last_assessment_id, 'title')) {
                     $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[$lang_id], $api_token);
@@ -393,9 +393,15 @@ class Functions {
                 //$question['fav'][0];
 
                 $arr = $this->derephrase($obj['questions'][$j], 1, [], 1);
-                if (array_keys($arr['arr'])[$lang_id]) {
+                if (is_numeric(array_keys($arr['arr'])[$lang_id])) {
+                    $question = array_values($arr['arr'])[$lang_id];
+                    $response_options = '-';
+                }
+                else if (array_keys($arr['arr'])[$lang_id]) {
                     $question = array_keys($arr['arr'])[$lang_id];
                     $response_options = array_values($arr['arr'])[$lang_id];
+                    $last_question_correct_response = array_values($arr['fav'])[$lang_id];
+                    $dash->pushAttribute($response_id, 'last_question_correct_response', $last_question_correct_response);
                 }
                 else if ($arr['arr'][$lang_id]) {
                     $question = $arr['arr'][$lang_id];
