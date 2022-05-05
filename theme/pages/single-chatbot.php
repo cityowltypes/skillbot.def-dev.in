@@ -38,15 +38,33 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
         	$next_message_identifier = array_search($telegram_response['text'], $last_message_response_options);
         	
         	if (count($tring = $functions->derephrase($last_message_identifier))>3) {
-        		$tring = $tring[0].'##'.$tring[1].'##'.$tring[2];
-        		$dash->pushAttribute($response_id, implode('__', $functions->derephrase($tring)), $telegram_response['text']);
+        		$str_tring = $tring[0].'##'.$tring[1].'##'.$tring[2];
+        		$dash->pushAttribute($response_id, implode('__', $functions->derephrase($str_tring)), $telegram_response['text']);
         	}
         	else
 	        	$dash->pushAttribute($response_id, implode('__', $functions->derephrase($last_message_identifier)), $telegram_response['text']);
+
+	        $form_score_name = 'id__'.$tring[1].'__score';
+    		$last_question_correct_response = $dash->getAttribute($response_id , 'last_question_correct_response');
+    		if ($last_question_correct_response == $telegram_response['text']) {
+    			$form_score = (int) $dash->getAttribute($response_id , $form_score_name) + 1;
+    			$dash->pushAttribute($response_id, $form_score_name, $form_score);
+    		}
         	
+        	/*
         	if (($next_message_identifier == NULL || $next_message_identifier == "null" || $next_message_identifier == false) && $telegram_response['text']) {
         		$next_message_identifier = array_search('👉👉👉', $last_message_response_options);
         	}
+			*/
+
+        	$this_id_type = $dash->getAttribute($tring[1], 'type');
+        	if ($this_id_type == 'form') {
+	        	if ($telegram_response['text'] == '👉👉👉' && $tring[2]) {
+	        		$next_message_identifier = $last_message_identifier;
+	        	} else if (trim($telegram_response['text']) && $telegram_response['text']!='🏠') {
+	        		$next_message_identifier = $tring[0].'##'.$tring[1].'##'.((int)$tring[2]+1);
+	        	}
+	        }
 
 		}
 
