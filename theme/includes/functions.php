@@ -437,7 +437,7 @@ class Functions {
                     else if ($j == 2) {
                         $arr = array_combine(array_column($this->csv_to_array($arr_url), 'district'), array_column($this->csv_to_array($arr_url), 'state'));
                         foreach ($arr as $key => $value) {
-                            if ($value == $response['id__5__2'])
+                            if ($value == $response['id__5__2'] || $value == $response['id__67__2'])
                                 $arr_final[] = $key;
                         }
                         $arr = $arr_final;

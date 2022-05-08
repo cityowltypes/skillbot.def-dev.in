@@ -176,7 +176,7 @@
                 "input_primary": true,
                 "input_type": "text",
                 "input_placeholder": "Module Title",
-                "input_unique": true,
+                "input_unique": false,
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true
@@ -229,7 +229,7 @@
                 "input_primary": true,
                 "input_type": "text",
                 "input_placeholder": "Level Title",
-                "input_unique": true,
+                "input_unique": false,
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true
@@ -282,7 +282,7 @@
                 "input_primary": true,
                 "input_type": "text",
                 "input_placeholder": "Chapter Title",
-                "input_unique": true,
+                "input_unique": false,
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true
@@ -320,7 +320,7 @@
                 "input_primary": true,
                 "input_type": "text",
                 "input_placeholder": "Title of the form",
-                "input_unique": true,
+                "input_unique": false,
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true
