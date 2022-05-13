@@ -196,54 +196,14 @@ class Functions {
         $chatbot = $dash->getObject($chatbot_id);
         $response = $dash->getObject($response_id);
         
-        if ($chatbot_id==3) {
-            if ($language=='english')
-                $lang_id = '0';
-            else if ($language=='हिन्दी')
-                $lang_id = '1';
-            else if ($language=='తెలుగు')
-                $lang_id = '2';
-            else if ($language=='मराठी')
-                $lang_id = '3';
-            else if ($language=='தமிழ்')
-                $lang_id = '4';
-            else if ($language=='বাংলা')
-                $lang_id = '5';
-            else if ($language=='ಕನ್ನಡ')
-                $lang_id = '6';
-            else if ($language=='অসমীয়া')
-                $lang_id = '7';
-            else if ($language=='മലയാളം')
-                $lang_id = '8';
-            else if ($language=='ଓଡ଼ିଆ')
-                $lang_id = '9';
-            else
-                $lang_id = '0';
-        }
-        else if ($chatbot_id==4) {
-            if ($language=='english')
-                $lang_id = '0';
-            else if ($language=='हिन्दी')
-                $lang_id = '1';
-            else if ($language=='తెలుగు')
-                $lang_id = '2';
-            else if ($language=='मराठी')
-                $lang_id = '3';
-            else if ($language=='ಕನ್ನಡ')
-                $lang_id = '4';
-            else if ($language=='বাংলা')
-                $lang_id = '5';
-            else if ($language=='ଓଡ଼ିଆ')
-                $lang_id = '6';
-            else
-                $lang_id = '0';
-        }
-        else
+        $languages = $this->derephrase($chatbot['languages'], 1);
+        $lang_id = array_search(strtolower($language), array_map('strtolower', array_values($languages)));
+        if (!$lang_id)
             $lang_id = '0';
 
         if ($chain_of_ids[0] == 'lang') {
             $telegram_message['message'] = 'Choose language';
-            $telegram_message['response'] = $this->derephrase($obj['languages'], 1);
+            $telegram_message['response'] = $languages;
             return $telegram_message;
         }
 
@@ -432,20 +392,18 @@ class Functions {
                     $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
                 } else if (filter_var(($arr_url = $response_options), FILTER_VALIDATE_URL)) {
                     if ($j == 1) {
+                        //state
                         $arr = array_unique(array_column($this->csv_to_array($arr_url), 'state'));
                     }
-                    else if ($j == 2) {
-                        $arr = array_combine(array_column($this->csv_to_array($arr_url), 'district'), array_column($this->csv_to_array($arr_url), 'state'));
+                    else if ($j>1) {
+                        //district or village
+                        if ($j == 2)
+                            $arr = array_combine(array_column($this->csv_to_array($arr_url), 'district'), array_column($this->csv_to_array($arr_url), 'state'));
+                        else if ($j == 3)
+                            $arr = array_combine(array_column($this->csv_to_array($arr_url), 'village'), array_column($this->csv_to_array($arr_url), 'district'));
+
                         foreach ($arr as $key => $value) {
-                            if ($value == $response['id__5__2'] || $value == $response['id__67__2'])
-                                $arr_final[] = $key;
-                        }
-                        $arr = $arr_final;
-                    }
-                    else if ($j == 3) {
-                        $arr = array_combine(array_column($this->csv_to_array($arr_url), 'village'), array_column($this->csv_to_array($arr_url), 'district'));
-                        foreach ($arr as $key => $value) {
-                            if ($value == $response['id__5__3'])
+                            if ($value == $response['id__'.$obj['id'].'__'.$j])
                                 $arr_final[] = $key;
                         }
                         $arr = $arr_final;
