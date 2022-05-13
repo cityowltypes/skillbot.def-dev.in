@@ -20,7 +20,7 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 
 	//GET MY CHATBOT ID
 	else if ($response_id && strtolower(trim($telegram_response['text']))=='chatbot_uid') {
-		$telegram_message['message']='000';
+		$telegram_message['message'] = $telegram_user_id;
 		$telegram_message['response']['id##'.$chatbot_id] = '🏠';
 		$next_message_identifier = 'chatbot##uid';
 	}
@@ -87,7 +87,8 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 	if ($next_message_identifier) {
 		
 		//PREPARE TELEGRAM MESSAGE AND RESPONSE OPTIONS
-		$telegram_message = $functions->get_message_array($next_message_identifier, $chatbot_id, $telegram_user_lang, $response_id, $postdata['api_token']);
+		if ($next_message_identifier != 'chatbot##uid')
+			$telegram_message = $functions->get_message_array($next_message_identifier, $chatbot_id, $telegram_user_lang, $response_id, $postdata['api_token']);
 
 		//SEND THE MESSAGE
 		if ($telegram_message['message'] ?? false) {
