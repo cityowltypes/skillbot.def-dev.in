@@ -13,12 +13,19 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 	$response_id = $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = ".$telegram_user_id." AND `content`->'$.chatbot' = '".$chatbot_slug."' AND `content`->'$.type' = 'response'")[0]['id'];
 
 	//DELETE DATA MESSAGE (FOR TESTING)
-	if ($response_id && strtolower(trim($telegram_response['text']))=='reset my chatbot data') {
+	if ($response_id && strtolower(trim($telegram_response['text']))=='chatbot_reset') {
 		$dash->doDeleteObject($response_id);
 		$response_id = false;
 	}
 
-	if ($response_id) {
+	//GET MY CHATBOT ID
+	else if ($response_id && strtolower(trim($telegram_response['text']))=='chatbot_uid') {
+		$telegram_message['message']='000';
+		$telegram_message['response']['id##'.$chatbot_id] = '🏠';
+		$next_message_identifier = 'chatbot##uid';
+	}
+
+	else if ($response_id) {
 		
 		//GET LAST SENT MESSAGE
 		$last_message_identifier = $dash->getAttribute($response_id , 'last_message_identifier');
@@ -50,12 +57,6 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
     			$form_score = (int) $dash->getAttribute($response_id , $form_score_name) + 1;
     			$dash->pushAttribute($response_id, $form_score_name, $form_score);
     		}
-        	
-        	/*
-        	if (($next_message_identifier == NULL || $next_message_identifier == "null" || $next_message_identifier == false) && $telegram_response['text']) {
-        		$next_message_identifier = array_search('👉👉👉', $last_message_response_options);
-        	}
-			*/
 
         	$this_id_type = $dash->getAttribute($tring[1], 'type');
         	if ($this_id_type == 'form') {
