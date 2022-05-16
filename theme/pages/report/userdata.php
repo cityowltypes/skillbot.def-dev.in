@@ -1,19 +1,15 @@
-<?php include_once TRIBE_ROOT . '/theme/includes/_init.php';?>
-
-<?php
+<?php include_once TRIBE_ROOT . '/theme/_init.php';
 $filename=$slug.'-' . time();
-
-$data1 = $sql->executeSQL("SELECT 
-	`d1`.`id` `id`,
-	`d1`.`type` `type`,
-	FROM `data` `d1`
-	WHERE 
-	`d1`.`type`='user'
-	ORDER BY `id` DESC");
-
-
-//$data=array_combine(array_column($data2, 'id'), $data2) + array_combine(array_column($data1, 'id'), $data1);
-
-$data = array_combine(array_column($data1, 'id'), $data1);
-
-$functions->array_to_csv($data, array_keys($data1[0]), $filename);
+$export = array();
+$ids = $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.type' = 'response' AND `content`->'$.chatbot' = 'digital-financial-inclusion' ORDER BY `id` DESC");
+$data = $dash->getObjects($ids);
+$ids = array_column($data, 'id');
+array_multisort($ids, SORT_DESC, $data);
+$i = 0;
+foreach ($data as $row) {
+	for ($j=1; $j < 10 ; $j++) { 
+		$export[$i]['id__5__'.$j]=$row['id__5__'.$j];
+	}
+	$i++;
+}
+$functions->array_to_csv($export, array_keys($export[0]), $filename);
