@@ -37,6 +37,24 @@ class Functions {
         return $rowsWithKeys;
     }
 
+    public function array_to_csv($data, $fields, $filename) {
+        $data=array_merge(array($fields), $data);
+
+        //print_r($data);
+        ob_start();
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename='.$filename.'.csv');
+
+        $fp = fopen('php://output', 'w');
+          
+        // Loop through file pointer and a line
+        foreach ($data as $fields) {
+            fputcsv($fp, $fields);
+        }
+          
+        fclose($fp);
+    }
+
     public function get_youtube_id($link) {
 
         $regexstr = '~
