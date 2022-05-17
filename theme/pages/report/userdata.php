@@ -7,6 +7,7 @@ $ids = array_column($data, 'id');
 array_multisort($ids, SORT_DESC, $data);
 $i = 0;
 foreach ($data as $row) {
+	$export[$i]['response_id'] = $row['id'];
 	for ($j=1; $j < 10 ; $j++) { 
 		$export[$i]['id__5__'.$j]=$row['id__5__'.$j];
 	}
