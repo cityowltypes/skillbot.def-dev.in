@@ -43,7 +43,7 @@
       },
       {
         "name": "Insights",
-        "href": "/admin/insights",
+        "href": "/report",
         "admin_access_only": 1
       },
       {
