@@ -237,13 +237,40 @@ class Functions {
             $i = 0;
             foreach ($items as $module_id=>$assessment_form_id) {
                 if ($module_id) {
-                    if ($title = trim($dash->getAttribute($module_id, 'title'))) {
-                        $telegram_message['response']['id##'.$module_id] = $this->derephrase($title)[$lang_id];
+                    
+                    //it's the user registration form
+                    if (!$i) {
+                        $number_of_questions_in_user_registration = count(json_decode($dash->getAttribute($module_id, 'questions'), 1));
+
+                        //if last question in registration form is not answered
+                        if (!$response['id__'.$module_id.'__'.$number_of_questions_in_user_registration]) {
+                            if ($title = trim($dash->getAttribute($module_id, 'title'))) {
+                                $telegram_message['response']['id##'.$module_id] = $this->derephrase($title)[$lang_id];
+                            }
+
+                            break;
+                        }
+                        else {
+                            if ($title = trim($dash->getAttribute($module_id, 'title'))) {
+                                $telegram_message['response']['id##'.$module_id] = '✅ '.$this->derephrase($title)[$lang_id];
+                            }
+                        }
+                    }
+
+                    else if ($title = trim($dash->getAttribute($module_id, 'title'))) {
+                        if ($response['completed__'.$module_id] == '1')
+                            $module_title_prefix = '✅ ';
+                        else if ($module_id == $response['last_module_id'])
+                            $module_title_prefix = '➡️ ';
+                        else
+                            $module_title_prefix = '';
+
+                        $telegram_message['response']['id##'.$module_id] = $module_title_prefix.$this->derephrase($title)[$lang_id];
                     }
                 }
                 else if ($assessment_form_id) {
                     if ($title = trim($dash->getAttribute($assessment_form_id, 'title'))) {
-                        $telegram_message['response']['id##'.$assessment_form_id] =$this->derephrase($title)[$lang_id];
+                        $telegram_message['response']['id##'.$assessment_form_id] = $this->derephrase($title)[$lang_id];
                     }
                 }
 
@@ -261,18 +288,24 @@ class Functions {
 
             $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[$lang_id], $api_token);
 
-            if ($assessment_form_id_for_this_module) {
+            $number_of_questions_in_assessment_form_id_for_this_module = count(json_decode($dash->getAttribute($assessment_form_id_for_this_module, 'questions'), 1));
+
+            //if last question in assessment form is not answered
+            if ($assessment_form_id_for_this_module && !$response['id__'.$assessment_form_id_for_this_module.'__'.$number_of_questions_in_assessment_form_id_for_this_module]) {
+
                 if ($title = trim($dash->getAttribute($assessment_form_id_for_this_module, 'title'))) {
                     $telegram_message['response']['id##'.$assessment_form_id_for_this_module] = ($this->derephrase($chatbot['pre_assessment_word'])[$lang_id] ?? 'Pre-assessment');
                 }
             }
 
-            $items = $this->derephrase($obj['level_and_form_ids'], 1);
+            else {
+                $items = $this->derephrase($obj['level_and_form_ids'], 1);
 
-            foreach ($items as $level_id=>$assessment_form_id) {
-                if ($level_id) {
-                    if ($title = trim($dash->getAttribute($level_id, 'title'))) {
-                        $telegram_message['response']['id##'.$level_id] = '👉👉👉';
+                foreach ($items as $level_id=>$assessment_form_id) {
+                    if ($level_id) {
+                        if ($title = trim($dash->getAttribute($level_id, 'title'))) {
+                            $telegram_message['response']['id##'.$level_id] = '👉👉👉';
+                        }
                     }
                 }
             }
@@ -289,15 +322,22 @@ class Functions {
 
             foreach ($items as $chapter_id) {
                 if ($title = trim($dash->getAttribute($chapter_id, 'title'))) {
-                    $telegram_message['response']['id##'.$chapter_id] =$this->derephrase($title)[$lang_id];
+                    $telegram_message['response']['id##'.$chapter_id] = $this->derephrase($title)[$lang_id];
                 }
             }
 
             $last_module_id = $response['last_module_id'];
             $last_module_level_and_form_ids = $this->derephrase($dash->getAttribute($last_module_id, 'level_and_form_ids'), 1);
             $assessment_form_id_for_this_level = $last_module_level_and_form_ids[$obj['id']];
-            if ($title = trim($dash->getAttribute($assessment_form_id_for_this_level, 'title'))) {
-                $telegram_message['response']['id##'.$assessment_form_id_for_this_level] = ($this->derephrase($chatbot['post_assessment_word'])[$lang_id] ?? 'Post-assessment');
+
+            $number_of_questions_in_assessment_form_id_for_this_level = count(json_decode($dash->getAttribute($assessment_form_id_for_this_level, 'questions'), 1));
+
+            //if last question in assessment form is not answered
+            if ($assessment_form_id_for_this_level && !$response['id__'.$assessment_form_id_for_this_level.'__'.$number_of_questions_in_assessment_form_id_for_this_level]) {
+
+                if ($title = trim($dash->getAttribute($assessment_form_id_for_this_level, 'title'))) {
+                    $telegram_message['response']['id##'.$assessment_form_id_for_this_level] = ($this->derephrase($chatbot['post_assessment_word'])[$lang_id] ?? 'Post-assessment');
+                }
             }
             
             $telegram_message['response']['id##'.$chatbot_id] = '🏠';
@@ -439,6 +479,12 @@ class Functions {
             else {
                 $arr = $this->derephrase($obj['questions'][0], 1, [], 1);
                 if (array_values($arr['fav'])[$lang_id]) {
+                    
+                    //if it's the LAST level post assessment form in the module
+                    $last_post_assessment_form_id = end(array_values($this->derephrase($dash->getAttribute($response['last_module_id'], 'level_and_form_ids'), 1)));
+                    if ($obj['id'] == $last_post_assessment_form_id)
+                        $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
+
                     $telegram_message['message']=$this->send_multi_message_return_last_one(array('Score: '.$response['id__'.$obj['id'].'__score'].' / '.count($obj['questions']), '👉🏠'), $api_token);
                 }
                 else {
