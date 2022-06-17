@@ -4,15 +4,13 @@
   $chatbot = $dash->getObject($_GET['chatbot_id']);
   $items = $functions->derephrase($chatbot['module_and_form_ids'], 1);
   $registration_form_id = array_keys($items)[0];
-  $name_ques_id = $chatbot['certificate_user_name_question_number'];
+  $name_ques_id = ($chatbot['certificate_user_name_question_number'] ?? 1);
 
 $i = 0;
 $incomplete = 0;
-foreach ($items as $module_id=>$assessment_form_id) {
-    if ($module_id) {
-      if ($response['completed__'.$module_id] != '1')
-        $incomplete = 1;
-    }
+foreach ($items as $module_id=>$assessment_form_id) {  
+    if ($i && $module_id && !isset($response['completed__'.$module_id]))
+      $incomplete = 1;
     $i++;
 }
 ?>
@@ -26,7 +24,7 @@ foreach ($items as $module_id=>$assessment_form_id) {
           <h1 class="card-title text-uppercase fw-bold mb-5">Certificate<br><span class="small">of Completion</span></h1>
           <h5 class="card-text fw-light">This is to certify</h5>
           <h5 class="card-text fw-bold"><u><?=$response['id__'.$registration_form_id.'__'.$name_ques_id]?></u></h5>
-          <h5 class="card-text fw-light">has successfully completed <strong><?=$chatbot['certificate_programme']?></strong> course by <strong><?=$chatbot['certificate_funder']?></strong> on <?=date('d, M Y', $response['updated_on'])?>.</h5>
+          <h5 class="card-text fw-light">has successfully completed <strong><?=$chatbot['certificate_programme']?></strong> course by <strong><?=$chatbot['certificate_funder']?></strong>.<br><br><em><?=date('d, M Y')?></em></h5>
         <?php } else { ?>
           <h1 class="card-title text-uppercase fw-bold mb-5"><span class="text-danger">Incomplete.</span><br><br>Please complete the course.</h1>
         <?php } ?>
