@@ -38,6 +38,10 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 			$telegram_user_lang = $dash->getAttribute($response_id , 'lang');
 			$next_message_identifier = 'id##'.$chatbot_id;
 		}
+		else if ($last_message_identifier == 'cert##'.$chatbot_id) {
+			$dash->pushAttribute($response_id, 'cert', $telegram_response['text']);
+			$next_message_identifier = 'id##'.$chatbot_id;
+		}
 		else {
 			//GET USER LANGUAGE
 			$telegram_user_lang = $dash->getAttribute($response_id , 'lang');

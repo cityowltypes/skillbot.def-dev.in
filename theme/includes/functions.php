@@ -225,6 +225,12 @@ class Functions {
             return $telegram_message;
         }
 
+        else if ($chain_of_ids[0] == 'cert') {
+            $telegram_message['message'] = '👉👉👉 https://skillbot.def-dev.in/tool/download-certificate?chatbot_id='.$chatbot_id.'&response_id='.$response_id;
+            $telegram_message['response']['id##'.$chatbot_id] = '🏠';
+            return $telegram_message;
+        }
+
         else if ($obj['type']=='chatbot') {
             if ($obj['intro_message']) {
                 $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[$lang_id], $api_token);
@@ -276,6 +282,8 @@ class Functions {
 
                 $i++;
             }
+
+            $telegram_message['response']['cert##'.$obj['id']] = '<download certificate>';
 
             $telegram_message['response']['lang##'.$obj['id']] = '<change language>';
             return $telegram_message;
@@ -488,7 +496,7 @@ class Functions {
                     $telegram_message['message']=$this->send_multi_message_return_last_one(array('Score: '.$response['id__'.$obj['id'].'__score'].' / '.count($obj['questions']), '👉🏠'), $api_token);
                 }
                 else {
-                    $telegram_message['message']=$this->send_multi_message_return_last_one('👉🏠', $api_token);
+                    $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['end_message'])[$lang_id].' 👉🏠', $api_token);
                 }
 
                 $telegram_message['response']['id##'.$chatbot_id] = '🏠';

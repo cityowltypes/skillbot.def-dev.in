@@ -149,6 +149,11 @@
                 "input_placeholder" : "Programme funded by"
             },
             {
+                "input_slug": "certificate_user_name_question_number",
+                "input_type" : "number",
+                "input_placeholder" : "Question number of NAME field in user registration form (for certificate)"
+            },
+            {
                 "input_slug": "files",
                 "input_type": "file_uploader",
                 "input_unique": false
