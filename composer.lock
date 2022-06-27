@@ -1875,11 +1875,11 @@
         },
         {
             "name": "wildfire/admin",
-            "version": "v2.1.37",
+            "version": "v2.1.59",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wil-ldf-ire/admin.git",
-                "reference": "f4939d3b08bec9da908595a3033add630d59287e"
+                "reference": "3f2983b1b81d13df2e16d29667b30d704fd80e61"
             },
             "require": {
                 "wildfire/api": "^0.1",
@@ -1893,7 +1893,7 @@
                 }
             },
             "description": "Admin for Tribe (v2.1)",
-            "time": "2022-04-13T12:48:19+00:00"
+            "time": "2022-06-24T10:30:04+00:00"
         },
         {
             "name": "wildfire/api",
@@ -1996,5 +1996,5 @@
         "php": ">=7.4"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.3.0"
 }
