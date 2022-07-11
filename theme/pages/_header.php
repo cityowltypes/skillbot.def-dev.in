@@ -12,6 +12,7 @@
 	<meta property="og:image" content="<?=$meta_image_url?>">
 
 	<link href="/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://use.typekit.net/jjw4adm.css">
 
 	<link href="/vendor/wildfire/admin/theme/assets/plugins/fontawesome/css/all.min.css" rel="stylesheet">
 	<link href="/theme/assets/css/custom.css" rel="stylesheet">
