@@ -11,4 +11,6 @@
 sftp-config.json
 /theme/dist
 .idea
-
+/lc
+/container-compose.yml
+/logs
