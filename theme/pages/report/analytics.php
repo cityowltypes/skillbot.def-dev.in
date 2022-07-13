@@ -151,7 +151,7 @@ function format_to_thousands(int $value) {
 
     <!-- users by age and average age -->
     <section>
-        <p class="display-4 text-center">Age related</p>
+        <p class="display-4 text-center">Age Related</p>
 
         <div class="row mt-5">
             <div class="col-lg-10 mx-auto">
