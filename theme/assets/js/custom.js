@@ -184,16 +184,12 @@ function numberFormatter (value, decimal) {
     );
 };
 
-function getColumn (anArray, columnNumber, formatNumber = false) {
+function getColumn (anArray, columnNumber) {
     if (typeof anArray === 'object') {
         anArray = Object.values(anArray);
     }
 
     return anArray.map(function(row) {
-        if (isInt(row[columnNumber]) && formatNumber) {
-            return numberFormatter(row[columnNumber]);
-        }
-
         if (typeof row[columnNumber] === 'string') {
             return row[columnNumber][0].toUpperCase() + row[columnNumber].substring(1);
         }
