@@ -1,5 +1,51 @@
 'use strict';
 
+// handle analytics filter
+(() => {
+    let district = document.querySelector('select[name="district"]');
+    if (district) {
+        district.addEventListener('change', (e) => {
+            e.preventDefault();
+
+            let search = window.location.search;
+            search = new URLSearchParams(search);
+
+            if (district.value === 'all') {
+                search.delete('district');
+            }
+            else {
+                search.set('district', district.value);
+            }
+            search = search.toString();
+            console.log(search)
+
+            window.location.href = `${window.location.pathname}?${search}`;
+        });
+    }
+
+    let state = document.querySelector('select[name="state"]');
+    if (state) {
+        state.addEventListener('change', (e) => {
+            e.preventDefault();
+
+            let search = window.location.search;
+            search = new URLSearchParams(search);
+
+            if (state.value === 'all') {
+                search.delete('state');
+            }
+            else {
+                search.set('state', state.value);
+            }
+
+            search.delete('district');
+            search = search.toString();
+
+            window.location.href = `${window.location.pathname}?${search}`;
+        })
+    }
+})();
+
 // draw charts for analytics
 (() => {
     if (!document.querySelector('input[name="is_analytics"]')) {
@@ -7,6 +53,50 @@
     }
 
     const autocolors = window['chartjs-plugin-autocolors'];
+
+    // users by district
+    let usersByDistrict = document.querySelector('canvas#users_by_district');
+    if (usersByDistrict) {
+        new Chart(usersByDistrict, {
+            type: 'bar',
+            data: {
+                labels: getColumn(analytics_data['users_by_district'], 'district'),
+                datasets: [{
+                    label: '',
+                    data: getColumn(analytics_data['users_by_district'], 'count')
+                }],
+            },
+            options: {
+                plugins: {
+                    autocolors: {
+                        mode: getColumn(analytics_data['users_by_district'], 'count')
+                    },
+                    tooltip: {
+                        enabled: true
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 8,
+                        formatter: function (value, context) {
+                            return numberFormatter(value);
+                        },
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                indexAxis: 'x',
+                skipNull: true,
+                minBarLength: 12,
+                maxBarThickness: 40
+            },
+            plugins: [
+                autocolors,
+                ChartDataLabels
+            ]
+        });
+    }
 
     // chart for users by age
     new Chart(document.querySelector('canvas#users_by_age'), {
@@ -24,7 +114,7 @@
                     mode: getColumn(analytics_data['users_by_age'], 'age_count')
                 },
                 tooltip: {
-                    enabled: false
+                    enabled: true
                 },
                 datalabels: {
                     anchor: 'end',
@@ -40,7 +130,8 @@
             },
             indexAxis: 'y',
             skipNull: true,
-            minBarLength: 12
+            minBarLength: 12,
+            maxBarThickness: 40
         },
         plugins: [
             autocolors,
@@ -64,13 +155,13 @@
                     mode: getColumn(analytics_data['per_module_users'], 'count')
                 },
                 tooltip: {
-                    enabled: false
+                    enabled: true
                 },
                 datalabels: {
                     anchor: 'center',
                     color: 'black',
                     font: {
-                        weight: 'bold'
+                        weight: 'normal'
                     },
                     formatter: function (value, context) {
                         return `${numberFormatter(value)}\n(${context.chart.data.labels[context.dataIndex]})`;
@@ -104,7 +195,7 @@
                     mode: getColumn(analytics_data['users_per_category'], 'count')
                 },
                 tooltip: {
-                    enabled: false
+                    enabled: true
                 },
                 datalabels: {
                     anchor: 'end',
@@ -120,7 +211,8 @@
             },
             indexAxis: 'x',
             skipNull: true,
-            minBarLength: 12
+            minBarLength: 12,
+            maxBarThickness: 40
         },
         plugins: [
             autocolors,
@@ -144,13 +236,13 @@
                     mode: getColumn(analytics_data['users_per_gender'], 'count')
                 },
                 tooltip: {
-                    enabled: false
+                    enabled: true
                 },
                 datalabels: {
                     anchor: 'center',
                     color: 'black',
                     font: {
-                        weight: 'bold'
+                        weight: 'normal'
                     },
                     formatter: function (value, context) {
                         return `${numberFormatter(value)}\n(${context.chart.data.labels[context.dataIndex]})`;
@@ -189,11 +281,16 @@ function getColumn (anArray, columnNumber) {
         anArray = Object.values(anArray);
     }
 
-    return anArray.map(function(row) {
-        if (typeof row[columnNumber] === 'string') {
-            return row[columnNumber][0].toUpperCase() + row[columnNumber].substring(1);
-        }
+    try {
+        return anArray.map(function(row) {
+            if (typeof row[columnNumber] === 'string') {
+                return row[columnNumber][0].toUpperCase() + row[columnNumber].substring(1);
+            }
 
-        return row[columnNumber];
-    });
+            return row[columnNumber];
+        });
+    }
+    catch (e) {
+        return anArray;
+    }
 }

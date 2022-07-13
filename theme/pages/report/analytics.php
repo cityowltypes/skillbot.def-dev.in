@@ -12,7 +12,7 @@ $bot = $dash->getObject($_GET['chatbot_id']);
 
 // if bot doesn't exist, show placeholder and terminate
 if (!$bot || ($bot['type'] ?? '') !== 'chatbot') {
-    require_once "_analytics_placeholder.php";
+    require_once "analytics/_placeholder_bots.php";
     die();
 }
 
@@ -20,26 +20,42 @@ $module_and_form = $functions->derephrase($bot['module_and_form_ids']);
 
 // console::debug($bot);
 // $bot_details = $sql->executeSQL("select * from data where type='response' and content->>'$.chatbot'='{$bot['slug']}' limit 0,10");
-// $registration_form = $sql->executeSQL("select * from data where type='form' and id={$module_and_form[0]} limit 1");
-// $registration_form = $dash->doContentCleanup($registration_form);
+$registration_form = $sql->executeSQL("select * from data where type='form' and id={$module_and_form[0]} limit 1");
+$registration_form = $dash->doContentCleanup($registration_form);
+
+$state = urldecode($_GET['state']) ?? null;
+$district = urldecode($_GET['district']) ?? null;
 
 // users by age
-$data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
-    where type = 'response' and
-        content->>'$.chatbot' = 'digital-financial-inclusion' and
-        content->>'$.id__5__6' between 10 and 100
-    group by age having age_count > 10
-    order by age
-");
-
-function is_valid_number ($array) {
-    if (filter_var($array['age'], FILTER_VALIDATE_INT) !== false) {
-        $array['age'] = floor($array['age']);
-        return $array;
-    }
-    else {
-        return null;
-    }
+if (!$state) {
+    $data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = 'digital-financial-inclusion' and
+            content->>'$.id__5__6' between 10 and 100
+        group by age
+        order by age
+    ");
+}
+elseif ($state && !$district) {
+    $data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = 'digital-financial-inclusion' and
+            lower(content->>'$.id__5__2') = '{$state}' and
+            content->>'$.id__5__6' between 10 and 100
+        group by age
+        order by age
+    ");
+}
+else if ($state && $district) {
+    $data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = 'digital-financial-inclusion' and
+            lower(content->>'$.id__5__2') = '{$state}' and
+            lower(content->>'$.id__5__3') = '{$district}' and
+            content->>'$.id__5__6' between 10 and 100
+        group by age
+        order by age
+    ");
 }
 
 foreach ($data['users_by_age'] as $age) {
@@ -47,7 +63,6 @@ foreach ($data['users_by_age'] as $age) {
 }
 
 $data['users_by_age'] = array_filter($temp);
-// sort($data['users_by_age']);
 // console::json($data['users_by_age']);
 
 // average age of users and total number of users
@@ -62,21 +77,65 @@ $data['average_age'] = floor($user_age / $data['user_count']);
 unset($user_age);
 
 // number of users per gender
-$data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
-    where type = 'response' and
-        content->>'$.chatbot' = 'digital-financial-inclusion' and
-        (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female')
-    group by sex
-");
+if (!$state) {
+    $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = 'digital-financial-inclusion' and
+            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female')
+        group by sex
+    ");
+}
+elseif ($state && !$district) {
+    $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = 'digital-financial-inclusion' and
+            lower(content->>'$.id__5__2') = '{$state}' and
+            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female')
+        group by sex
+    ");
+}
+elseif ($state && $district) {
+    $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = 'digital-financial-inclusion' and
+            lower(content->>'$.id__5__2') = '{$state}' and
+            lower(content->>'$.id__5__3') = '{$district}' and
+            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female')
+        group by sex
+    ");
+}
 
 // number of users per category
-$data['users_per_category'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
-    where type = 'response' and
-        content->>'$.chatbot' = 'digital-financial-inclusion' and
-        not content->>'$.id__5__5' is null and
-        not content->>'$.id__5__5' = '/start'
-    group by category having count(content->>'$.id__5__5') > 15
-");
+if (!$state) {
+    $data['users_per_category'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = 'digital-financial-inclusion' and
+            not content->>'$.id__5__5' is null and
+            not content->>'$.id__5__5' = '/start'
+        group by category having count(content->>'$.id__5__5') > 10
+    ");
+}
+elseif ($state && !$district) {
+    $data['users_per_category'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = 'digital-financial-inclusion' and
+            not content->>'$.id__5__5' is null and
+            not content->>'$.id__5__5' = '/start' and
+            lower(content->>'$.id__5__2') = '{$state}'
+        group by category having count(content->>'$.id__5__5') > 10
+    ");
+}
+elseif ($state && $district) {
+    $data['users_per_category'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = 'digital-financial-inclusion' and
+            not content->>'$.id__5__5' is null and
+            not content->>'$.id__5__5' = '/start' and
+            lower(content->>'$.id__5__2') = '{$state}' and
+            lower(content->>'$.id__5__3') = '{$district}'
+        group by category having count(content->>'$.id__5__5') > 10
+    ");
+}
 // console::debug($data['users_per_category']);
 
 // per module the number of users who've completed
@@ -91,11 +150,30 @@ foreach ($bot_module_ids as $key => $_id) {
     $data['per_module_users'][$_id]['module_name'] = $functions->derephrase($data['per_module_users'][$_id]['module_name'])[0];
 
     // get count of users who've completed these modules
-    $data['per_module_users'][$_id]['count'] = $sql->executeSQL("SELECT count(*) as count from data
-        where content->>'$.chatbot' = '{$bot['slug']}' and
-            type = 'response' and
-            {$bot_module_ids[$key]} = 1
-    ")[0]['count'];
+    if (!$state) {
+        $data['per_module_users'][$_id]['count'] = $sql->executeSQL("SELECT count(*) as count from data
+            where content->>'$.chatbot' = '{$bot['slug']}' and
+                type = 'response' and
+                {$bot_module_ids[$key]} = 1
+        ")[0]['count'];
+    }
+    elseif ($state && !$district) {
+        $data['per_module_users'][$_id]['count'] = $sql->executeSQL("SELECT count(*) as count from data
+            where content->>'$.chatbot' = '{$bot['slug']}' and
+                type = 'response' and
+                lower(content->>'$.id__5__2') = '{$state}' and
+                {$bot_module_ids[$key]} = 1
+        ")[0]['count'];
+    }
+    elseif ($state && $district) {
+        $data['per_module_users'][$_id]['count'] = $sql->executeSQL("SELECT count(*) as count from data
+            where content->>'$.chatbot' = '{$bot['slug']}' and
+                type = 'response' and
+                lower(content->>'$.id__5__2') = '{$state}' and
+                lower(content->>'$.id__5__3') = '{$district}' and
+                {$bot_module_ids[$key]} = 1
+        ")[0]['count'];
+    }
 }
 // console::debug($data['per_module_users']);
 
@@ -107,12 +185,43 @@ foreach ($bot_module_ids as $_json_key) {
 }
 
 $_search_pattern = implode(' and ', $_search_pattern);
-$data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
-    where type = 'response' and
-        content->>'$.chatbot' = '{$bot['slug']}' and
-        {$_search_pattern}
-")[0]['count'] ?? null;
+if (!$state) {
+    $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
+        where type = 'response' and
+            content->>'$.chatbot' = '{$bot['slug']}' and
+            {$_search_pattern}
+    ")[0]['count'] ?? null;
+}
+elseif ($state && !$district) {
+    $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
+        where type = 'response' and
+            content->>'$.chatbot' = '{$bot['slug']}' and
+            {$_search_pattern} and
+            lower(content->>'$.id__5__2') = '{$state}'
+    ")[0]['count'] ?? null;
+}
+elseif ($state && $district) {
+    $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
+        where type = 'response' and
+            content->>'$.chatbot' = '{$bot['slug']}' and
+            {$_search_pattern} and
+            lower(content->>'$.id__5__2') = '{$state}' and
+            lower(content->>'$.id__5__3') = '{$district}'
+    ")[0]['count'] ?? null;
+}
 // console::debug($data['users_who_completed_all']);
+
+// district wise users for state
+if ($state && !$district) {
+    $data['users_by_district'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__3') as 'district', count(content->>'$.id__5__3') as 'count' FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = '{$bot['slug']}' and
+            lower(content->>'$.id__5__2') = '{$state}' and
+            content->>'$.id__5__6' between 10 and 100
+        group by district having count > 8
+        order by district
+    ");
+}
 
 // console::debug($registration_form);
 // console::debug(array_map('json_decode', array_column($bot_details, 'content')));
@@ -121,37 +230,54 @@ $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count fr
 function format_to_thousands(int $value) {
     return number_format($value, 0, '.', ',');
 }
+
+function is_valid_number ($array) {
+    if (filter_var($array['age'], FILTER_VALIDATE_INT) !== false) {
+        $array['age'] = floor($array['age']);
+        return $array;
+    }
+    else {
+        return null;
+    }
+}
 ?>
 <div class="py-5 container">
-    <nav>
-        <div class="row justify-content-around">
-            <?php
-            $_scopes = ['overall', 'state', 'district'];
-            foreach ($_scopes as $scope) {
-                if (($_GET['scope'] ?? 'overall') === $scope) {
-                    echo "<a class='col-3 btn btn-primary text-capitalize' href='#'>{$scope}</a>";
-                }
-                else {
-                    echo "<a class='col-3 btn btn-outline-primary text-capitalize' href='?chatbot_id={$_GET['chatbot_id']}&scope={$scope}'>{$scope}</a>";
-                }
-            }
-            ?>
-        </div>
-    </nav>
+    <?php
+    require_once "analytics/_state.php";
+
+    if ($data['user_count'] == 0) {
+        require_once "analytics/_placeholder_stats.php";
+        die();
+    }
+    ?>
 
     <input type="hidden" name="is_analytics" value="true">
 
     <!-- total number of users -->
     <section class="py-5 mt-5">
-        <p class='display-2 text-center'><?= format_to_thousands($data['user_count']) ?></p>
-        <p class='text-uppercase text-center'>total users</p>
+        <?php
+        if (isset($data['users_by_district'])):
+        ?>
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <canvas id="users_by_district" width="300" height="300"></canvas>
+            </div>
+        </div>
+        <?php
+        endif
+        ?>
+
+        <div class="text-center">
+            <p class='display-2'><?= format_to_thousands($data['user_count']) ?></p>
+            <p class='text-uppercase'>total users</p>
+        </div>
     </section>
 
     <hr class="my-5">
 
     <!-- users by age and average age -->
     <section>
-        <p class="display-4 text-center">Age Related</p>
+        <p class="display-4 text-center">Distribution by Age</p>
 
         <div class="row mt-5">
             <div class="col-lg-10 mx-auto">
@@ -169,7 +295,7 @@ function format_to_thousands(int $value) {
 
     <!-- users per module -->
     <section>
-        <p class="display-4 text-center">Module Related</p>
+        <p class="display-4 text-center">Distribution by Module</p>
 
         <div class="row mt-5">
             <div class="col-lg-6 mx-auto">
@@ -188,7 +314,7 @@ function format_to_thousands(int $value) {
 
     <!-- users per category -->
     <section class="container">
-        <p class="display-4 text-center">Category Related</p>
+        <p class="display-4 text-center">Distribution by Category</p>
 
         <div class="row mt-5">
             <div class="col-lg-8 mx-auto">
@@ -200,8 +326,8 @@ function format_to_thousands(int $value) {
     <hr class="my-5">
 
     <!-- users per sex -->
-    <section class="container">
-        <p class="display-4 text-center">Users by Sex</p>
+    <section class="container pb-5">
+        <p class="display-4 text-center">Distribution by Sex</p>
 
         <div class="row mt-5">
             <div class="col-lg-6 mx-auto">
