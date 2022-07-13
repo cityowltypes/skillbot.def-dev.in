@@ -45,6 +45,8 @@ unset($temp, $state_list['state']);
                             $selected_state = $state;
                         }
 
+                        $state = strtolower($state);
+
                         echo "<option value='{$v}' class='text-capitalize' {$is_selected}>{$state}</option>";
                     }
                     ?>
@@ -61,6 +63,7 @@ unset($temp, $state_list['state']);
                     foreach ($state_list[$selected_state] as $district => $lc) {
                         $v = urlencode(strtolower($district));
                         $is_selected = ($_GET['district'] ?? '') == $v ? 'selected' : '';
+                        $district = strtolower($district);
 
                         echo "<option value='{$v}' class='text-capitalize' {$is_selected}>{$district}</option>";
                     }
