@@ -140,7 +140,9 @@ elseif ($state && $district) {
 
 // per module the number of users who've completed
 $data['per_module_users'] = null;
-$bot_module_ids = array_map('trim', explode(',', $bot['module_ids']));
+$bot_module_ids = $functions->derephrase($bot['module_and_form_ids']);
+$bot_module_ids = array_column($bot_module_ids, 0);
+$bot_module_ids = array_map('trim', $bot_module_ids);
 
 foreach ($bot_module_ids as $key => $_id) {
     $bot_module_ids[$key] = "content->>'$.completed__{$_id}'";
@@ -327,7 +329,7 @@ function is_valid_number ($array) {
 
     <!-- users per sex -->
     <section class="container pb-5">
-        <p class="display-4 text-center">Distribution by Sex</p>
+        <p class="display-4 text-center">Distribution by Gender</p>
 
         <div class="row mt-5">
             <div class="col-lg-6 mx-auto">
