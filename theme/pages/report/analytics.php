@@ -6,25 +6,6 @@
  */
 use \Wildfire\Core\Console as console;
 
-// if user isn't logged in send to login screen
-if (empty($_SESSION)) {
-    header("Location: /user/login");
-    die();
-}
-
-// if logged in but isn't and admin or doesn't have dashboard access
-// send to home
-if (
-    !empty($_SESSION) && 
-    (
-        $_SESSION['role'] !== 'admin' || 
-        $_SESSION['wildfire_dashboard_access'] !== 1
-    )
-) {
-    header("Location: /");
-    die();
-}
-
 require_once THEME_PATH . '/pages/_header.php';
 
 $bot = $dash->getObject($_GET['chatbot_id']);
