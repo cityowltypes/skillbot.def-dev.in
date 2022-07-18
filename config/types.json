@@ -414,5 +414,78 @@
                 "list_sortable": true
             }
         ]
+    },
+    "map": {
+        "type": "content",
+        "slug": "map",
+        "headmeta_title_prepend": "",
+        "headmeta_title_append": [
+            {
+                "type": "webapp",
+                "slug": "headmeta_title"
+            }
+        ],
+        "headmeta_title_glue": "&mdash;",
+        "headmeta_title": "title",
+        "name": "map",
+        "plural": "maps",
+        "disallow_editing": false,
+        "modules": [
+            {
+                "input_slug": "title",
+                "input_primary": true,
+                "input_type": "text",
+                "input_placeholder": "Map title",
+                "input_unique": true,
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
+            },
+            {
+                "input_slug": "form_id",
+                "input_type": "number",
+                "input_placeholder" : "Form ID with which this data connects",
+                "list_field": true,
+                "list_searchable": true,
+                "list_sortable": true
+            },
+            {"input_slug": "andaman_and_nicobar_islands", "input_type": "text"},
+            {"input_slug": "andhra_pradesh", "input_type": "text"},
+            {"input_slug": "arunachal_pradesh", "input_type": "text"},
+            {"input_slug": "assam", "input_type": "text"},
+            {"input_slug": "bihar", "input_type": "text"},
+            {"input_slug": "chandigarh", "input_type": "text"},
+            {"input_slug": "chhattisgarh", "input_type": "text"},
+            {"input_slug": "dadra_and_nagar_haveli_and_daman_and_diu", "input_type": "text"},
+            {"input_slug": "delhi", "input_type": "text"},
+            {"input_slug": "goa", "input_type": "text"},
+            {"input_slug": "gujarat", "input_type": "text"},
+            {"input_slug": "haryana", "input_type": "text"},
+            {"input_slug": "himachal_pradesh", "input_type": "text"},
+            {"input_slug": "jammu_and_kashmir", "input_type": "text"},
+            {"input_slug": "jharkhand", "input_type": "text"},
+            {"input_slug": "karnataka", "input_type": "text"},
+            {"input_slug": "kerala", "input_type": "text"},
+            {"input_slug": "ladakh", "input_type": "text"},
+            {"input_slug": "lakshadweep", "input_type": "text"},
+            {"input_slug": "madhya_pradesh", "input_type": "text"},
+            {"input_slug": "maharashtra", "input_type": "text"},
+            {"input_slug": "manipur", "input_type": "text"},
+            {"input_slug": "meghalaya", "input_type": "text"},
+            {"input_slug": "mizoram", "input_type": "text"},
+            {"input_slug": "nagaland", "input_type": "text"},
+            {"input_slug": "odisha", "input_type": "text"},
+            {"input_slug": "puducherry", "input_type": "text"},
+            {"input_slug": "punjab", "input_type": "text"},
+            {"input_slug": "rajasthan", "input_type": "text"},
+            {"input_slug": "sikkim", "input_type": "text"},
+            {"input_slug": "tamil_nadu", "input_type": "text"},
+            {"input_slug": "telangana", "input_type": "text"},
+            {"input_slug": "tripura", "input_type": "text"},
+            {"input_slug": "uttar_pradesh", "input_type": "text"},
+            {"input_slug": "uttarakhand", "input_type": "text"},
+            {"input_slug": "west_bengal", "input_type": "text"}
+        ]
     }
 }
+
