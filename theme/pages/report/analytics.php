@@ -23,8 +23,33 @@ $module_and_form = $functions->derephrase($bot['module_and_form_ids']);
 $registration_form = $sql->executeSQL("select * from data where type='form' and id={$module_and_form[0]} limit 1");
 $registration_form = $dash->doContentCleanup($registration_form);
 
+
+$registration_form = array_pop($registration_form);
+$state_list = $functions->derephrase($registration_form['questions'][1])[0][1] ?? null;
+
+if (!$state_list) {
+    require_once "analytics/_placeholder_bots.php";
+    die();
+}
+
+$csv_handle = fopen($state_list, 'r');
+$state_list = [];
+
+while ($temp = fgetcsv($csv_handle, 0, ',')) {
+    $state_list[$temp[0]][$temp[1]][] = $temp[2];
+}
+unset($temp, $state_list['state']);
+$state_list = strtolower(json_encode($state_list));
+$state_list = json_decode($state_list, 1);
+
 $state = urldecode($_GET['state']) ?? null;
 $district = urldecode($_GET['district']) ?? null;
+
+// list of valid districts if state is selected and district isn't
+if ($state && !$district) {
+    $districts = array_keys($state_list[$state]);
+    $districts = implode("','", $districts);
+}
 
 // users by age
 if (!$state) {
@@ -41,6 +66,7 @@ elseif ($state && !$district) {
         where type = 'response' and
             content->>'$.chatbot' = 'digital-financial-inclusion' and
             lower(content->>'$.id__5__2') = '{$state}' and
+            lower(content->>'$.id__5__3') IN ('{$districts}') AND
             content->>'$.id__5__6' between 10 and 100
         group by age
         order by age
@@ -211,7 +237,6 @@ elseif ($state && $district) {
             lower(content->>'$.id__5__3') = '{$district}'
     ")[0]['count'] ?? null;
 }
-// console::debug($data['users_who_completed_all']);
 
 // district wise users for state
 if ($state && !$district) {
@@ -219,15 +244,12 @@ if ($state && !$district) {
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__2') = '{$state}' and
+            lower(content->>'$.id__5__3') IN ('{$districts}') AND
             content->>'$.id__5__6' between 10 and 100
         group by district having count > 8
         order by district
     ");
 }
-
-// console::debug($registration_form);
-// console::debug(array_map('json_decode', array_column($bot_details, 'content')));
-// console::json($data);
 
 function format_to_thousands(int $value) {
     return number_format($value, 0, '.', ',');
@@ -247,6 +269,7 @@ function is_valid_number ($array) {
     <?php
     require_once "analytics/_state.php";
 
+    // if there's no data to show for the selection
     if ($data['user_count'] == 0) {
         require_once "analytics/_placeholder_stats.php";
         die();

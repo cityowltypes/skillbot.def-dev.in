@@ -3,29 +3,13 @@
  * @var object $sql
  * @var object $dash
  * @var object $functions
+ * @var array $state_list
  * @var array $registration_form
+ * @var string $state
+ * @var string $district
  */
-
-use \Wildfire\Core\Console as console;
-
-$registration_form = array_pop($registration_form);
-$state_list = $functions->derephrase($registration_form['questions'][1])[0][1] ?? null;
-
-if (!$state_list) {
-    require_once "_placeholder.php";
-    die();
-}
-
-// $state_list = file_get_contents($state_list);
-$csv_handle = fopen($state_list, 'r');
-$state_list = [];
-
-while ($temp = fgetcsv($csv_handle, 0, ',')) {
-    $state_list[$temp[0]][$temp[1]][] = $temp[2];
-}
-unset($temp, $state_list['state']);
-// console::debug($state_list);
 ?>
+
 <div class="container py-5">
     <h1 class="display-6 text-center">Filter</h1>
 
@@ -45,7 +29,12 @@ unset($temp, $state_list['state']);
                             $selected_state = $state;
                         }
 
-                        $state = ucwords(strtolower($state));
+                        if (strlen($state) > 2) {
+                            $state = ucwords(strtolower($state));
+                        }
+                        else {
+                            strtoupper($state);
+                        }
 
                         echo "<option value='{$v}' class='text-capitalize' {$is_selected}>{$state}</option>";
                     }
