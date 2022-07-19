@@ -56,7 +56,7 @@ if (
     !$state &&
     isset($_GET['state_code'])
 ) {
-    $map_states = $dash->getObject(18366);
+    $map_states = $dash->getObject(29297);
     $state = strtolower($map_states[$_GET['state_code']]) ?? null;
     $data['state'] = $state;
 
