@@ -2,6 +2,8 @@
 /**
  * @var array $data
  */
+
+require_once THEME_PATH . '/pages/_header.php';
 ?>
 
 <div class="py-5 container">
