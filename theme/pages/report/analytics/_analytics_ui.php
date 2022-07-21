@@ -7,7 +7,7 @@
 <div class="py-5 container">
     <?php
     // render filter ui only if request uri doesn't have no_filter set
-    if (!isset($_GET['no_filter'])) {
+    if (!isset($_GET['no_filter']) && $data['user_count'] !== 0) {
         require_once "_state.php";
     }
     ?>
