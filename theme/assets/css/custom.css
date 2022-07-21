@@ -35,6 +35,113 @@
 	fill: var(--bs-primary);
 }
 
+.hamburger {
+	position: relative;
+	border: unset;
+	background-color: unset;
+	width: 1.5rem;
+	align-self: stretch;
+}
+
+.hamburger:hover >span,
+.hamburger:hover >span::after,
+.hamburger:hover >span::before {
+	background-color: var(--bs-dark);
+}
+
+.btn-square {
+	aspect-ratio: 1/1;
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.hamburger >span,
+.hamburger >span::after,
+.hamburger >span::before {
+	display: block;
+	height: 2px;
+	width: 1.5rem;
+	background-color: var(--bs-white);
+	border: unset;
+	left: 0;
+	transition: background-color 120ms ease-in-out;
+}
+
+.hamburger >span,
+.hamburger >span::after,
+.hamburger >span::before {
+	position: absolute;
+	content: '';
+}
+
+.hamburger >span::before {
+	top: 0.5rem;
+}
+
+.hamburger >span::after {
+	bottom: 0.5rem;
+}
+
+aside.side-nav,
+#dash-viewport {
+	transition: margin-left 230ms ease-in-out;
+}
+
+aside.side-nav {
+	position: fixed;
+	width: 90%;
+	height: 100%;
+	margin-left: -100%;
+	background-color: var(--bs-gray-dark);
+	z-index: 99;
+}
+
+aside.side-nav.expanded {
+	margin-left: 0;
+}
+
+.main {
+	overflow-x: hidden;
+}
+
+@media screen and (max-width: 968px) {
+	aside.side-nav a {
+		font-size: 1.1rem;
+		padding-top: 0.7rem;
+		padding-bottom: 0.7rem;
+		border-bottom: 1px solid var(--bs-gray-900);
+	}
+}
+
+@media screen and (min-width: 968px) {
+	aside.side-nav,
+	#dash-viewport {
+		transition: margin-left 230ms ease-in-out;
+	}
+
+	aside.side-nav {
+		position: fixed;
+		width: 230px;
+		height: 100%;
+		margin-left: -230px;
+	}
+
+	aside.side-nav.expanded {
+		margin-left: 0;
+	}
+
+	aside.side-nav.expanded + #dash-viewport {
+		margin-left: 230px;
+	}
+}
+
+aside.side-nav .nav-item > a:hover {
+	cursor: pointer;
+	background-color: var(--bs-gray-500);
+	color: #000 !important;
+}
+
 .lds-facebook {
 	display: inline-block;
 	position: relative;
@@ -46,7 +153,7 @@
 	position: absolute;
 	left: 8px;
 	width: 16px;
-	background: #000;
+	background: var(--bs-gray-500);
 	animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
 }
 .lds-facebook div:nth-child(1) {

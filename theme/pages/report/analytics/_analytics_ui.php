@@ -2,110 +2,123 @@
 /**
  * @var array $data
  */
-
-require_once THEME_PATH . '/pages/_header.php';
 ?>
 
 <div class="py-5 container">
     <?php
-    require_once "_state.php";
-
-    // if there's no data to show for the selection
-    if ($data['user_count'] == 0) {
-        require_once "_placeholder_stats.php";
-        die();
+    // render filter ui only if request uri doesn't have no_filter set
+    if (!isset($_GET['no_filter'])) {
+        require_once "_state.php";
     }
     ?>
 
-    <input type="hidden" name="is_analytics" value="true">
-
-    <!-- total number of users -->
-    <section class="py-5 mt-5">
+    <div id="analytics-container" class="d-flex flex-column justify-content-center align-items-center">
         <?php
-        if (isset($data['users_by_district'])):
-        ?>
-        <div class="row">
-            <div class="col-lg-10 mx-auto">
-                <canvas id="users_by_district" width="300" height="300"></canvas>
-            </div>
-        </div>
-        <?php
-        endif
+        // if there's no data to show for the selection
+        if ($data['user_count'] == 0) {
+            require_once "_placeholder_stats.php";
+            die();
+        }
         ?>
 
-        <div class="text-center">
-            <p class='display-2'><?= format_to_thousands($data['user_count']) ?></p>
-            <p class='text-uppercase'>total users</p>
-        </div>
-    </section>
+        <input type="hidden" name="is_analytics" value="true">
 
-    <hr class="my-5">
+        <hr class="my-5 bg-transparent">
 
-    <!-- users by age and average age -->
-    <section>
-        <p class="display-4 text-center">Distribution by Age</p>
+        <!-- total number of users -->
+        <section class="container">
+            <div class="card card-body py-5 col-lg-10 mx-auto shadow-sm">
+                <?php
+                if (isset($data['users_by_district'])):
+                ?>
+                <div class="row mb-5">
+                    <div class="col-lg-10 mx-auto">
+                        <canvas id="users_by_district" width="300" height="300"></canvas>
+                    </div>
+                </div>
+                <?php
+                endif
+                ?>
 
-        <div class="row mt-5">
-            <div class="col-lg-10 mx-auto">
-                <canvas id="users_by_age" width="400" height="400"></canvas>
+                <div class="text-center">
+                    <p class='display-2'><?= format_to_thousands($data['user_count']) ?></p>
+                    <p class='text-uppercase'>total users</p>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <div class="mt-5 text-center">
-            <p class='display-2 mb-0'><?= $data['average_age'] ?></p>
-            <p class='text-uppercase mb-0'>average age</p>
-        </div>
-    </section>
+        <hr class="my-5 bg-transparent">
 
-    <hr class="my-5">
+        <!-- users by age and average age -->
+        <section class="container">
+            <div class="card card-body py-5 col-lg-10 mx-auto shadow-sm">
+                <p class="display-4 text-center">Distribution by Age</p>
 
-    <!-- users per module -->
-    <section>
-        <p class="display-4 text-center">Distribution by Module</p>
+                <div class="row mt-5">
+                    <div class="col-lg-10 mx-auto">
+                        <canvas id="users_by_age" width="400" height="400"></canvas>
+                    </div>
+                </div>
 
-        <div class="row mt-5">
-            <div class="col-lg-6 mx-auto">
-                <canvas id="users_per_module" width="400" height="400"></canvas>
+                <div class="mt-5 text-center">
+                    <p class='display-2 mb-0'><?= $data['average_age'] ?></p>
+                    <p class='text-uppercase mb-0'>average age</p>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <!-- users who completed all modules -->
-        <div class="mt-5 text-center">
-            <p class='display-2 mb-0'><?= format_to_thousands($data['users_who_completed_all']) ?></p>
-            <p class='text-uppercase mb-0'>users completed all modules</p>
-        </div>
-    </section>
+        <hr class="my-5 bg-transparent">
 
-    <hr class="my-5">
+        <!-- users per module -->
+        <section class="container">
+            <div class="card card-body py-5 shadow-sm col-lg-10 mx-auto">
+                <p class="display-4 text-center">Distribution by Module</p>
 
-    <!-- users per category -->
-    <section class="container">
-        <p class="display-4 text-center">Distribution by Category</p>
+                <div class="row mt-5">
+                    <div class="col-lg-7 mx-auto">
+                        <canvas id="users_per_module" width="400" height="400"></canvas>
+                    </div>
+                </div>
 
-        <div class="row mt-5">
-            <div class="col-lg-8 mx-auto">
-                <canvas id="users_per_category" width="400" height="400"></canvas>
+                <!-- users who completed all modules -->
+                <div class="mt-5 text-center">
+                    <p class='display-2 mb-0'><?= format_to_thousands($data['users_who_completed_all']) ?></p>
+                    <p class='text-uppercase mb-0'>users completed all modules</p>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <hr class="my-5">
+        <hr class="my-5 bg-transparent">
 
-    <!-- users per sex -->
-    <section class="container pb-5">
-        <p class="display-4 text-center">Distribution by Gender</p>
+        <!-- users per category -->
+        <section class="container">
+            <div class="card card-body col-lg-10 mx-auto shadow-sm py-5">
+                <p class="display-4 text-center">Distribution by Category</p>
 
-        <div class="row mt-5">
-            <div class="col-lg-6 mx-auto">
-                <canvas id="users_per_sex" width="400" height="400"></canvas>
+                <div class="row mt-5">
+                    <div class="col-lg-8 mx-auto">
+                        <canvas id="users_per_category" width="400" height="400"></canvas>
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <hr class="my-5 bg-transparent">
+
+        <!-- users per sex -->
+        <section class="container pb-5">
+            <div class="card card-body shadow-sm col-lg-10 py-5 mx-auto">
+                <p class="display-4 text-center">Distribution by Gender</p>
+
+                <div class="row mt-5">
+                    <div class="col-lg-5 mx-auto">
+                        <canvas id="users_per_sex" width="400" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 </div>
-
-<script>
-    let analytics_data = <?= json_encode($data) ?>;
-</script>
 
 <?php
 require_once THEME_PATH . '/pages/_footer.php';

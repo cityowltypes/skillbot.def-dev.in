@@ -9,7 +9,9 @@ $dash = new Dash;
 $sql = new MySQL();
 $functions = new Functions;
 
-$bot = $dash->getObject($_GET['chatbot_id']);
+$api = new Api();
+
+$bot = $dash->getObject($_GET['id']);
 
 // if bot doesn't exist, show placeholder and terminate
 if (!$bot || ($bot['type'] ?? '') !== 'chatbot') {
@@ -48,21 +50,14 @@ unset($temp, $state_list['state']);
 $state_list = strtolower(json_encode($state_list));
 $state_list = json_decode($state_list, 1);
 
-$state = urldecode($_GET['state']) ?? null;
 $district = urldecode($_GET['district']) ?? null;
 
-if (
-    ($_GET['interface'] ?? false) === 'api' &&
-    !$state &&
-    isset($_GET['state_code'])
-) {
-    $map_states = $dash->getObject(29297);
-    $state = strtolower($map_states[$_GET['state_code']]) ?? null;
-    $data['state'] = $state;
+$map_states = $dash->getObject(29297);
+$state = strtolower($map_states[$_GET['state']]) ?? null;
+$data['state'] = $state;
 
-    if ($state) {
-        $data['encodedState'] = urlencode($data['state']);
-    }
+if ($state) {
+    $data['encodedState'] = urlencode($data['state']);
 }
 
 // list of valid districts if state is selected and district isn't
@@ -72,7 +67,7 @@ if ($state && !$district) {
 }
 
 // users by age
-if (!$state) {
+if (!$state && !isset($_GET['state'])) {
     $data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
@@ -281,7 +276,6 @@ function is_valid_number ($array) {
 }
 
 if (($_GET['interface'] ?? false) === 'api') {
-    $api = new Api();
     if ($api->method('get')) {
         $api->json($data)->send();
     }
