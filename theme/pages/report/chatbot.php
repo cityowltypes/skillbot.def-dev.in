@@ -68,15 +68,16 @@ echo "<script>const valid_map_keys = JSON.parse('$map_data')</script>"
                 </div>
 
                 <div class="text-center mt-5">
-                    <span class="border border-2 border-secondary text-secondary px-2 rounded-circle btn-square">
-                        <i class="fas fa-arrow-down"></i>
-                    </span>
+                    <i class="far fa-chevron-double-down fa-2x"></i>
                 </div>
             </div>
         </div>
 
+        <hr class="bg-transparent py-5">
+        <hr class="bg-transparent py-5">
+
         <!-- Detailed analytics for selected state -->
-        <div id="detailed-analytics" class="d-flex justify-content-center py-5 mt-5"></div>
+        <div id="detailed-analytics" class="d-flex justify-content-center py-5"></div>
     </div>
 </div>
 

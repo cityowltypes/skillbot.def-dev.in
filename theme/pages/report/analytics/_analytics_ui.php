@@ -4,7 +4,7 @@
  */
 ?>
 
-<div class="py-5 container-fluid">
+<div class="container-fluid">
     <?php
     // render filter ui only if request uri doesn't have no_filter set
     if (!isset($_GET['no_filter']) && $data['user_count'] !== 0 && isset($_GET['state'])) {
@@ -26,11 +26,11 @@
         <hr class="my-5 bg-transparent">
 
         <!-- total number of users -->
-        <section class="row w-100 align-items-start" style="row-gap: 3rem; column-gap: 1rem">
+        <section class="widget-wrapper container align-items-start">
             <?php
             if (isset($data['users_by_district'])):
             ?>
-            <div class="card px-0 col-lg-3 shadow-sm">
+            <div class="card px-0 shadow-sm">
                 <div class="card-header">Users by district</div>
 
                 <div class="card-body">
@@ -48,7 +48,7 @@
             <?php
             if (!isset($data['users_by_district']) && isset($_GET['district'])):
             ?>
-            <div class="card px-0 col-lg-2 shadow-sm">
+            <div class="card px-0 shadow-sm col-lg-2 ">
                 <div class="card-header">Total users in district</div>
 
                 <div class="card-body">
@@ -59,7 +59,7 @@
             endif;
             ?>
 
-            <div class="card col-lg-3 px-0 shadow-sm">
+            <div class="card px-0 shadow-sm">
                 <div class="card-header">
                     <p class="mb-0">Distribution by Age</p>
                 </div>
@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <div class="card px-0 shadow-sm col-lg-3">
+            <div class="card px-0 shadow-sm">
                 <div class="card-header">
                     Distribution by Module
                 </div>
@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <div class="card col-lg-3 shadow-sm px-0">
+            <div class="card px-0 shadow-sm">
                 <div class="card-header">Distribution by Category</div>
 
                 <div class="card-body">
@@ -96,7 +96,7 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm col-lg-3 px-0">
+            <div class="card px-0 shadow-sm">
                 <div class="card-header">Distribution by Gender</div>
 
                 <div class="card-body">

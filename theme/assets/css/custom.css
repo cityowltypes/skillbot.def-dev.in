@@ -110,6 +110,22 @@ aside.side-nav.expanded {
 	overflow-x: hidden;
 }
 
+.widget-wrapper {
+	display: grid;
+	grid-auto-flow: row;
+	grid-gap: 2rem;
+}
+
+.widget-wrapper .card-header {
+	background-color: var(--bs-primary);
+	text-transform: uppercase;
+	color: #fff;
+}
+
+.widget-wrapper .card {
+	border-color: var(--bs-primary);
+}
+
 @media screen and (max-width: 968px) {
 	aside.side-nav a {
 		font-size: 1.1rem;
@@ -138,6 +154,11 @@ aside.side-nav.expanded {
 
 	aside.side-nav.expanded + #dash-viewport {
 		margin-left: 230px;
+	}
+
+	.widget-wrapper {
+		grid-template-columns: 1fr 1fr;
+		grid-gap: 1rem;
 	}
 }
 

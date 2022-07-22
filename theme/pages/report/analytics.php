@@ -52,7 +52,9 @@ $state_list = json_decode($state_list, 1);
 
 $district = urldecode($_GET['district']) ?? null;
 
-$map_states = $dash->getObject(29297);
+$map_states = $dash->get_ids(['type' => 'map', 'chatbot_id' => $_GET['id']], '=', 'AND');
+$map_states = $dash->getObjects($map_states);
+$map_states = array_pop($map_states);
 $state = strtolower($map_states[$_GET['state']]) ?? null;
 $data['state'] = $state;
 
