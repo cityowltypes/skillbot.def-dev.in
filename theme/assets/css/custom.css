@@ -31,6 +31,11 @@
 	stroke: #000;
 }
 
+g.inactive > path {
+	fill: #cecece;
+	stroke: #000;
+}
+
 .map_of_india_svg.active > path {
 	fill: var(--bs-primary);
 }

@@ -442,9 +442,9 @@
                 "list_sortable": true
             },
             {
-                "input_slug": "form_id",
+                "input_slug": "chatbot_id",
                 "input_type": "number",
-                "input_placeholder" : "Form ID with which this data connects",
+                "input_placeholder" : "Chatbot ID with which this data connects",
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true

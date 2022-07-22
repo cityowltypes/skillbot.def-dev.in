@@ -6,6 +6,19 @@ let toggle = document.querySelector('#toggle');
 let loading = "<div class='lds-facebook'><div></div><div></div><div></div></div>";
 let district = null;
 
+if (!!valid_map_keys) {
+    let mapGroups = document.querySelectorAll(".map g.map_of_india_svg");
+    if (mapGroups) {
+        mapGroups.forEach(g => {
+            // if map has valid keys
+            if (!valid_map_keys.includes(g.dataset.state)) {
+                g.classList.add('inactive');
+                g.classList.remove('map_of_india_svg');
+            }
+        });
+    }
+}
+
 if (toggle) {
     toggle.addEventListener('click', (e) => toggleSideBar(e));
 }

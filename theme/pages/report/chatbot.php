@@ -1,6 +1,40 @@
 <?php
+/**
+ * @var object $dash;
+ */
+
+if (!isset($_GET['id'])) {
+    header('Location: /report');
+    die();
+}
+
 include_once __DIR__ . '/../_header.php';
 require_once 'includes/_nav.php';
+
+try {
+    $map_data = $dash->get_ids(['type' => 'map', 'chatbot_id' => $_GET['id']], '=', 'AND');
+    $map_data = $dash->getObjects($map_data);
+    $map_data = array_pop($map_data);
+    $map_data = array_filter($map_data, function ($value, $key) {
+        if (trim($value)) {
+            return $key;
+        }
+
+        return null;
+    }, ARRAY_FILTER_USE_BOTH);
+}
+finally {
+    if (!$map_data) {
+        header('Location: /report');
+        die();
+    }
+}
+
+$ignore = ['id', 'slug', 'type', 'class', 'title', 'chatbot_id', 'redirect_uri', 'content_privacy', 'created_on', 'updated_on'];
+$map_data = array_diff_key($map_data, array_flip($ignore));
+$map_data = array_keys($map_data);
+$map_data = json_encode($map_data);
+echo "<script>const valid_map_keys = JSON.parse('$map_data')</script>"
 ?>
 
 <div class="main">
@@ -42,7 +76,7 @@ require_once 'includes/_nav.php';
         </div>
 
         <!-- Detailed analytics for selected state -->
-        <div id="detailed-analytics" class="d-flex justify-content-center py-5"></div>
+        <div id="detailed-analytics" class="d-flex justify-content-center py-5 mt-5"></div>
     </div>
 </div>
 

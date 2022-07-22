@@ -9,7 +9,6 @@ require_once 'includes/_nav.php';
         <?php foreach ($dash->getObjects($dash->get_ids(array('type'=>'chatbot'), '=', 'AND')) as $chatbot) : ?>
         <a
             href="/report/chatbot?id=<?= $chatbot['id'] ?>&handle=<?= $chatbot['chatbot_handle'] ?>"
-            target="_blank"
             class="btn btn-primary my-2 btn-lg">
             <?= $chatbot['title'] ?>
         </a>
