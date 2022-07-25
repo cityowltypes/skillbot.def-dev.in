@@ -134,6 +134,26 @@
                 "list_sortable": true
             },
             {
+                "input_slug": "primary_color",
+                "input_type": "color",
+                "input_placeholder": "Primary Color"
+            },
+            {
+                "input_slug": "select_color",
+                "input_type": "color",
+                "input_placeholder": "Selection Color"
+            },
+            {
+                "input_slug": "text_color",
+                "input_type": "color",
+                "input_placeholder": "Text Color"
+            },
+            {
+                "input_slug": "inactive_color",
+                "input_type": "color",
+                "input_placeholder": "Inactive Color"
+            },
+            {
                 "input_slug": "logos_footer",
                 "input_type": "url",
                 "input_placeholder" : "Logos on the footer"
