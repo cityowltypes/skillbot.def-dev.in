@@ -5,6 +5,11 @@
 	--text-color: var(--bs-black-rgb);
 }
 
+.partner-banner {
+	height: 7rem;
+	object-fit: contain;
+}
+
 .certificate-font-heading-1 {
 	font-family: rhythm-one, sans-serif;
 	font-weight: 400;

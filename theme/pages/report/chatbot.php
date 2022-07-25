@@ -63,6 +63,13 @@ echo "<style>
     ?>
 
     <div id="dash-viewport" class="py-5">
+        <?php if (trim($bot['logos_footer'] ?? '')): ?>
+        <div class="container mb-5">
+            <div class="col-lg-8 mx-auto">
+                <img src="<?= trim($bot['logos_footer']) ?>" alt="Partner banner" class="img-fluid partner-banner">
+            </div>
+        </div>
+        <?php endif; ?>
         <!-- Map and State stats -->
         <div class="row">
             <div class='col-11 col-lg-6 px-2 map mx-auto me-lg-0 ms-lg-auto'>
