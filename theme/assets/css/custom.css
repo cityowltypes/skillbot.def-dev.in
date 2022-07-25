@@ -10,6 +10,14 @@
 	object-fit: contain;
 }
 
+.bg-primary-custom {
+	background-color: var(--primary-color, var(--bs-primary));
+}
+
+.text-theme {
+	color: var(--text-color, var(--bs-black-rgb));
+}
+
 .certificate-font-heading-1 {
 	font-family: rhythm-one, sans-serif;
 	font-weight: 400;
@@ -40,12 +48,12 @@
 
 .map_of_india_svg > path {
 	fill: var(--background-color);
-	stroke: #000;
+	stroke: var(--primary-color);
 }
 
 g.inactive > path {
 	fill: var(--inactive-color);
-	stroke: #000;
+	stroke: var(--primary-color);
 }
 
 .map_of_india_svg.active > path {
@@ -129,13 +137,13 @@ aside.side-nav.expanded {
 }
 
 .widget-wrapper .card-header {
-	background-color: var(--bs-primary);
+	background-color: var(--primary-color, var(--bs-primary));
 	text-transform: uppercase;
 	color: #fff;
 }
 
 .widget-wrapper .card {
-	border-color: var(--bs-primary);
+	border-color: var(--primary-color, var(--bs-primary));
 }
 
 @media screen and (max-width: 968px) {

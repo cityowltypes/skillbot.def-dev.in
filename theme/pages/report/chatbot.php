@@ -64,7 +64,7 @@ echo "<style>
 
     <div id="dash-viewport" class="py-5">
         <?php if (trim($bot['logos_footer'] ?? '')): ?>
-        <div class="container mb-5">
+        <div class="container mb-5 pb-lg-5">
             <div class="col-lg-8 mx-auto">
                 <img src="<?= trim($bot['logos_footer']) ?>" alt="Partner banner" class="img-fluid partner-banner">
             </div>
@@ -72,7 +72,7 @@ echo "<style>
         <?php endif; ?>
         <!-- Map and State stats -->
         <div class="row">
-            <div class='col-11 col-lg-6 px-2 map mx-auto me-lg-0 ms-lg-auto'>
+            <div class='col-11 col-lg-6 px-2 map mx-auto mb-5 mb-lg-0 me-lg-0 ms-lg-auto'>
                 <?php
                 $map = file_get_contents(THEME_PATH . "/assets/img/india.svg");
                 echo $map;
@@ -81,21 +81,21 @@ echo "<style>
 
             <div id="statDisplay" class="col-12 col-lg-4 me-lg-auto d-flex flex-column justify-content-center align-items-center">
                 <div class="text-center">
-                    <h1 id="stateName" class="fw-light text-capitalize"></h1>
+                    <h1 id="stateName" class="fw-light display-2 text-capitalize text-theme"></h1>
                 </div>
 
                 <div class="text-center mt-5">
-                    <p id="totalUsers" class="display-1"></p>
-                    <h2 class="h3 fw-light">Total Users</h2>
+                    <p id="totalUsers" class="display-1 text-theme"></p>
+                    <h2 class="h3 fw-light text-theme">Total Users</h2>
                 </div>
 
                 <div class="text-center mt-5">
-                    <p id="averageAge" class="display-1"></p>
-                    <h2 class="h3 fw-light">Average age</h2>
+                    <p id="averageAge" class="display-1 text-theme"></p>
+                    <h2 class="h3 fw-light text-theme">Average age</h2>
                 </div>
 
                 <div class="text-center mt-5">
-                    <i class="far fa-chevron-double-down fa-2x"></i>
+                    <i class="far fa-chevron-double-down fa-2x text-theme"></i>
                 </div>
             </div>
         </div>
