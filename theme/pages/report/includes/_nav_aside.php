@@ -3,7 +3,15 @@
         <li class="nav-item">
             <a
                 href="/report"
-                class="w-100 btn text-white rounded-0 text-start text-decoration-none"><i class="far fa-arrow-left me-2"></i>Go back
+                class="w-100 btn text-white rounded-0 text-start text-decoration-none">
+                <i class="fad fa-arrow-left me-2"></i>Go back
+            </a>
+        </li>
+        <li class="nav-item">
+            <a
+                    href="<?= "/report/chatbot?id={$_GET['id']}&handle={$_GET['handle']}" ?>"
+                    class="w-100 btn text-white rounded-0 text-start text-decoration-none">
+                <i class="fad fa-redo me-2"></i>Reset & Reload
             </a>
         </li>
         <li class="nav-item">

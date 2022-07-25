@@ -5,6 +5,7 @@
 
 use \Wildfire\Core\Console as console;
 
+// if chatbot id isn't provided return to /report
 if (!isset($_GET['id'])) {
     header('Location: /report');
     die();
@@ -59,7 +60,9 @@ echo "<style>
 
 <div class="main">
     <?php
-    require_once 'includes/_nav_aside.php';
+    if (($_SESSION['role_slug'] ?? null) === 'admin') {
+        require_once 'includes/_nav_aside.php';
+    }
     ?>
 
     <div id="dash-viewport" class="py-5">

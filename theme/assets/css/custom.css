@@ -1,7 +1,7 @@
 :root {
 	--background-color: var(--bs-white);
 	--inactive-color: var(--bs-gray-400);
-	--primary-color: var(--bs-primary);
+	--primary-color: #b43232;
 	--text-color: var(--bs-black-rgb);
 }
 
@@ -10,8 +10,17 @@
 	object-fit: contain;
 }
 
+.brand-logo {
+	height: 7rem;
+}
+
 .bg-primary-custom {
 	background-color: var(--primary-color, var(--bs-primary));
+}
+
+.btn-primary-custom {
+	background-color: var(--primary-color);
+	color: var(--bs-white);
 }
 
 .text-theme {
