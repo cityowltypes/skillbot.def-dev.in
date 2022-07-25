@@ -139,9 +139,9 @@
                 "input_placeholder": "Primary Color"
             },
             {
-                "input_slug": "select_color",
+                "input_slug": "background_color",
                 "input_type": "color",
-                "input_placeholder": "Selection Color"
+                "input_placeholder": "Background Color"
             },
             {
                 "input_slug": "text_color",

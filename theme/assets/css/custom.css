@@ -1,3 +1,10 @@
+:root {
+	--background-color: var(--bs-white);
+	--inactive-color: var(--bs-gray-400);
+	--primary-color: var(--bs-primary);
+	--text-color: var(--bs-black-rgb);
+}
+
 .certificate-font-heading-1 {
 	font-family: rhythm-one, sans-serif;
 	font-weight: 400;
@@ -27,17 +34,17 @@
 }
 
 .map_of_india_svg > path {
-	fill: #fff;
+	fill: var(--background-color);
 	stroke: #000;
 }
 
 g.inactive > path {
-	fill: #cecece;
+	fill: var(--inactive-color);
 	stroke: #000;
 }
 
 .map_of_india_svg.active > path {
-	fill: var(--bs-primary);
+	fill: var(--primary-color);
 }
 
 .hamburger {
