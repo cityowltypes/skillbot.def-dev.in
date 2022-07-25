@@ -156,7 +156,7 @@ async function selectMapRegion(g, init = false) {
 
     if (uiTotalUsers) {
         if (res.state !== "" || init) {
-            uiTotalUsers.innerText = res['user_count'] ?? 0;
+            uiTotalUsers.innerText = numeral(res['user_count'] ?? 0).format('0,0');
         }
         else {
             uiTotalUsers.innerText = 0;

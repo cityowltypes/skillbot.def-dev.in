@@ -84,7 +84,7 @@
 
                 <!-- users who completed all modules -->
                 <div class="card-footer text-muted">
-                    <?= format_to_thousands($data['users_who_completed_all']) ?> users completed all modules
+                    <?= format_to_thousands($data['users_who_completed_all']) ?> users certified
                 </div>
             </div>
 

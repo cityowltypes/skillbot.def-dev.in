@@ -55,14 +55,18 @@
 	width: 100% !important;
 }
 
+.map_of_india_svg > path,
+g.inactive > path {
+	stroke: var(--primary-color);
+	stroke-width: 0.6px;
+}
+
 .map_of_india_svg > path {
 	fill: var(--background-color);
-	stroke: var(--primary-color);
 }
 
 g.inactive > path {
 	fill: var(--inactive-color);
-	stroke: var(--primary-color);
 }
 
 .map_of_india_svg.active > path {

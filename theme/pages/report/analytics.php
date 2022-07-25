@@ -1,4 +1,7 @@
 <?php
+/**
+ * @var array $bot;
+ */
 use \Wildfire\Api;
 use \Wildfire\Core\Dash;
 use \Wildfire\Core\MySQL;
@@ -68,12 +71,18 @@ if ($state && !$district) {
     $districts = strtolower(implode("','", $districts));
 }
 
+$age_group = "content->>'$.id__5__6' between 10 and 100";
+
+if (trim($bot['min_age'] ?? '') && trim($bot['max_age'] ?? '')) {
+    $age_group = "content->>'$.id__5__6' between {$bot['min_age']} and {$bot['max_age']}";
+}
+
 // users by age
 if (!$state && !isset($_GET['state'])) {
     $data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            content->>'$.id__5__6' between 10 and 100
+            {$age_group}
         group by age having age_count > 5
         order by age
     ");
@@ -84,7 +93,7 @@ elseif (!$district) {
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__2') = '{$state}' and
             lower(content->>'$.id__5__3') IN ('{$districts}') AND
-            content->>'$.id__5__6' between 10 and 100
+            {$age_group}
         group by age having age_count > 5
         order by age
     ");
@@ -95,7 +104,7 @@ else {
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__2') = '{$state}' and
             lower(content->>'$.id__5__3') = '{$district}' and
-            content->>'$.id__5__6' between 10 and 100
+            {$age_group}
         group by age having age_count > 5
         order by age
     ");
@@ -123,7 +132,8 @@ if (!$state) {
     $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female')
+            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female') and
+            {$age_group}
         group by sex
     ");
 }
@@ -132,7 +142,8 @@ elseif ($state && !$district) {
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__2') = '{$state}' and
-            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female')
+            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female') and
+            {$age_group}
         group by sex
     ");
 }
@@ -142,7 +153,8 @@ elseif ($state && $district) {
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__2') = '{$state}' and
             lower(content->>'$.id__5__3') = '{$district}' and
-            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female')
+            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female') and
+            {$age_group}
         group by sex
     ");
 }
@@ -153,7 +165,8 @@ if (!$state) {
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' AND
             content->>'$.id__5__5' IS NOT NULL AND 
-            NOT content->>'$.id__5__5' = '/start'
+            NOT content->>'$.id__5__5' = '/start' and
+            {$age_group}
         group by category having count(content->>'$.id__5__5') > 50
     ");
 }
@@ -162,7 +175,8 @@ elseif ($state && !$district) {
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__5') IN ('{$category_list}') AND
-            lower(content->>'$.id__5__2') = '{$state}'
+            lower(content->>'$.id__5__2') = '{$state}' and
+            {$age_group}
         group by category having count(content->>'$.id__5__5') > 10
     ");
 }
@@ -172,7 +186,8 @@ elseif ($state && $district) {
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__5') IN ('{$category_list}') AND
             lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__3') = '{$district}'
+            lower(content->>'$.id__5__3') = '{$district}' and
+            {$age_group}
         group by category having count(content->>'$.id__5__5') > 10
     ");
 }
@@ -195,6 +210,7 @@ foreach ($bot_module_ids as $key => $_id) {
         $data['per_module_users'][$_id]['count'] = $sql->executeSQL("SELECT count(*) as count from data
             where content->>'$.chatbot' = '{$bot['slug']}' and
                 type = 'response' and
+                {$age_group} and
                 {$bot_module_ids[$key]} = 1
         ")[0]['count'];
     }
@@ -202,6 +218,7 @@ foreach ($bot_module_ids as $key => $_id) {
         $data['per_module_users'][$_id]['count'] = $sql->executeSQL("SELECT count(*) as count from data
             where content->>'$.chatbot' = '{$bot['slug']}' and
                 type = 'response' and
+                {$age_group} and
                 lower(content->>'$.id__5__2') = '{$state}' and
                 {$bot_module_ids[$key]} = 1
         ")[0]['count'];
@@ -210,6 +227,7 @@ foreach ($bot_module_ids as $key => $_id) {
         $data['per_module_users'][$_id]['count'] = $sql->executeSQL("SELECT count(*) as count from data
             where content->>'$.chatbot' = '{$bot['slug']}' and
                 type = 'response' and
+                {$age_group} and
                 lower(content->>'$.id__5__2') = '{$state}' and
                 lower(content->>'$.id__5__3') = '{$district}' and
                 {$bot_module_ids[$key]} = 1
@@ -228,6 +246,7 @@ $_search_pattern = implode(' and ', $_search_pattern);
 if (!$state) {
     $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
         where type = 'response' and
+            {$age_group} and
             content->>'$.chatbot' = '{$bot['slug']}' and
             {$_search_pattern}
     ")[0]['count'] ?? null;
@@ -235,6 +254,7 @@ if (!$state) {
 elseif ($state && !$district) {
     $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
         where type = 'response' and
+            {$age_group} and
             content->>'$.chatbot' = '{$bot['slug']}' and
             {$_search_pattern} and
             lower(content->>'$.id__5__2') = '{$state}'
@@ -243,6 +263,7 @@ elseif ($state && !$district) {
 elseif ($state && $district) {
     $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
         where type = 'response' and
+            {$age_group} and
             content->>'$.chatbot' = '{$bot['slug']}' and
             {$_search_pattern} and
             lower(content->>'$.id__5__2') = '{$state}' and
@@ -254,6 +275,7 @@ elseif ($state && $district) {
 if ($state && !$district) {
     $data['users_by_district'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__3') as 'district', count(content->>'$.id__5__3') as 'count' FROM `data`
         where type = 'response' and
+            {$age_group} and
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__2') = '{$state}' and
             lower(content->>'$.id__5__3') IN ('{$districts}') AND

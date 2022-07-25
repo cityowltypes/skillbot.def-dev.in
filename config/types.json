@@ -134,6 +134,16 @@
                 "list_sortable": true
             },
             {
+                "input_slug": "min_age",
+                "input_type": "number",
+                "input_placeholder": "Minimum age for analytics"
+            },
+            {
+                "input_slug": "max_age",
+                "input_type": "number",
+                "input_placeholder": "Maximum age for analytics"
+            },
+            {
                 "input_slug": "primary_color",
                 "input_type": "color",
                 "input_placeholder": "Primary Color"
