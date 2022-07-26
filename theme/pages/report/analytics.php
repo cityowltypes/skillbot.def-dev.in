@@ -16,7 +16,7 @@ $api = new Api();
 
 $bot = $dash->getObject($_GET['id']);
 
-// if bot doesn't exist, show placeholder and terminate
+/** IF BOT DOESN'T EXIST, SHOW PLACEHOLDER AND TERMINATE */
 if (!$bot || ($bot['type'] ?? '') !== 'chatbot') {
     require_once "analytics/_placeholder_bots.php";
     die();
@@ -65,7 +65,7 @@ if ($state) {
     $data['encodedState'] = urlencode($data['state']);
 }
 
-// list of valid districts if state is selected and district isn't
+/** LIST OF VALID DISTRICTS IF STATE IS SELECTED AND DISTRICT ISN'T */
 if ($state && !$district) {
     $districts = array_keys($state_list[$state]);
     $districts = strtolower(implode("','", $districts));
@@ -77,7 +77,7 @@ if (trim($bot['min_age'] ?? '') && trim($bot['max_age'] ?? '')) {
     $age_group = "content->>'$.id__5__6' between {$bot['min_age']} and {$bot['max_age']}";
 }
 
-// users by age
+/** BY AGE */
 if (!$state && !isset($_GET['state'])) {
     $data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
         where type = 'response' and
@@ -116,7 +116,7 @@ foreach ($data['users_by_age'] as $age) {
 
 $data['users_by_age'] = array_filter($temp);
 
-// average age of users and total number of users
+/** AVERAGE AGE AND TOTAL NUMBER OF USERS */
 $user_age = 0;
 $data['user_count'] = 0;
 foreach ($data['users_by_age'] as $user) {
@@ -127,7 +127,7 @@ foreach ($data['users_by_age'] as $user) {
 $data['average_age'] = floor($user_age / $data['user_count']);
 unset($user_age);
 
-// number of users per gender
+/** BY GENDER */
 if (!$state) {
     $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
         where type = 'response' and
@@ -137,7 +137,7 @@ if (!$state) {
         group by sex
     ");
 }
-elseif ($state && !$district) {
+elseif (!$district) {
     $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
@@ -147,7 +147,7 @@ elseif ($state && !$district) {
         group by sex
     ");
 }
-elseif ($state && $district) {
+else {
     $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
@@ -159,7 +159,7 @@ elseif ($state && $district) {
     ");
 }
 
-// number of users per category
+/** BY CATEGORY */
 if (!$state) {
     $data['users_per_category']['male'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
         where type = 'response' and
@@ -239,7 +239,7 @@ $data['users_per_category']['female'] = array_combine(
 ksort($data['users_per_category']['female']);
 $data['users_per_category']['female'] = array_values($data['users_per_category']['female']);
 
-// per module the number of users who've completed
+/** BY MODULE */
 $data['per_module_users'] = null;
 $bot_module_ids = $functions->derephrase($bot['module_and_form_ids']);
 $bot_module_ids = array_column($bot_module_ids, 0);
@@ -282,7 +282,7 @@ foreach ($bot_module_ids as $key => $_id) {
     }
 }
 
-// number of users who've completed all modules
+/** CERTIFIED USERS */
 $_search_pattern = [];
 
 foreach ($bot_module_ids as $_json_key) {
@@ -298,7 +298,7 @@ if (!$state) {
             {$_search_pattern}
     ")[0]['count'] ?? null;
 }
-elseif ($state && !$district) {
+elseif (!$district) {
     $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
         where type = 'response' and
             {$age_group} and
@@ -307,7 +307,7 @@ elseif ($state && !$district) {
             lower(content->>'$.id__5__2') = '{$state}'
     ")[0]['count'] ?? null;
 }
-elseif ($state && $district) {
+else {
     $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
         where type = 'response' and
             {$age_group} and
@@ -318,7 +318,7 @@ elseif ($state && $district) {
     ")[0]['count'] ?? null;
 }
 
-// district wise users for state
+/** BY DISTRICT */
 if ($state && !$district) {
     $data['users_by_district'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__3') as 'district', count(content->>'$.id__5__3') as 'count' FROM `data`
         where type = 'response' and
@@ -332,7 +332,8 @@ if ($state && !$district) {
     ");
 }
 
-function format_to_thousands(int $value) {
+function format_to_thousands(int $value): string
+{
     return number_format($value, 0, '.', ',');
 }
 
