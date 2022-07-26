@@ -344,17 +344,22 @@ function drawAnalyticsCharts() {
     new Chart(document.querySelector('canvas#users_per_category'), {
         type: 'bar',
         data: {
-            labels: getColumn(analytics_data['users_per_category'], 'category'),
-            datasets: [{
-                label: '',
-                data: getColumn(analytics_data['users_per_category'], 'count')
-            }],
+            labels: analytics_data['users_per_category']['labels'],
+            datasets: [
+                {
+                    label: 'Male',
+                    data: analytics_data['users_per_category']['male'],
+                    backgroundColor: '#36a2eb'
+                },
+                {
+                    label: 'Female',
+                    data: analytics_data['users_per_category']['female'],
+                    backgroundColor: '#ff6384',
+                },
+            ],
         },
         options: {
             plugins: {
-                autocolors: {
-                    mode: getColumn(analytics_data['users_per_category'], 'count')
-                },
                 tooltip: {
                     enabled: true
                 },
@@ -367,7 +372,15 @@ function drawAnalyticsCharts() {
                     },
                 },
                 legend: {
-                    display: false
+                    display: true
+                },
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true
+                    }
                 }
             },
             indexAxis: 'x',
@@ -376,7 +389,6 @@ function drawAnalyticsCharts() {
             maxBarThickness: 40
         },
         plugins: [
-            autocolors,
             ChartDataLabels
         ]
     });
@@ -388,14 +400,15 @@ function drawAnalyticsCharts() {
             labels: getColumn(analytics_data['users_per_gender'], 'sex'),
             datasets: [{
                 label: '',
-                data: getColumn(analytics_data['users_per_gender'], 'count')
+                data: getColumn(analytics_data['users_per_gender'], 'count'),
+                backgroundColor: [
+                    analytics_data['users_per_gender'][0].sex === 'female' ? '#ff6384' : '#36a2eb',
+                    analytics_data['users_per_gender'][0].sex === 'female' ? '#36a2eb' : '#ff6384'
+                ]
             }],
         },
         options: {
             plugins: {
-                autocolors: {
-                    mode: getColumn(analytics_data['users_per_gender'], 'count')
-                },
                 tooltip: {
                     enabled: true
                 },
@@ -416,7 +429,6 @@ function drawAnalyticsCharts() {
             minBarLength: 12
         },
         plugins: [
-            autocolors,
             ChartDataLabels
         ]
     });

@@ -161,36 +161,83 @@ elseif ($state && $district) {
 
 // number of users per category
 if (!$state) {
-    $data['users_per_category'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+    $data['users_per_category']['male'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' AND
             content->>'$.id__5__5' IS NOT NULL AND 
-            NOT content->>'$.id__5__5' = '/start' and
+            NOT content->>'$.id__5__5' = '/start' AND
+            lower(content->>'$.id__5__8') = 'male' AND
+            {$age_group}
+        group by category having count(content->>'$.id__5__5') > 50
+    ");
+    $data['users_per_category']['female'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = '{$bot['slug']}' AND
+            content->>'$.id__5__5' IS NOT NULL AND 
+            NOT content->>'$.id__5__5' = '/start' AND
+            lower(content->>'$.id__5__8') = 'female' AND
             {$age_group}
         group by category having count(content->>'$.id__5__5') > 50
     ");
 }
-elseif ($state && !$district) {
-    $data['users_per_category'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+elseif (!$district) {
+    $data['users_per_category']['male'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__5') IN ('{$category_list}') AND
             lower(content->>'$.id__5__2') = '{$state}' and
+            lower(content->>'$.id__5__8') = 'male' AND
+            {$age_group}
+        group by category having count(content->>'$.id__5__5') > 10
+    ");
+    $data['users_per_category']['female'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = '{$bot['slug']}' and
+            lower(content->>'$.id__5__5') IN ('{$category_list}') AND
+            lower(content->>'$.id__5__2') = '{$state}' and
+            lower(content->>'$.id__5__8') = 'female' AND
             {$age_group}
         group by category having count(content->>'$.id__5__5') > 10
     ");
 }
-elseif ($state && $district) {
-    $data['users_per_category'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+else {
+    $data['users_per_category']['male'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__5__5') IN ('{$category_list}') AND
             lower(content->>'$.id__5__2') = '{$state}' and
             lower(content->>'$.id__5__3') = '{$district}' and
+            lower(content->>'$.id__5__8') = 'male' AND
+            {$age_group}
+        group by category having count(content->>'$.id__5__5') > 10
+    ");
+    $data['users_per_category']['female'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+        where type = 'response' and
+            content->>'$.chatbot' = '{$bot['slug']}' and
+            lower(content->>'$.id__5__5') IN ('{$category_list}') AND
+            lower(content->>'$.id__5__2') = '{$state}' and
+            lower(content->>'$.id__5__3') = '{$district}' and
+            lower(content->>'$.id__5__8') = 'female' AND
             {$age_group}
         group by category having count(content->>'$.id__5__5') > 10
     ");
 }
+$data['users_per_category']['labels'] = array_column($data['users_per_category']['male'], 'category');
+ksort($data['users_per_category']['labels']);
+
+$data['users_per_category']['male'] = array_combine(
+    array_column($data['users_per_category']['male'], 'category'),
+    array_column($data['users_per_category']['male'], 'count')
+);
+ksort($data['users_per_category']['male']);
+$data['users_per_category']['male'] = array_values($data['users_per_category']['male']);
+
+$data['users_per_category']['female'] = array_combine(
+    array_column($data['users_per_category']['female'], 'category'),
+    array_column($data['users_per_category']['female'], 'count')
+);
+ksort($data['users_per_category']['female']);
+$data['users_per_category']['female'] = array_values($data['users_per_category']['female']);
 
 // per module the number of users who've completed
 $data['per_module_users'] = null;
