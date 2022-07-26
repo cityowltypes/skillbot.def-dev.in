@@ -31,7 +31,7 @@
             if (isset($data['users_by_district'])):
             ?>
             <div class="card px-0 shadow-sm">
-                <div class="card-header">Users by district</div>
+                <div class="card-header small fw-bold">Users by district</div>
 
                 <div class="card-body">
                     <canvas id="users_by_district" width="300" height="300"></canvas>
@@ -49,7 +49,7 @@
             if (!isset($data['users_by_district']) && isset($_GET['district'])):
             ?>
             <div class="card px-0 shadow-sm col-lg-2 ">
-                <div class="card-header">Total users in district</div>
+                <div class="card-header small fw-bold">Total users in district</div>
 
                 <div class="card-body">
                     <div class="card-text display-2 text-center"><?= format_to_thousands($data['user_count']) ?></div>
@@ -60,9 +60,7 @@
             ?>
 
             <div class="card px-0 shadow-sm">
-                <div class="card-header">
-                    <p class="mb-0">Distribution by Age</p>
-                </div>
+                <div class="card-header small fw-bold">Distribution by Age</div>
 
                 <div class="card-body">
                     <canvas id="users_by_age" width="400" height="400"></canvas>
@@ -74,7 +72,7 @@
             </div>
 
             <div class="card px-0 shadow-sm">
-                <div class="card-header">
+                <div class="card-header small fw-bold">
                     Distribution by Module
                 </div>
 
@@ -89,7 +87,7 @@
             </div>
 
             <div class="card px-0 shadow-sm">
-                <div class="card-header">Distribution by Category</div>
+                <div class="card-header small fw-bold">Distribution by Category</div>
 
                 <div class="card-body">
                     <canvas id="users_per_category" width="400" height="400"></canvas>
@@ -97,7 +95,7 @@
             </div>
 
             <div class="card px-0 shadow-sm">
-                <div class="card-header">Distribution by Gender</div>
+                <div class="card-header small fw-bold">Distribution by Gender</div>
 
                 <div class="card-body">
                     <canvas id="users_per_sex" width="400" height="400"></canvas>
