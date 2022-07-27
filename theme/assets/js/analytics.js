@@ -325,7 +325,7 @@ function drawAnalyticsCharts() {
                         weight: 'normal'
                     },
                     formatter: function (value, context) {
-                        return `${numberFormatter(value)}\n(${context.chart.data.labels[context.dataIndex]})`;
+                        return `${numberFormatter(value)}\n${context.chart.data.labels[context.dataIndex].replace(/\s/, '\n')}`;
                     },
                     textAlign: 'center'
                 }
@@ -385,7 +385,7 @@ function drawAnalyticsCharts() {
             },
             indexAxis: 'x',
             skipNull: true,
-            minBarLength: 12,
+            minBarLength: 0,
             maxBarThickness: 40
         },
         plugins: [

@@ -222,22 +222,30 @@ else {
         group by category having count(content->>'$.id__5__5') > 10
     ");
 }
-$data['users_per_category']['labels'] = array_column($data['users_per_category']['male'], 'category');
+
+$data['users_per_category']['labels'] = array_merge(
+    array_column($data['users_per_category']['female'], 'category'),
+    array_column($data['users_per_category']['male'], 'category')
+);
+$data['users_per_category']['labels'] = array_unique($data['users_per_category']['labels']);
 ksort($data['users_per_category']['labels']);
 
-$data['users_per_category']['male'] = array_combine(
-    array_column($data['users_per_category']['male'], 'category'),
-    array_column($data['users_per_category']['male'], 'count')
-);
-ksort($data['users_per_category']['male']);
-$data['users_per_category']['male'] = array_values($data['users_per_category']['male']);
+$overlay = array_fill(0, count($data['users_per_category']['labels']), NULL);
 
-$data['users_per_category']['female'] = array_combine(
-    array_column($data['users_per_category']['female'], 'category'),
-    array_column($data['users_per_category']['female'], 'count')
-);
-ksort($data['users_per_category']['female']);
-$data['users_per_category']['female'] = array_values($data['users_per_category']['female']);
+foreach (['male', 'female'] as $sex) {
+    $data['users_per_category'][$sex] = array_combine(
+        array_column($data['users_per_category'][$sex], 'category'),
+        array_column($data['users_per_category'][$sex], 'count')
+    );
+    ksort($data['users_per_category'][$sex]);
+
+    unset($temp);
+    foreach ($data['users_per_category']['labels'] as $label) {
+        $temp[$label] = $data['users_per_category'][$sex][$label] ?? 0;
+    }
+
+    $data['users_per_category'][$sex] = array_values($temp ?? []);
+}
 
 /** BY MODULE */
 $data['per_module_users'] = null;
