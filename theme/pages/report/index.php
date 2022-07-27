@@ -24,6 +24,24 @@ $stats = array_merge(
     $sql->executeSQL("select count(*) as 'level' from data where type = 'level'")[0],
     $sql->executeSQL("select count(*) as 'chatbot' from data where type = 'chatbot'")[0]
 );
+
+$traffic_stat = $sql->executeSQL("select 
+       date(from_unixtime(created_on)) as creation_date, 
+       count(*) as 'count' 
+from data 
+where type = 'response' 
+group by creation_date
+");
+
+unset($temp);
+
+$temp['date'] = array_column($traffic_stat, 'creation_date');
+$temp['count'] = array_column($traffic_stat, 'count');
+$traffic_stat = json_encode($temp);
+
+echo "<script>
+const TRAFFIC = {$traffic_stat};
+</script>";
 ?>
 
 <div class="main">
@@ -44,34 +62,51 @@ $stats = array_merge(
         </a>
         <?php endforeach ?>
 
-        <div class="col-lg-6 mt-5">
-            <h2 class="fw-light mb-4">Overall Stats</h2>
+        <div class="row">
+            <h2 class="fw-light mt-5 mb-4">Overall Stats</h2>
 
-            <table class="table table-bordered table-hover">
-                <thead class="table-dark">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Category</th>
-                    <th scope="col">Stats</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php
-                $i = 0;
-                foreach($stats as $key => $value) {
-                    $i++;
-                    $value = $fn->format_to_thousands($value);
-                    $key = ucwords($key);
+            <div class="col-lg-6">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Stats</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                    $i = 0;
+                    foreach($stats as $key => $value) {
+                        $i++;
+                        $value = $fn->format_to_thousands($value);
+                        $key = ucwords($key);
 
-                    echo "<tr>
-                            <th scope='row'>{$i}</th>
-                            <td>{$key}</td>
-                            <td>{$value}</td>
-                        </tr>";
-                }
-                ?>
-                </tbody>
-            </table>
+                        echo "<tr>
+                                <th scope='row'>{$i}</th>
+                                <td>{$key}</td>
+                                <td>{$value}</td>
+                            </tr>";
+                    }
+                    ?>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header small fw-bold text-uppercase bg-primary-custom text-light">
+                        Responses (last 14 days)
+                    </div>
+
+                    <div class="card-body">
+                        <canvas id="responses_by_date" width="400" height="400"></canvas>
+                    </div>
+
+                    <div class="card-footer text-muted">
+                        <?=$fn->format_to_thousands($stats['response'])?> responses in total
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -18,7 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="/theme/assets/js/custom.js"></script>
     <?php
-    if ($type === 'report' && $slug === 'chatbot') {
+    if ($type === 'report') {
         echo "<script src='/theme/assets/js/analytics.js'></script>";
     }
     ?>

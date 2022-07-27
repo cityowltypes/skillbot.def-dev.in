@@ -6,7 +6,7 @@ let toggle = document.querySelector('#toggle');
 let loading = "<div class='lds-facebook'><div></div><div></div><div></div></div>";
 let district = null;
 
-if (!!valid_map_keys) {
+if (typeof valid_map_keys !== 'undefined') {
     let mapGroups = document.querySelectorAll(".map g.map_of_india_svg");
     if (mapGroups) {
         mapGroups.forEach(g => {
@@ -94,6 +94,10 @@ async function selectMapRegion(g, init = false) {
     let uiStateName = document.querySelector('#stateName');
     let showButton = document.querySelector('#showDetailedStats');
     let detailedAnalytics = document.querySelector('#detailed-analytics');
+
+    if (!document.querySelector('svg.map_of_india')) {
+        return;
+    }
 
     if (detailedAnalytics) {
         detailedAnalytics.innerHTML = loading;
@@ -434,10 +438,6 @@ function drawAnalyticsCharts() {
     });
 }
 
-function fetchDistrictStats() {
-
-}
-
 function districtFilter() {
     let district = document.querySelector('select[name="district"]');
     if (!district) return;
@@ -475,5 +475,45 @@ function districtFilter() {
         if (analyticsContainer) analyticsContainer.innerHTML = res;
 
         drawAnalyticsCharts();
+    });
+}
+
+let responsesByDate = document.querySelector('#responses_by_date');
+if (responsesByDate) {
+    new Chart(responsesByDate, {
+        type: 'line',
+        data: {
+            labels: TRAFFIC.date.slice(-14),
+            datasets: [
+                {
+                    label: '',
+                    data: TRAFFIC.count.slice(-14),
+                    backgroundColor: '#b43232',
+                    borderColor: '#b43232',
+                }
+            ],
+        },
+        options: {
+            plugins: {
+                tooltip: {
+                    enabled: true
+                },
+                legend: {
+                    display: false
+                },
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true
+                    }
+                }
+            },
+            indexAxis: 'x',
+            skipNull: true,
+            minBarLength: 0,
+            maxBarThickness: 40
+        }
     });
 }
