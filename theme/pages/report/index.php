@@ -84,7 +84,7 @@ const TRAFFIC = {$traffic_stat};
 
                         echo "<tr>
                                 <th scope='row'>{$i}</th>
-                                <td>{$key}</td>
+                                <td>{$key}s</td>
                                 <td>{$value}</td>
                             </tr>";
                     }
