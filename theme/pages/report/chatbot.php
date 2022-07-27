@@ -57,7 +57,7 @@ echo "<style>
     --background-color: {$bot['background_color']};
     --primary-color: {$bot['primary_color']};
     --text-color: {$bot['text_color']};
-    --inactive-color: {$bot['inactive-color']};
+    --inactive-color: {$bot['inactive_color']};
 }
 </style>";
 ?>
