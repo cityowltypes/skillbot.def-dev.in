@@ -535,4 +535,9 @@ class Functions {
 
         return $output_file;
     }
+
+    function format_to_thousands(int $value): string
+    {
+        return number_format($value, 0, '.', ',');
+    }
 }

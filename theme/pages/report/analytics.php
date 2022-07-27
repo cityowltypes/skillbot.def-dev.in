@@ -340,10 +340,7 @@ if ($state && !$district) {
     ");
 }
 
-function format_to_thousands(int $value): string
-{
-    return number_format($value, 0, '.', ',');
-}
+
 
 function is_valid_number ($array) {
     if (filter_var($array['age'], FILTER_VALIDATE_INT) !== false) {

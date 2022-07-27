@@ -1,6 +1,7 @@
 <?php
 /**
  * @var array $data
+ * @var object $functions
  */
 ?>
 
@@ -38,7 +39,7 @@
                 </div>
 
                 <div class="card-footer text-muted">
-                    Total users: <?= format_to_thousands($data['user_count']) ?>
+                    Total users: <?= $functions->format_to_thousands($data['user_count']) ?>
                 </div>
             </div>
             <?php
@@ -52,7 +53,7 @@
                 <div class="card-header small fw-bold">Total users in district</div>
 
                 <div class="card-body">
-                    <div class="card-text display-2 text-center"><?= format_to_thousands($data['user_count']) ?></div>
+                    <div class="card-text display-2 text-center"><?= $functions->format_to_thousands($data['user_count']) ?></div>
                 </div>
             </div>
             <?php
@@ -82,7 +83,7 @@
 
                 <!-- users who completed all modules -->
                 <div class="card-footer text-muted">
-                    <?= format_to_thousands($data['users_who_completed_all']) ?> users certified
+                    <?= $functions->format_to_thousands($data['users_who_completed_all']) ?> users certified
                 </div>
             </div>
 
