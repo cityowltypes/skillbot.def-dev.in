@@ -9,7 +9,7 @@
                 class="navbar-brand me-0 ms-3"
                 href="<?= "https://t.me/{$_GET['handle']}" ?>"
                 target="_blank">
-            <i class="fab fa-telegram-plane me-2"></i><?=$_GET['handle']?>
+            @<?=$_GET['handle']?>
         </a>
         <?php endif; ?>
 
