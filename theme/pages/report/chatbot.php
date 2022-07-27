@@ -4,6 +4,7 @@
  */
 
 use \Wildfire\Core\Console as console;
+use \Wildfire\Theme\Functions;
 
 // if chatbot id isn't provided return to /report
 if (!isset($_GET['id'])) {
@@ -36,6 +37,9 @@ finally {
         die();
     }
 }
+
+$fn = new Functions();
+$bot['languages'] = $fn->derephrase($bot['languages']);
 
 $ignore = ['id', 'slug', 'type', 'class', 'title', 'chatbot_id', 'redirect_uri', 'content_privacy', 'created_on', 'updated_on'];
 $map_data = array_diff_key($map_data, array_flip($ignore));
@@ -85,6 +89,11 @@ echo "<style>
             <div id="statDisplay" class="col-12 col-lg-4 me-lg-auto d-flex flex-column justify-content-center align-items-center">
                 <div class="text-center">
                     <h1 id="stateName" class="fw-light display-2 text-capitalize text-theme"></h1>
+                </div>
+
+                <div class="text-center mt-5">
+                    <p class="display-1 text-theme"><?= sizeof($bot['languages']) ?></p>
+                    <h2 class="h3 fw-light text-theme">Supported Languages</h2>
                 </div>
 
                 <div class="text-center mt-5">

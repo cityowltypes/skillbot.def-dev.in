@@ -14,6 +14,6 @@
         <?php endif; ?>
 
         <?php if (($_SESSION['role_slug'] ?? null) === 'admin'): ?>
-        <a href="/admin" class="btn btn-light ms-auto">Admin Panel</a>
+        <a href="/admin" target="_blank" class="btn btn-light ms-auto">Admin Panel</a>
         <?php endif; ?>
 </nav>
