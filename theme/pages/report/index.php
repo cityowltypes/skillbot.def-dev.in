@@ -101,10 +101,6 @@ const TRAFFIC = {$traffic_stat};
                     <div class="card-body">
                         <canvas id="responses_by_date" width="400" height="400"></canvas>
                     </div>
-
-                    <div class="card-footer text-muted">
-                        <?=$fn->format_to_thousands($stats['response'])?> responses in total
-                    </div>
                 </div>
             </div>
         </div>
