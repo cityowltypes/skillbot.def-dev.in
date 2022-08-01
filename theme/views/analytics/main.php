@@ -9,7 +9,7 @@
     <?php
     // render filter ui only if request uri doesn't have no_filter set
     if (!isset($_GET['no_filter']) && $data['user_count'] !== 0 && isset($_GET['state'])) {
-        require_once "_state.php";
+        require_once "filter.php";
     }
     ?>
 
@@ -49,7 +49,7 @@
             <?php
             if (!isset($data['users_by_district']) && isset($_GET['district'])):
             ?>
-            <div class="card px-0 shadow-sm col-lg-2 ">
+            <div class="card px-0 shadow-sm">
                 <div class="card-header small fw-bold">Total users in district</div>
 
                 <div class="card-body">

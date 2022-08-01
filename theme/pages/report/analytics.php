@@ -1,7 +1,4 @@
 <?php
-/**
- * @var array $bot;
- */
 use \Wildfire\Api;
 use \Wildfire\Core\Dash;
 use \Wildfire\Core\MySQL;
@@ -18,29 +15,27 @@ $bot = $dash->getObject($_GET['id']);
 
 /** IF BOT DOESN'T EXIST, SHOW PLACEHOLDER AND TERMINATE */
 if (!$bot || ($bot['type'] ?? '') !== 'chatbot') {
-    require_once "analytics/_placeholder_bots.php";
+    require_once THEME_PATH . "/views/analytics/placeholder/bot.php";
     die();
 }
 
 $module_and_form = $functions->derephrase($bot['module_and_form_ids']);
 
+$form_map = $dash->get_ids(['chatbot' => $bot['slug']], '=');
+$form_map = array_pop($form_map);
+$form_map = $dash->getObject($form_map['id']); // reduce form index for arrays but not for keys
+
 $registration_form = $sql->executeSQL("select * from data where type='form' and id={$module_and_form[0]} limit 1");
 $registration_form = $dash->doContentCleanup($registration_form);
-
-
 $registration_form = array_pop($registration_form);
-$state_list = $functions->derephrase($registration_form['questions'][1])[0][1] ?? null;
-$category_list = $functions->derephrase($registration_form['questions'][4])[0] ?? null;
+$registration_form_id = $registration_form['id'];
+$state_list = $functions->derephrase($registration_form['questions'][$form_map['state'] - 1])[0][1] ?? null;
+$category_list = $functions->derephrase($registration_form['questions'][$form_map['category'] - 1])[0] ?? null;
 
 if ($category_list) {
     unset($category_list[0]);
     $category_list = array_values($category_list);
     $category_list = strtolower(implode("','", $category_list));
-}
-
-if (!$state_list) {
-    require_once "analytics/_placeholder_bots.php";
-    die();
 }
 
 $csv_handle = fopen($state_list, 'r');
@@ -71,50 +66,68 @@ if ($state && !$district) {
     $districts = strtolower(implode("','", $districts));
 }
 
-$age_group = "content->>'$.id__5__6' between 10 and 100";
+$age_group = "content->>'$.id__{$registration_form_id}__{$form_map['age']}' between 10 and 100";
 
 if (trim($bot['min_age'] ?? '') && trim($bot['max_age'] ?? '')) {
-    $age_group = "content->>'$.id__5__6' between {$bot['min_age']} and {$bot['max_age']}";
+    $age_group = "content->>'$.id__{$registration_form_id}__{$form_map['age']}' between {$bot['min_age']} and {$bot['max_age']}";
 }
 
 /** BY AGE */
 if (!$state && !isset($_GET['state'])) {
-    $data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
-        where type = 'response' and
-            content->>'$.chatbot' = '{$bot['slug']}' and
-            {$age_group}
+    $data['users_by_age'] = $sql->executeSQL("
+        SELECT 
+               content->>'$.id__{$registration_form_id}__{$form_map['age']}' as 'age', 
+               count(content->>'$.id__{$registration_form_id}__{$form_map['age']}') as age_count 
+        FROM `data`
+        WHERE 
+              type = 'response' and 
+              content->>'$.chatbot' = '{$bot['slug']}' and
+              {$age_group}
         group by age having age_count > 5
         order by age
     ");
 }
-elseif (!$district) {
-    $data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
-        where type = 'response' and
-            content->>'$.chatbot' = '{$bot['slug']}' and
-            lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__3') IN ('{$districts}') AND
-            {$age_group}
+elseif (!$district && isset($districts)) {
+    $data['users_by_age'] = $sql->executeSQL("
+        SELECT 
+               content->>'$.id__{$registration_form_id}__{$form_map['age']}' as 'age', 
+               count(content->>'$.id__{$registration_form_id}__{$form_map['age']}') as age_count 
+        FROM data
+        where 
+              type = 'response' and
+              content->>'$.chatbot' = '{$bot['slug']}' and
+              lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+              lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') IN ('{$districts}') AND
+              {$age_group}
         group by age having age_count > 5
         order by age
     ");
 }
-else {
-    $data['users_by_age'] = $sql->executeSQL("SELECT content->>'$.id__5__6' as 'age', count(content->>'$.id__5__6') as age_count FROM `data`
-        where type = 'response' and
-            content->>'$.chatbot' = '{$bot['slug']}' and
-            lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__3') = '{$district}' and
-            {$age_group}
+elseif (isset($districts)) {
+    $data['users_by_age'] = $sql->executeSQL("
+        SELECT 
+               content->>'$.id__{$registration_form_id}__{$form_map['age']}' as 'age', 
+               count(content->>'$.id__{$registration_form_id}__{$form_map['age']}') as age_count 
+        FROM `data`
+        where 
+              type = 'response' and
+              content->>'$.chatbot' = '{$bot['slug']}' and
+              lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+              lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') IN ('{$districts}') AND
+              {$age_group}
         group by age having age_count > 5
         order by age
     ");
 }
 
+unset($temp);
 foreach ($data['users_by_age'] as $age) {
     $temp[] = is_valid_number($age);
 }
 
-$data['users_by_age'] = array_filter($temp);
+if (isset($temp)) {
+    $data['users_by_age'] = array_filter($temp);
+}
 
 /** AVERAGE AGE AND TOTAL NUMBER OF USERS */
 $user_age = 0;
@@ -129,31 +142,52 @@ unset($user_age);
 
 /** BY GENDER */
 if (!$state) {
-    $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
+    $data['users_per_gender'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') as 'sex', 
+               count(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') as count 
+        FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female') and
+            (
+                lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' OR
+                lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female'
+            ) and
             {$age_group}
         group by sex
     ");
 }
 elseif (!$district) {
-    $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
+    $data['users_per_gender'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') as 'sex', 
+               count(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') as count  
+        FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            lower(content->>'$.id__5__2') = '{$state}' and
-            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female') and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+            (
+                lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' OR
+                lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female'
+            ) and
             {$age_group}
         group by sex
     ");
 }
 else {
-    $data['users_per_gender'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__8') as 'sex', count(content->>'$.id__5__8') as count FROM `data`
+    $data['users_per_gender'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') as 'sex', 
+               count(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') as count   
+        FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__3') = '{$district}' and
-            (lower(content->>'$.id__5__8') = 'male' || lower(content->>'$.id__5__8') = 'female') and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}' and
+            (
+                lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' OR
+                lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female'
+            ) and
             {$age_group}
         group by sex
     ");
@@ -161,65 +195,89 @@ else {
 
 /** BY CATEGORY */
 if (!$state) {
-    $data['users_per_category']['male'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+    $data['users_per_category']['male'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') as category, 
+               count(lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}')) as 'count' 
+        FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' AND
-            content->>'$.id__5__5' IS NOT NULL AND 
-            NOT content->>'$.id__5__5' = '/start' AND
-            lower(content->>'$.id__5__8') = 'male' AND
+            content->>'$.id__{$registration_form_id}__{$form_map['category']}' IS NOT NULL AND 
+            NOT content->>'$.id__{$registration_form_id}__{$form_map['category']}' = '/start' AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' AND
             {$age_group}
-        group by category having count(content->>'$.id__5__5') > 50
+        group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 50
     ");
-    $data['users_per_category']['female'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+    $data['users_per_category']['female'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') as category, 
+               count(lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}')) as 'count' 
+        FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' AND
-            content->>'$.id__5__5' IS NOT NULL AND 
-            NOT content->>'$.id__5__5' = '/start' AND
-            lower(content->>'$.id__5__8') = 'female' AND
+            content->>'$.id__{$registration_form_id}__{$form_map['category']}' IS NOT NULL AND 
+            NOT content->>'$.id__{$registration_form_id}__{$form_map['category']}' = '/start' AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female' AND
             {$age_group}
-        group by category having count(content->>'$.id__5__5') > 50
+        group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 50
     ");
 }
 elseif (!$district) {
-    $data['users_per_category']['male'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+    $data['users_per_category']['male'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') as category, 
+               count(lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}')) as 'count' 
+        FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            lower(content->>'$.id__5__5') IN ('{$category_list}') AND
-            lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__8') = 'male' AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') IN ('{$category_list}') AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' AND
             {$age_group}
-        group by category having count(content->>'$.id__5__5') > 10
+        group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 10
     ");
-    $data['users_per_category']['female'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+    $data['users_per_category']['female'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') as category, 
+               count(lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}')) as 'count' 
+        FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            lower(content->>'$.id__5__5') IN ('{$category_list}') AND
-            lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__8') = 'female' AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') IN ('{$category_list}') AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female' AND
             {$age_group}
-        group by category having count(content->>'$.id__5__5') > 10
+        group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 10
     ");
 }
 else {
-    $data['users_per_category']['male'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+    $data['users_per_category']['male'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') as category, 
+               count(lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}')) as 'count' 
+        FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            lower(content->>'$.id__5__5') IN ('{$category_list}') AND
-            lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__3') = '{$district}' and
-            lower(content->>'$.id__5__8') = 'male' AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') IN ('{$category_list}') AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}' and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' AND
             {$age_group}
-        group by category having count(content->>'$.id__5__5') > 10
+        group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 10
     ");
-    $data['users_per_category']['female'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__5') as category, count(lower(content->>'$.id__5__5')) as 'count' FROM `data`
+    $data['users_per_category']['female'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') as category, 
+               count(lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}')) as 'count' 
+        FROM `data`
         where type = 'response' and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            lower(content->>'$.id__5__5') IN ('{$category_list}') AND
-            lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__3') = '{$district}' and
-            lower(content->>'$.id__5__8') = 'female' AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') IN ('{$category_list}') AND
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}' and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female' AND
             {$age_group}
-        group by category having count(content->>'$.id__5__5') > 10
+        group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 10
     ");
 }
 
@@ -274,7 +332,7 @@ foreach ($bot_module_ids as $key => $_id) {
             where content->>'$.chatbot' = '{$bot['slug']}' and
                 type = 'response' and
                 {$age_group} and
-                lower(content->>'$.id__5__2') = '{$state}' and
+                lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
                 {$bot_module_ids[$key]} = 1
         ")[0]['count'];
     }
@@ -283,8 +341,8 @@ foreach ($bot_module_ids as $key => $_id) {
             where content->>'$.chatbot' = '{$bot['slug']}' and
                 type = 'response' and
                 {$age_group} and
-                lower(content->>'$.id__5__2') = '{$state}' and
-                lower(content->>'$.id__5__3') = '{$district}' and
+                lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+                lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}' and
                 {$bot_module_ids[$key]} = 1
         ")[0]['count'];
     }
@@ -312,7 +370,7 @@ elseif (!$district) {
             {$age_group} and
             content->>'$.chatbot' = '{$bot['slug']}' and
             {$_search_pattern} and
-            lower(content->>'$.id__5__2') = '{$state}'
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}'
     ")[0]['count'] ?? null;
 }
 else {
@@ -321,26 +379,28 @@ else {
             {$age_group} and
             content->>'$.chatbot' = '{$bot['slug']}' and
             {$_search_pattern} and
-            lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__3') = '{$district}'
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}'
     ")[0]['count'] ?? null;
 }
 
 /** BY DISTRICT */
 if ($state && !$district) {
-    $data['users_by_district'] = $sql->executeSQL("SELECT lower(content->>'$.id__5__3') as 'district', count(content->>'$.id__5__3') as 'count' FROM `data`
+    $data['users_by_district'] = $sql->executeSQL("
+        SELECT 
+               lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') as 'district', 
+               count(content->>'$.id__{$registration_form_id}__{$form_map['district']}') as 'count' 
+        FROM `data`
         where type = 'response' and
             {$age_group} and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            lower(content->>'$.id__5__2') = '{$state}' and
-            lower(content->>'$.id__5__3') IN ('{$districts}') AND
-            content->>'$.id__5__6' between 10 and 100
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+            lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') IN ('{$districts}') AND
+            content->>'$.id__{$registration_form_id}__{$form_map['age']}' between 10 and 100
         group by district having count > 8
         order by district
     ");
 }
-
-
 
 function is_valid_number ($array) {
     if (filter_var($array['age'], FILTER_VALIDATE_INT) !== false) {
@@ -360,4 +420,4 @@ if (($_GET['interface'] ?? false) === 'api') {
     $api->send(400);
 }
 
-require_once "analytics/_analytics_ui.php";
+require_once THEME_PATH . "/views/analytics/main.php";

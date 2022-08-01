@@ -189,6 +189,15 @@ async function selectMapRegion(g, init = false) {
         detailedAnalytics.innerHTML = detailedDataHtml;
         drawAnalyticsCharts();
         districtFilter();
+        console.log('attaching event');
+        let filterForm = document.querySelector('#region_filter');
+        console.log(filterForm);
+        if (filterForm) {
+            filterForm.addEventListener('submit', (e) => {
+                console.log('event attached');
+                filterFormSubmission(e);
+            });
+        }
     }
 
     updateUrl(`/report/chatbot?${searchParams.toString()}`);
@@ -472,10 +481,16 @@ function districtFilter() {
         res = await fetch(`/report/analytics?${search.toString()}`);
         res = await res.text();
 
-        if (analyticsContainer) analyticsContainer.innerHTML = res;
+        if (analyticsContainer) {
+            analyticsContainer.innerHTML = res;
+        }
 
         drawAnalyticsCharts();
     });
+}
+
+function filterFormSubmission(e) {
+    e.preventDefault();
 }
 
 let responsesByDate = document.querySelector('#responses_by_date');

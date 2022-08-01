@@ -30,10 +30,19 @@ try {
 
         return null;
     }, ARRAY_FILTER_USE_BOTH);
+
+    $form_map = $dash->get_ids(['chatbot' => $bot['slug']], '=');
+    $form_map = array_pop($form_map);
+    $form_map = $dash->getObject($form_map['id']);
 }
 finally {
     if (!($map_data && $bot)) {
         header('Location: /report');
+        die();
+    }
+
+    if ($form_map === 0) {
+        require_once THEME_PATH . "/views/analytics/placeholder/form_map.php";
         die();
     }
 }

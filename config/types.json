@@ -516,6 +516,58 @@
             {"input_slug": "uttarakhand", "input_type": "text"},
             {"input_slug": "west_bengal", "input_type": "text"}
         ]
+    },
+    "form_map": {
+        "type": "content",
+        "slug": "form_map",
+        "headmeta_title_prepend": "",
+        "headmeta_title_append": [
+            {
+                "type": "webapp",
+                "slug": "headmeta_title"
+            }
+        ],
+        "headmeta_title_glue": "&mdash;",
+        "headmeta_title": "title",
+        "name": "form map",
+        "plural": "form maps",
+        "disallow_editing": false,
+        "modules": [
+            {
+                "input_slug": "chatbot",
+                "input_type": "select",
+                "input_placeholder": "Chatbot",
+                "input_primary": true,
+                "input_unique": true,
+                "list_field": true,
+                "list_searchable": true
+            },
+            {
+                "input_slug": "state",
+                "input_type": "number",
+                "input_placeholder": "State Index"
+            },
+            {
+                "input_slug": "district",
+                "input_type": "number",
+                "input_placeholder": "District Index"
+            },
+            {
+                "input_slug": "age",
+                "input_type": "number",
+                "input_placeholder": "Age Index"
+            },
+            {
+                "input_slug": "gender",
+                "input_type": "number",
+                "input_placeholder": "Gender Index"
+            },
+            {
+                "input_slug": "category",
+                "input_type": "number",
+                "input_placeholder": "Category Index"
+            }
+        ]
     }
 }
 
