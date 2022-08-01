@@ -189,12 +189,9 @@ async function selectMapRegion(g, init = false) {
         detailedAnalytics.innerHTML = detailedDataHtml;
         drawAnalyticsCharts();
         districtFilter();
-        console.log('attaching event');
         let filterForm = document.querySelector('#region_filter');
-        console.log(filterForm);
         if (filterForm) {
             filterForm.addEventListener('submit', (e) => {
-                console.log('event attached');
                 filterFormSubmission(e);
             });
         }
@@ -489,10 +486,39 @@ function districtFilter() {
     });
 }
 
-function filterFormSubmission(e) {
+async function filterFormSubmission(e) {
     e.preventDefault();
+    let container = document.querySelector('#analytics-container');
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = loading;
+
+    let form = new FormData(e.target);
+    let today = new Date().toISOString().slice(0, 10);
+    let dates = {
+        start: form.get('start_date') ?? today,
+        end: form.get('end_date') ?? today
+    };
+
+    let search = String(window.location.search);
+    search = new URLSearchParams(search);
+
+    search.set('start_date', dates.start);
+    search.set('end_date', dates.end);
+    updateUrl(`${window.location.pathname}?${search.toString()}`);
+
+    search.set('no_filter', 'true');
+
+    let res = await fetch(`/report/analytics?${search.toString()}`);
+    res = await res.text();
+
+    container.innerHTML = res;
+    drawAnalyticsCharts();
 }
 
+// #responses_by_date runs on analytics dashboard
 let responsesByDate = document.querySelector('#responses_by_date');
 if (responsesByDate) {
     new Chart(responsesByDate, {

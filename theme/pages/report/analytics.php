@@ -32,6 +32,13 @@ $registration_form_id = $registration_form['id'];
 $state_list = $functions->derephrase($registration_form['questions'][$form_map['state'] - 1])[0][1] ?? null;
 $category_list = $functions->derephrase($registration_form['questions'][$form_map['category'] - 1])[0] ?? null;
 
+$date_range = '';
+if (isset($_GET['start_date'], $_GET['end_date'])) {
+    $start_date = strtotime($_GET['start_date']);
+    $end_date = strtotime($_GET['end_date']);
+    $date_range = "AND created_on BETWEEN {$start_date} AND {$end_date}";
+}
+
 if ($category_list) {
     unset($category_list[0]);
     $category_list = array_values($category_list);
@@ -83,6 +90,7 @@ if (!$state && !isset($_GET['state'])) {
               type = 'response' and 
               content->>'$.chatbot' = '{$bot['slug']}' and
               {$age_group}
+              {$date_range}
         group by age having age_count > 5
         order by age
     ");
@@ -98,12 +106,12 @@ elseif (!$district && isset($districts)) {
               content->>'$.chatbot' = '{$bot['slug']}' and
               lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
               lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') IN ('{$districts}') AND
-              {$age_group}
+              {$age_group} {$date_range}
         group by age having age_count > 5
         order by age
     ");
 }
-elseif (isset($districts)) {
+else {
     $data['users_by_age'] = $sql->executeSQL("
         SELECT 
                content->>'$.id__{$registration_form_id}__{$form_map['age']}' as 'age', 
@@ -113,8 +121,8 @@ elseif (isset($districts)) {
               type = 'response' and
               content->>'$.chatbot' = '{$bot['slug']}' and
               lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
-              lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') IN ('{$districts}') AND
-              {$age_group}
+              lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = ('{$district}') AND
+              {$age_group} {$date_range}
         group by age having age_count > 5
         order by age
     ");
@@ -153,7 +161,7 @@ if (!$state) {
                 lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' OR
                 lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female'
             ) and
-            {$age_group}
+            {$age_group} {$date_range}
         group by sex
     ");
 }
@@ -170,7 +178,7 @@ elseif (!$district) {
                 lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' OR
                 lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female'
             ) and
-            {$age_group}
+            {$age_group} {$date_range}
         group by sex
     ");
 }
@@ -188,7 +196,7 @@ else {
                 lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' OR
                 lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female'
             ) and
-            {$age_group}
+            {$age_group} {$date_range}
         group by sex
     ");
 }
@@ -205,7 +213,7 @@ if (!$state) {
             content->>'$.id__{$registration_form_id}__{$form_map['category']}' IS NOT NULL AND 
             NOT content->>'$.id__{$registration_form_id}__{$form_map['category']}' = '/start' AND
             lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' AND
-            {$age_group}
+            {$age_group} {$date_range}
         group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 50
     ");
     $data['users_per_category']['female'] = $sql->executeSQL("
@@ -218,7 +226,7 @@ if (!$state) {
             content->>'$.id__{$registration_form_id}__{$form_map['category']}' IS NOT NULL AND 
             NOT content->>'$.id__{$registration_form_id}__{$form_map['category']}' = '/start' AND
             lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female' AND
-            {$age_group}
+            {$age_group} {$date_range}
         group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 50
     ");
 }
@@ -233,7 +241,7 @@ elseif (!$district) {
             lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') IN ('{$category_list}') AND
             lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' AND
-            {$age_group}
+            {$age_group} {$date_range}
         group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 10
     ");
     $data['users_per_category']['female'] = $sql->executeSQL("
@@ -246,7 +254,7 @@ elseif (!$district) {
             lower(content->>'$.id__{$registration_form_id}__{$form_map['category']}') IN ('{$category_list}') AND
             lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female' AND
-            {$age_group}
+            {$age_group} {$date_range}
         group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 10
     ");
 }
@@ -262,7 +270,7 @@ else {
             lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}' and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'male' AND
-            {$age_group}
+            {$age_group} {$date_range}
         group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 10
     ");
     $data['users_per_category']['female'] = $sql->executeSQL("
@@ -276,7 +284,7 @@ else {
             lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}' and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['gender']}') = 'female' AND
-            {$age_group}
+            {$age_group} {$date_range}
         group by category having count(content->>'$.id__{$registration_form_id}__{$form_map['category']}') > 10
     ");
 }
@@ -325,6 +333,7 @@ foreach ($bot_module_ids as $key => $_id) {
                 type = 'response' and
                 {$age_group} and
                 {$bot_module_ids[$key]} = 1
+                {$date_range}
         ")[0]['count'];
     }
     elseif ($state && !$district) {
@@ -334,6 +343,7 @@ foreach ($bot_module_ids as $key => $_id) {
                 {$age_group} and
                 lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
                 {$bot_module_ids[$key]} = 1
+                {$date_range}
         ")[0]['count'];
     }
     elseif ($state && $district) {
@@ -344,6 +354,7 @@ foreach ($bot_module_ids as $key => $_id) {
                 lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
                 lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}' and
                 {$bot_module_ids[$key]} = 1
+                {$date_range}
         ")[0]['count'];
     }
 }
@@ -361,7 +372,7 @@ if (!$state) {
         where type = 'response' and
             {$age_group} and
             content->>'$.chatbot' = '{$bot['slug']}' and
-            {$_search_pattern}
+            {$_search_pattern} {$date_range}
     ")[0]['count'] ?? null;
 }
 elseif (!$district) {
@@ -371,6 +382,7 @@ elseif (!$district) {
             content->>'$.chatbot' = '{$bot['slug']}' and
             {$_search_pattern} and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}'
+            {$date_range}
     ")[0]['count'] ?? null;
 }
 else {
@@ -381,6 +393,7 @@ else {
             {$_search_pattern} and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}'
+            {$date_range}
     ")[0]['count'] ?? null;
 }
 
@@ -397,6 +410,7 @@ if ($state && !$district) {
             lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') IN ('{$districts}') AND
             content->>'$.id__{$registration_form_id}__{$form_map['age']}' between 10 and 100
+            {$date_range}
         group by district having count > 8
         order by district
     ");

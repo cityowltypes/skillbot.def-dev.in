@@ -17,7 +17,7 @@
         <?php
         // if there's no data to show for the selection
         if ($data['user_count'] == 0) {
-            require_once "_placeholder_stats.php";
+            require_once THEME_PATH . "/views/analytics/placeholder/stat.php";
             die();
         }
         ?>
