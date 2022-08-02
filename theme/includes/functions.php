@@ -518,7 +518,7 @@ class Functions {
         }
     }
 
-    function join_images(string $image1, string $image2, string $upload_dir): string
+    public function join_images(string $image1, string $image2, string $upload_dir): string
     {
         $dash = new Dash();
 
@@ -536,8 +536,31 @@ class Functions {
         return $output_file;
     }
 
-    function format_to_thousands(int $value): string
+    public function format_to_thousands(int $value): string
     {
         return number_format($value, 0, '.', ',');
+    }
+
+    public function get_form_map (array $bot): array
+    {
+        $dash = new Dash();
+
+        $form_map = $dash->get_ids(['chatbot' => $bot['slug']], '=');
+        $form_map = array_pop($form_map);
+
+        return $dash->getObject($form_map['id']); // reduce form index for arrays but not for keys
+    }
+
+    public function get_registration_form (array $bot): array
+    {
+        $sql = new MySQL();
+        $dash = new Dash();
+
+        $module_and_form = $this->derephrase($bot['module_and_form_ids']);
+
+        $registration_form = $sql->executeSQL("select * from data where type='form' and id={$module_and_form[0]} limit 1");
+        $registration_form = $dash->doContentCleanup($registration_form);
+
+        return array_pop($registration_form);
     }
 }

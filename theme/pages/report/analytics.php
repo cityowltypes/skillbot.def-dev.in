@@ -19,16 +19,10 @@ if (!$bot || ($bot['type'] ?? '') !== 'chatbot') {
     die();
 }
 
-$module_and_form = $functions->derephrase($bot['module_and_form_ids']);
-
-$form_map = $dash->get_ids(['chatbot' => $bot['slug']], '=');
-$form_map = array_pop($form_map);
-$form_map = $dash->getObject($form_map['id']); // reduce form index for arrays but not for keys
-
-$registration_form = $sql->executeSQL("select * from data where type='form' and id={$module_and_form[0]} limit 1");
-$registration_form = $dash->doContentCleanup($registration_form);
-$registration_form = array_pop($registration_form);
+$form_map = $functions->get_form_map($bot);
+$registration_form = $functions->get_registration_form($bot);
 $registration_form_id = $registration_form['id'];
+
 $state_list = $functions->derephrase($registration_form['questions'][$form_map['state'] - 1])[0][1] ?? null;
 $category_list = $functions->derephrase($registration_form['questions'][$form_map['category'] - 1])[0] ?? null;
 
