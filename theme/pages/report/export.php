@@ -24,15 +24,25 @@ if (trim($chatbot['min_age'] ?? '') && trim($chatbot['max_age'] ?? '')) {
     $age_group = "content->>'$.id__{$user_form_id}__{$form_map['age']}' between {$chatbot['min_age']} and {$chatbot['max_age']}";
 }
 
-$ids = $sql->executeSQL("
-    SELECT `id` 
+if ($_GET['target'] === 'unfiltered') {
+    $query = "SELECT `id` 
     FROM `data` 
-    WHERE `content_privacy`='private' AND 
+    WHERE 
+          `content`->'$.type' = 'response' AND 
+          `content`->'$.chatbot' = '{$chatbot['slug']}'
+    ORDER BY `id` DESC";
+}
+else {
+    $query = "SELECT `id` 
+    FROM `data` 
+    WHERE 
           `content`->'$.type' = 'response' AND 
           `content`->'$.chatbot' = '{$chatbot['slug']}' AND
           {$age_group}
-    ORDER BY `id` DESC"
-);
+    ORDER BY `id` DESC";
+}
+
+$ids = $sql->executeSQL($query);
 
 $data = $dash->getObjects($ids);
 $ids = array_column($data, 'id');
