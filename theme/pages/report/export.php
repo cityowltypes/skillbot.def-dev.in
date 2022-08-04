@@ -6,6 +6,8 @@
  * @var object $functions
  */
 
+use \Wildfire\Core\Console as console;
+
 include_once TRIBE_ROOT . '/theme/_init.php';
 
 $filename="{$slug}-" . time();
@@ -25,7 +27,7 @@ if (trim($chatbot['min_age'] ?? '') && trim($chatbot['max_age'] ?? '')) {
 }
 
 if ($_GET['target'] === 'unfiltered') {
-    $query = "SELECT `id` 
+    $query = "SELECT * 
     FROM `data` 
     WHERE 
           `content`->'$.type' = 'response' AND 
@@ -33,7 +35,7 @@ if ($_GET['target'] === 'unfiltered') {
     ORDER BY `id` DESC";
 }
 else {
-    $query = "SELECT `id` 
+    $query = "SELECT * 
     FROM `data` 
     WHERE 
           `content`->'$.type' = 'response' AND 
@@ -42,11 +44,11 @@ else {
     ORDER BY `id` DESC";
 }
 
-$ids = $sql->executeSQL($query);
+$data = $sql->executeSQL($query);
 
-$data = $dash->getObjects($ids);
-$ids = array_column($data, 'id');
-array_multisort($ids, SORT_DESC, $data);
+foreach ($data as $key => $value) {
+    $data[$key] = json_decode($value['content'], 1);
+}
 
 $i = 0;
 foreach ($data as $row) {
