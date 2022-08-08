@@ -1,4 +1,10 @@
 <?php
+/**
+ * @var object $api
+ * @var object $sql
+ * @var object $dash
+ * @var array $postdata
+ */
 include_once __DIR__ . '/../_init.php';
 $chatbot_slug = $postdata['slug'];
 $chatbot_id = $postdata['id'];

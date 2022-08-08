@@ -6,7 +6,7 @@
  * @var object $functions
  */
 
-use \Wildfire\Core\Console as console;
+use \Wildfire\Core\Console as cc;
 
 include_once TRIBE_ROOT . '/theme/_init.php';
 
@@ -55,6 +55,8 @@ $i = 0;
 foreach ($data as $row) {
 	$export[$i]['response_id'] = $row['id'];
 	$export[$i]['created_on'] = date('d, M Y H:i', $row['created_on']);
+
+	dd($row);
 
 	for ($j=1; $j < 10 ; $j++) {
         $export[$i]["id__{$user_form_id}__{$j}"] = $row["id__{$user_form_id}__{$j}"];

@@ -193,6 +193,12 @@ aside.side-nav.expanded {
 		grid-template-columns: 1fr 1fr;
 		grid-gap: 1rem;
 	}
+
+	.small-thumb {
+		object-fit: cover;
+		aspect-ratio: 1/1;
+		max-width: 10ch;
+	}
 }
 
 aside.side-nav .nav-item > a:hover {
