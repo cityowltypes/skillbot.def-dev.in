@@ -48,12 +48,13 @@ $data = $sql->executeSQL($query);
 
 foreach ($data as $key => $value) {
     $data[$key] = json_decode($value['content'], 1);
+    $data[$key]['created_on'] = $value['created_on'];
 }
 
 $i = 0;
 foreach ($data as $row) {
 	$export[$i]['response_id'] = $row['id'];
-	$export[$i]['updated_on'] = date('d, M Y H:i', $row['updated_on']);
+	$export[$i]['created_on'] = date('d, M Y H:i', $row['created_on']);
 
 	for ($j=1; $j < 10 ; $j++) {
         $export[$i]["id__{$user_form_id}__{$j}"] = $row["id__{$user_form_id}__{$j}"];
