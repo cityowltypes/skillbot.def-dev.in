@@ -24,13 +24,15 @@ foreach ($items as $module_id=>$assessment_form_id) {
 
 if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && !$incomplete) {
     $form_data = [
-        'name' => $response['id__'.$registration_form_id.'__'.$name_ques_id]
+        'name' => $response["id__.$registration_form_id.__.$name_ques_id"]
     ];
 
-    $certificate_template = THEME_PATH . '/docs/certificate.pdf';
-    $pdf_form = new PdfForm(THEME_PATH . '/docs/certificate.pdf', $form_data);
+    $certificate_template = $chatbot['certificate_url'] ?? THEME_PATH . '/docs/certificate.pdf';
+    $pdf_form = new PdfForm($certificate_template, $form_data);
+
     $output_file = time() . '.pdf';
     $pdf_form->flatten()->save("/tmp/${output_file}")->download();
+
     die();
 }
 else {

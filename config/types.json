@@ -169,6 +169,11 @@
                 "input_placeholder" : "Logos on the footer"
             },
             {
+                "input_slug": "certificate_url",
+                "input_type": "url",
+                "input_placeholder": "Certificate template url"
+            },
+            {
                 "input_slug": "certificate_programme",
                 "input_type" : "text",
                 "input_placeholder" : "Programme name in certificate"
