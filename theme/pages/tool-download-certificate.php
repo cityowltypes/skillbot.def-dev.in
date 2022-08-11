@@ -24,7 +24,7 @@ foreach ($items as $module_id=>$assessment_form_id) {
 
 if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && !$incomplete) {
     $form_data = [
-        'name' => $response["id__.$registration_form_id.__.$name_ques_id"]
+        'name' => $response["id__{$registration_form_id}__{$name_ques_id}"]
     ];
 
     $certificate_template = $chatbot['certificate_url'] ?? THEME_PATH . '/docs/certificate.pdf';
