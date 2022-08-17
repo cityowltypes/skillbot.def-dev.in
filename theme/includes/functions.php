@@ -135,7 +135,7 @@ class Functions {
                                 $reph_available[$handle][] = $rtemp;
                         }
                     } else {
-                        $reph_available[$handle] = $reph_temp[0];
+                        $reph_available[$handle] = $reph_temp[0] ?? null;
                     }
                 }
                 else {

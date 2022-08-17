@@ -1,15 +1,15 @@
 <?php include_once __DIR__ . '/../_init.php';?>
 <!doctype html>
-<html lang="<?=$types['webapp']['lang']?>">
+<html lang="<?=$types['webapp']['lang'] ?? 'en'?>">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-	<title><?=$meta_title?></title>
-	<meta name="description" content="<?=$meta_description?>">
+	<title><?=$meta_title ?? ''?></title>
+	<meta name="description" content="<?=$meta_description ?? ''?>">
 	<meta property="og:title" content="<?=$meta_title?>">
 	<meta property="og:description" content="<?=$meta_description?>">
-	<meta property="og:image" content="<?=$meta_image_url?>">
+	<meta property="og:image" content="<?=$meta_image_url ?? ''?>">
 
 	<link href="/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="https://use.typekit.net/jjw4adm.css">

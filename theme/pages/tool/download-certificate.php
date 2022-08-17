@@ -3,20 +3,21 @@
  * @var object $dash;
  * @var object $functions;
  */
-include_once __DIR__ . '/_header.php';
+include_once THEME_PATH . '/pages/_header.php';
 
 use \Theme\PdfForm;
+
 
 $response = $dash->getObject($_GET['response_id']);
 $chatbot = $dash->getObject($_GET['chatbot_id']);
 $items = $functions->derephrase($chatbot['module_and_form_ids'], 1);
 $registration_form_id = array_keys($items)[0];
-$name_ques_id = ($chatbot['certificate_user_name_question_number'] ?? 1);
+$name_ques_id = trim($chatbot['certificate_user_name_question_number']) ?: 1;
 
 $i = 0;
 $incomplete = 0;
 
-foreach ($items as $module_id=>$assessment_form_id) {  
+foreach ($items as $module_id=>$assessment_form_id) {
     if ($i && $module_id && !isset($response['completed__'.$module_id]))
       $incomplete = 1;
     $i++;
@@ -35,9 +36,7 @@ if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && !$incomplete) 
 
     die();
 }
-else {
 ?>
-
 <div class="card border-danger border-5 rounded-0" style="width: 100vw; height: 100vh;">
   <div class="d-flex align-content-between flex-wrap justify-content-center card-body text-center">
     <div class="card-title fw-light small text-muted text-uppercase border-bottom border-muted w-100 pb-3"><i class="fal fa-crosshairs"></i>&nbsp;Capture Screenshot<br>Response ID: <?=$response['id']?></div>
@@ -50,7 +49,4 @@ else {
     </div>
   </div>
 </div>
-
-<?php } // end of if-else ?>
-
-<?php include_once __DIR__ . '/_footer.php'?>
+<?php include_once THEME_PATH . '/pages/_footer.php';?>
