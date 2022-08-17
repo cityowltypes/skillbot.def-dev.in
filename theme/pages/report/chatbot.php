@@ -78,9 +78,14 @@ echo "<style>
     }
     ?>
 
-    <div id="dash-viewport" class="py-5">
+    <div id="dash-viewport" class="pb-5 pt-2">
+        <a
+                href="<?= "/report/chatbot?id={$_GET['id']}&handle={$_GET['handle']}" ?>"
+                class="w-100 btn rounded-0 text-start text-decoration-none">
+            <i class="fad fa-redo me-2"></i>Reset & Reload
+        </a>
         <?php if (trim($bot['logos_footer'] ?? '')): ?>
-        <div class="container mb-5 pb-lg-5">
+        <div class="container my-5 pb-lg-5">
             <div class="col-lg-8 mx-auto">
                 <img src="<?= trim($bot['logos_footer']) ?>" alt="Partner banner" class="img-fluid partner-banner">
             </div>
