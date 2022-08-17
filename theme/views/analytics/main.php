@@ -87,6 +87,7 @@
                 </div>
             </div>
 
+            <?php if (isset($data['users_per_category'])) : ?>
             <div class="card px-0 shadow-sm">
                 <div class="card-header small fw-bold">Distribution by Category</div>
 
@@ -94,7 +95,9 @@
                     <canvas id="users_per_category" width="400" height="400"></canvas>
                 </div>
             </div>
+            <?php endif ; ?>
 
+            <?php if (isset($data['users_per_gender'])) : ?>
             <div class="card px-0 shadow-sm">
                 <div class="card-header small fw-bold">Distribution by Gender</div>
 
@@ -102,6 +105,7 @@
                     <canvas id="users_per_sex" width="400" height="400"></canvas>
                 </div>
             </div>
+            <?php endif; ?>
         </section>
     </div>
 </div>

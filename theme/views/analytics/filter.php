@@ -49,21 +49,21 @@ foreach ($state_list as $state_name => $lc) {
                     </select>
                 </div>
 
-                <div class="d-flex justify-content-between">
+                <div class="row justify-content-between">
                     <?php
                     // set current date as max selectable date
                     $date = new DateTime();
                     $today = $date->format('Y-m-d');
                     unset($date);
                     ?>
-                    <div class="mb-3">
+                    <div class="mb-3 col-lg-6">
                         <label for="start_date" class="form-label">Start Date</label>
                         <input id="start_date" class="form-control" type="date"
                                name="start_date" max="<?=$today?>" value="<?=$_GET['start_date'] ?? ''?>"
                                required>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3 col-lg-6">
                         <label for="end_date" class="form-label">End Date</label>
                         <input id="end_date" class="form-control" type="date"
                                name="end_date" max="<?=$today?>" value="<?=$_GET['end_date'] ?? ''?>"

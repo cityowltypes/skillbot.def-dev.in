@@ -335,7 +335,7 @@ function drawAnalyticsCharts() {
                         weight: 'normal'
                     },
                     formatter: function (value, context) {
-                        return `${numberFormatter(value)}\n${context.chart.data.labels[context.dataIndex].replace(/\s/, '\n')}`;
+                        return `${numberFormatter(value)}`;
                     },
                     textAlign: 'center'
                 }
@@ -351,97 +351,103 @@ function drawAnalyticsCharts() {
     });
 
     // chart for users by category
-    new Chart(document.querySelector('canvas#users_per_category'), {
-        type: 'bar',
-        data: {
-            labels: analytics_data['users_per_category']['labels'],
-            datasets: [
-                {
-                    label: 'Male',
-                    data: analytics_data['users_per_category']['male'],
-                    backgroundColor: '#36a2eb'
-                },
-                {
-                    label: 'Female',
-                    data: analytics_data['users_per_category']['female'],
-                    backgroundColor: '#ff6384',
-                },
-            ],
-        },
-        options: {
-            plugins: {
-                tooltip: {
-                    enabled: true
-                },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'end',
-                    offset: 8,
-                    formatter: function (value, context) {
-                        return numberFormatter(value);
+    let users_by_cat = document.querySelector('canvas#users_per_category');
+    if (users_by_cat) {
+        new Chart(users_by_cat, {
+            type: 'bar',
+            data: {
+                labels: analytics_data['users_per_category']['labels'],
+                datasets: [
+                    {
+                        label: 'Male',
+                        data: analytics_data['users_per_category']['male'],
+                        backgroundColor: '#36a2eb'
                     },
-                },
-                legend: {
-                    display: true
-                },
-                scales: {
-                    x: {
-                        stacked: true
+                    {
+                        label: 'Female',
+                        data: analytics_data['users_per_category']['female'],
+                        backgroundColor: '#ff6384',
                     },
-                    y: {
-                        stacked: true
-                    }
-                }
+                ],
             },
-            indexAxis: 'x',
-            skipNull: true,
-            minBarLength: 0,
-            maxBarThickness: 40
-        },
-        plugins: [
-            ChartDataLabels
-        ]
-    });
+            options: {
+                plugins: {
+                    tooltip: {
+                        enabled: true
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 8,
+                        formatter: function (value, context) {
+                            return numberFormatter(value);
+                        },
+                    },
+                    legend: {
+                        display: true
+                    },
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                },
+                indexAxis: 'x',
+                skipNull: true,
+                minBarLength: 0,
+                maxBarThickness: 40
+            },
+            plugins: [
+                ChartDataLabels
+            ]
+        });
+    }
 
     // users per sex
-    new Chart(document.querySelector('canvas#users_per_sex'), {
-        type: 'pie',
-        data: {
-            labels: getColumn(analytics_data['users_per_gender'], 'sex'),
-            datasets: [{
-                label: '',
-                data: getColumn(analytics_data['users_per_gender'], 'count'),
-                backgroundColor: [
-                    analytics_data['users_per_gender'][0].sex === 'female' ? '#ff6384' : '#36a2eb',
-                    analytics_data['users_per_gender'][0].sex === 'female' ? '#36a2eb' : '#ff6384'
-                ]
-            }],
-        },
-        options: {
-            plugins: {
-                tooltip: {
-                    enabled: true
-                },
-                datalabels: {
-                    anchor: 'center',
-                    color: 'black',
-                    font: {
-                        weight: 'normal'
-                    },
-                    formatter: function (value, context) {
-                        return `${numberFormatter(value)}\n(${context.chart.data.labels[context.dataIndex]})`;
-                    },
-                    textAlign: 'center'
-                }
+    let users_by_sex = document.querySelector('canvas#users_per_sex');
+    if (users_by_sex) {
+        new Chart(users_by_sex, {
+            type: 'pie',
+            data: {
+                labels: getColumn(analytics_data['users_per_gender'], 'sex'),
+                datasets: [{
+                    label: '',
+                    data: getColumn(analytics_data['users_per_gender'], 'count'),
+                    backgroundColor: [
+                        analytics_data['users_per_gender'][0].sex === 'female' ? '#ff6384' : '#36a2eb',
+                        analytics_data['users_per_gender'][0].sex === 'female' ? '#36a2eb' : '#ff6384'
+                    ]
+                }],
             },
-            indexAxis: 'y',
-            skipNull: true,
-            minBarLength: 12
-        },
-        plugins: [
-            ChartDataLabels
-        ]
-    });
+            options: {
+                plugins: {
+                    tooltip: {
+                        enabled: true
+                    },
+                    datalabels: {
+                        anchor: 'center',
+                        color: 'black',
+                        font: {
+                            weight: 'normal'
+                        },
+                        formatter: function (value, context) {
+                            return `${numberFormatter(value)}\n(${context.chart.data.labels[context.dataIndex]})`;
+                        },
+                        textAlign: 'center'
+                    }
+                },
+                indexAxis: 'y',
+                skipNull: true,
+                minBarLength: 12
+            },
+            plugins: [
+                ChartDataLabels
+            ]
+        });
+    }
 }
 
 function districtFilter() {

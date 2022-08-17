@@ -49,7 +49,8 @@ unset($temp, $state_list['state']);
 $state_list = strtolower(json_encode($state_list));
 $state_list = json_decode($state_list, 1);
 
-$district = urldecode($_GET['district']) ?? null;
+$district = urldecode($_GET['district']);
+$district = trim($district ?? '') ?: null;
 
 $map_states = $dash->get_ids(['type' => 'map', 'chatbot_id' => $_GET['id']], '=', 'AND');
 $map_states = $dash->getObjects($map_states);
@@ -62,9 +63,11 @@ if ($state) {
 }
 
 /** LIST OF VALID DISTRICTS IF STATE IS SELECTED AND DISTRICT ISN'T */
+$districts = '';
 if ($state && !$district) {
     $districts = array_keys($state_list[$state]);
     $districts = strtolower(implode("','", $districts));
+    $districts = "lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') IN ('{$districts}') AND";
 }
 
 $age_group = "content->>'$.id__{$registration_form_id}__{$form_map['age']}' between 10 and 100";
@@ -85,7 +88,7 @@ if (!$state && !isset($_GET['state'])) {
               content->>'$.chatbot' = '{$bot['slug']}' and
               {$age_group}
               {$date_range}
-        group by age having age_count > 5
+        group by age having age_count > 1
         order by age
     ");
 }
@@ -99,8 +102,7 @@ elseif (!$district && isset($districts)) {
               type = 'response' and
               content->>'$.chatbot' = '{$bot['slug']}' and
               lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
-              lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') IN ('{$districts}') AND
-              {$age_group} {$date_range}
+              {$districts} {$age_group} {$date_range}
         group by age having age_count > 5
         order by age
     ");
@@ -134,9 +136,29 @@ if (isset($temp)) {
 /** AVERAGE AGE AND TOTAL NUMBER OF USERS */
 $user_age = 0;
 $data['user_count'] = 0;
+if (isset($state) && trim($state) && !$district) {
+    $query = "SELECT count(*) as count from data WHERE type = 'response' AND
+        content->>'$.chatbot' = '{$bot['slug']}' AND
+        lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+        {$districts} {$age_group} {$date_range}";
+}
+elseif (isset($district) && trim($district)) {
+    $query = "SELECT count(*) as count from data WHERE type = 'response' AND
+        content->>'$.chatbot' = '{$bot['slug']}' AND
+        lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') = '{$district}' and
+        lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
+        {$age_group} {$date_range}";
+}
+else {
+    $query = "SELECT count(*) as count from data WHERE type = 'response' AND
+        content->>'$.chatbot' = '{$bot['slug']}' AND
+        {$age_group} {$date_range}";
+}
+
+$data['user_count'] = $sql->executeSQL($query)[0]['count'];
+
 foreach ($data['users_by_age'] as $user) {
     $user_age += $user['age'] * $user['age_count'];
-    $data['user_count'] += $user['age_count'];
 }
 
 $data['average_age'] = floor($user_age / $data['user_count']);
@@ -193,6 +215,10 @@ else {
             {$age_group} {$date_range}
         group by sex
     ");
+}
+
+if (!$data['users_per_gender']) {
+    unset($data['users_per_gender']);
 }
 
 /** BY CATEGORY */
@@ -283,28 +309,34 @@ else {
     ");
 }
 
-$data['users_per_category']['labels'] = array_merge(
-    array_column($data['users_per_category']['female'], 'category'),
-    array_column($data['users_per_category']['male'], 'category')
-);
-$data['users_per_category']['labels'] = array_unique($data['users_per_category']['labels']);
-ksort($data['users_per_category']['labels']);
+if (!($data['users_per_category']['male'] && $data['users_per_category']['female'])) {
+    unset($data['users_per_category']);
+}
 
-$overlay = array_fill(0, count($data['users_per_category']['labels']), NULL);
-
-foreach (['male', 'female'] as $sex) {
-    $data['users_per_category'][$sex] = array_combine(
-        array_column($data['users_per_category'][$sex], 'category'),
-        array_column($data['users_per_category'][$sex], 'count')
+if (isset($data['users_per_category'])) {
+    $data['users_per_category']['labels'] = array_merge(
+        array_column($data['users_per_category']['female'], 'category'),
+        array_column($data['users_per_category']['male'], 'category')
     );
-    ksort($data['users_per_category'][$sex]);
+    $data['users_per_category']['labels'] = array_unique($data['users_per_category']['labels']);
+    ksort($data['users_per_category']['labels']);
 
-    unset($temp);
-    foreach ($data['users_per_category']['labels'] as $label) {
-        $temp[$label] = $data['users_per_category'][$sex][$label] ?? 0;
+    $overlay = array_fill(0, count($data['users_per_category']['labels']), NULL);
+
+    foreach (['male', 'female'] as $sex) {
+        $data['users_per_category'][$sex] = array_combine(
+            array_column($data['users_per_category'][$sex], 'category'),
+            array_column($data['users_per_category'][$sex], 'count')
+        );
+        ksort($data['users_per_category'][$sex]);
+
+        unset($temp);
+        foreach ($data['users_per_category']['labels'] as $label) {
+            $temp[$label] = $data['users_per_category'][$sex][$label] ?? 0;
+        }
+
+        $data['users_per_category'][$sex] = array_values($temp ?? []);
     }
-
-    $data['users_per_category'][$sex] = array_values($temp ?? []);
 }
 
 /** BY MODULE */
@@ -402,10 +434,8 @@ if ($state && !$district) {
             {$age_group} and
             content->>'$.chatbot' = '{$bot['slug']}' and
             lower(content->>'$.id__{$registration_form_id}__{$form_map['state']}') = '{$state}' and
-            lower(content->>'$.id__{$registration_form_id}__{$form_map['district']}') IN ('{$districts}') AND
-            content->>'$.id__{$registration_form_id}__{$form_map['age']}' between 10 and 100
-            {$date_range}
-        group by district having count > 8
+            {$districts} {$age_group}  {$date_range}
+        group by district having count > 1
         order by district
     ");
 }
