@@ -101,11 +101,6 @@ echo "<style>
                 </div>
 
                 <div class="text-center mt-5">
-                    <p class="display-1 text-theme"><?= sizeof($bot['languages']) ?></p>
-                    <h2 class="h3 fw-light text-theme">Supported Languages</h2>
-                </div>
-
-                <div class="text-center mt-5">
                     <p id="totalUsers" class="display-1 text-theme"></p>
                     <h2 class="h3 fw-light text-theme">Total Users</h2>
                 </div>
