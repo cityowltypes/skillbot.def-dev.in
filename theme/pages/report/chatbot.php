@@ -126,6 +126,17 @@ echo "<style>
 
         <!-- Detailed analytics for selected state -->
         <div id="detailed-analytics" class="d-flex justify-content-center py-5"></div>
+
+        <div class="text-center">
+            <a
+                id="responses_table_link"
+                href="#/"
+                class="btn btn-primary-custom text-uppercase"
+                data-href='/report/responses'
+                target="_blank">
+                Responses <i class="far fa-arrow-right"></i>
+            </a>
+        </div>
     </div>
 </div>
 

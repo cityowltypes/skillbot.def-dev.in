@@ -57,7 +57,7 @@
 
 .map_of_india_svg > path,
 g.inactive > path {
-	stroke: var(--primary-color);
+	stroke: var(--inactive-color);
 	stroke-width: 0.6px;
 }
 
@@ -69,8 +69,14 @@ g.inactive > path {
 	fill: var(--inactive-color);
 }
 
+.map_of_india_svg > path:hover {
+	fill: var(--bs-gray-400);
+	cursor: pointer;
+}
+
 .map_of_india_svg.active > path {
 	fill: var(--primary-color);
+	stroke: var(--primary-color);
 }
 
 .hamburger {
@@ -199,6 +205,21 @@ aside.side-nav.expanded {
 		aspect-ratio: 1/1;
 		max-width: 10ch;
 	}
+}
+
+.cursor-pointer:hover {
+	cursor: pointer;
+	background-color: var(--bs-gray-400);
+}
+
+th.active {
+	background-color: var(--bs-gray-600);
+	color: var(--bs-white);
+}
+
+th.active.fas {
+	display: block;
+	line-height: unset;
 }
 
 aside.side-nav .nav-item > a:hover {

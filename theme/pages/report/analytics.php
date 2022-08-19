@@ -11,6 +11,21 @@ $functions = new Functions;
 
 $api = new Api();
 
+// variables defined for this
+$bot = null; // chatbot
+$data = null; // data to be used for plotting graphs
+$state = null; // requested state
+$form_map = null; // form fields mapped to labels of registration form
+$district = null; // requested district
+$districts = null; // csv of districts
+$age_group = null; // age limiter
+$state_list = null; // list of states
+$map_states = null; // valid states to be marked on map
+$date_range = null; // date limiter
+$category_list = null; // list of categories
+$registration_form = null; // module's registration form
+$registration_form_id = null; // id of registration form
+
 $bot = $dash->getObject($_GET['id']);
 
 /** IF BOT DOESN'T EXIST, SHOW PLACEHOLDER AND TERMINATE */

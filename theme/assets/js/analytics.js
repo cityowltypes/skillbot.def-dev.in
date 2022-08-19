@@ -148,13 +148,14 @@ async function selectMapRegion(g, init = false) {
     if (!init) {
         searchParams.set('state', g.dataset.state);
     }
+
+    updateUrl(`/report/chatbot?${searchParams.toString()}`);
     searchParams.set('interface', 'api');
 
     let requestUrl = `/report/analytics?${searchParams.toString()}`;
     let res = await fetch(requestUrl);
     res = await res.json();
     analytics_data = res;
-
 
     searchParams.delete('interface');
 
@@ -197,8 +198,6 @@ async function selectMapRegion(g, init = false) {
         }
     }
 
-    updateUrl(`/report/chatbot?${searchParams.toString()}`);
-
     if (
         showButton &&
         (res.state !== "") &&
@@ -215,6 +214,11 @@ async function selectMapRegion(g, init = false) {
 function updateUrl (url) {
     if (typeof url === 'string') {
         window.history.replaceState({}, "", url);
+
+        let anchor = document.querySelector('#responses_table_link');
+        if (anchor) {
+            anchor.href = `${anchor.dataset.href}${window.location.search}`;
+        }
     }
 }
 
@@ -225,10 +229,12 @@ function drawAnalyticsCharts() {
 
     const autocolors = window['chartjs-plugin-autocolors'];
 
+    let chart = null;
+
     // users by district
-    let usersByDistrict = document.querySelector('canvas#users_by_district');
-    if (usersByDistrict) {
-        new Chart(usersByDistrict, {
+    chart = document.querySelector('canvas#users_by_district');
+    if (chart) {
+        new Chart(chart, {
             type: 'bar',
             data: {
                 labels: getColumn(analytics_data['users_by_district'], 'district'),
@@ -270,90 +276,96 @@ function drawAnalyticsCharts() {
     }
 
     // chart for users by age
-    new Chart(document.querySelector('canvas#users_by_age'), {
-        type: 'bar',
-        data: {
-            labels: getColumn(analytics_data['users_by_age'], 'age'),
-            datasets: [{
-                label: '',
-                data: getColumn(analytics_data['users_by_age'], 'age_count')
-            }],
-        },
-        options: {
-            plugins: {
-                autocolors: {
-                    mode: getColumn(analytics_data['users_by_age'], 'age_count')
-                },
-                tooltip: {
-                    enabled: true
-                },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'end',
-                    offset: 8,
-                    formatter: function (value, context) {
-                        return numberFormatter(value);
-                    },
-                },
-                legend: {
-                    display: false
-                }
+    chart = document.querySelector('canvas#users_by_age');
+    if (chart) {
+        new Chart(chart, {
+            type: 'bar',
+            data: {
+                labels: getColumn(analytics_data['users_by_age'], 'age'),
+                datasets: [{
+                    label: '',
+                    data: getColumn(analytics_data['users_by_age'], 'age_count')
+                }],
             },
-            indexAxis: 'y',
-            skipNull: true,
-            minBarLength: 12,
-            maxBarThickness: 40
-        },
-        plugins: [
-            autocolors,
-            ChartDataLabels
-        ]
-    });
+            options: {
+                plugins: {
+                    autocolors: {
+                        mode: getColumn(analytics_data['users_by_age'], 'age_count')
+                    },
+                    tooltip: {
+                        enabled: true
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 8,
+                        formatter: function (value, context) {
+                            return numberFormatter(value);
+                        },
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                indexAxis: 'y',
+                skipNull: true,
+                minBarLength: 12,
+                maxBarThickness: 40
+            },
+            plugins: [
+                autocolors,
+                ChartDataLabels
+            ]
+        });
+    }
 
     // users per module
-    new Chart(document.querySelector('canvas#users_per_module'), {
-        type: 'pie',
-        data: {
-            labels: getColumn(analytics_data['per_module_users'], 'module_name'),
-            datasets: [{
-                label: '',
-                data: getColumn(analytics_data['per_module_users'], 'count')
-            }],
-        },
-        options: {
-            plugins: {
-                autocolors: {
-                    mode: getColumn(analytics_data['per_module_users'], 'count')
-                },
-                tooltip: {
-                    enabled: true
-                },
-                datalabels: {
-                    anchor: 'center',
-                    color: 'black',
-                    font: {
-                        weight: 'normal'
-                    },
-                    formatter: function (value, context) {
-                        return `${numberFormatter(value)}`;
-                    },
-                    textAlign: 'center'
-                }
+    chart = document.querySelector('canvas#users_per_module');
+    if (chart) {
+        new Chart(chart, {
+            type: 'pie',
+            data: {
+                labels: getColumn(analytics_data['per_module_users'], 'module_name'),
+                datasets: [{
+                    label: '',
+                    data: getColumn(analytics_data['per_module_users'], 'count')
+                }],
             },
-            indexAxis: 'y',
-            skipNull: true,
-            minBarLength: 12
-        },
-        plugins: [
-            autocolors,
-            ChartDataLabels
-        ]
-    });
+            options: {
+                plugins: {
+                    autocolors: {
+                        mode: getColumn(analytics_data['per_module_users'], 'count')
+                    },
+                    tooltip: {
+                        enabled: true
+                    },
+                    datalabels: {
+                        anchor: 'center',
+                        color: 'black',
+                        font: {
+                            weight: 'normal'
+                        },
+                        formatter: function (value, context) {
+                            return `${numberFormatter(value)}`;
+                        },
+                        textAlign: 'center'
+                    }
+                },
+                indexAxis: 'y',
+                skipNull: true,
+                minBarLength: 12
+            },
+            plugins: [
+                autocolors,
+                ChartDataLabels
+            ]
+        });
+    }
 
     // chart for users by category
-    let users_by_cat = document.querySelector('canvas#users_per_category');
-    if (users_by_cat) {
-        new Chart(users_by_cat, {
+    chart = document.querySelector('canvas#users_per_category');
+    if (chart) {
+        new Chart(chart, {
             type: 'bar',
             data: {
                 labels: analytics_data['users_per_category']['labels'],
@@ -407,9 +419,9 @@ function drawAnalyticsCharts() {
     }
 
     // users per sex
-    let users_by_sex = document.querySelector('canvas#users_per_sex');
-    if (users_by_sex) {
-        new Chart(users_by_sex, {
+    chart = document.querySelector('canvas#users_per_sex');
+    if (chart) {
+        new Chart(chart, {
             type: 'pie',
             data: {
                 labels: getColumn(analytics_data['users_per_gender'], 'sex'),
@@ -563,4 +575,33 @@ if (responsesByDate) {
             maxBarThickness: 40
         }
     });
+}
+
+let responsesTable = document.querySelector('#responses-table');
+if (responsesTable) {
+    let tableHeads = responsesTable.querySelectorAll('thead th');
+    if (tableHeads) {
+        tableHeads.forEach(th => {
+            th.addEventListener('click', (e) => sortResponsesTable(e));
+        })
+    }
+}
+
+function sortResponsesTable(e) {
+    e.preventDefault();
+
+    let th = e.target.closest('th');
+    let searchParam = window.location.search;
+    let usp = new URLSearchParams(searchParam);
+
+    usp.set('sort', th.dataset.sort);
+
+    if (!!th.dataset.order && th.dataset.order !== '') {
+        usp.set('order', th.dataset.order);
+    }
+    else {
+        usp.set('order', 'desc');
+    }
+
+    location.replace(`${window.location.pathname}?${usp.toString()}`);
 }
