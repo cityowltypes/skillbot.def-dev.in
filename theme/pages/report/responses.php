@@ -230,11 +230,11 @@ require_once THEME_PATH . '/pages/_header.php';
 
     <nav aria-label="Page navigation">
         <p class="small text-muted text-end">(Total: <?php echo $responses_count ?? 0 ?>)</p>
-        <ul class="pagination justify-content-center">
+        <ul class="pagination justify-content-center flex-wrap">
             <?php
             $active_class = $page == 1 ? 'disabled' : '';
             $target = $fn->update_query_string('page', $page-1);
-            echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>Previous</a></li>";
+            echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'><i class='far fa-chevron-left'></i></a></li>";
 
             if ($pages_count <= 10) {
                 for ($i = 1; $i <= $pages_count; $i++) {
@@ -245,8 +245,8 @@ require_once THEME_PATH . '/pages/_header.php';
             }
             else {
                 // 1,2,3,4,5...11
-                if ($page < 3) {
-                    for ($i=1; $i <= 3; $i++) {
+                if ($page < 5) {
+                    for ($i=1; $i <= 5; $i++) {
                         $active_class = $page == $i ? 'active' : '';
                         $target = $fn->update_query_string('page', $i);
                         echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>$i</a></li>";
@@ -257,7 +257,7 @@ require_once THEME_PATH . '/pages/_header.php';
                     echo "<li class='page-item'><a class='page-link' href='$target' target='_self'>$pages_count</li>";
                 }
                 // 1...7,8,9,10,11;
-                elseif ($page <= $pages_count && $page >= $pages_count - 3) {
+                elseif ($page <= $pages_count && $page >= $pages_count - 4) {
                     $target = $fn->update_query_string('page', 1);
                     echo "<li class='page-item'><a class='page-link' href='$target' target='_self'>1</a></li>";
                     echo "<li class='page-item disabled'><a class='page-link' href='#'>...</li>";
@@ -274,6 +274,7 @@ require_once THEME_PATH . '/pages/_header.php';
                     echo "<li class='page-item'><a class='page-link' href='$target' target='_self'>1</a></li>";
                     echo "<li class='page-item disabled'><a class='page-link' href='#'>...</li>";
 
+
                     for ($i = $page-2; $i <= $page+2; $i++) {
                         $active_class = $page == $i ? 'active' : '';
                         $target = $fn->update_query_string('page', $i);
@@ -288,7 +289,7 @@ require_once THEME_PATH . '/pages/_header.php';
 
             $active_class = $page == $pages_count ? 'disabled' : 'enabled';
             $target = $fn->update_query_string('page', $page+1);
-            echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>Next</a></li>";
+            echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'><i class='fas fa-chevron-right'></i></a></li>";
             ?>
         </ul>
     </nav>
