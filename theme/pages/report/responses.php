@@ -153,7 +153,7 @@ require_once THEME_PATH . '/pages/_header.php';
 
 <div class="container-fluid mt-5 pb-5">
     <div class="container">
-        <form id="search_form" class="col-lg-5">
+        <form id="search_form" class="col-lg-5 mx-auto">
             <div class="input-group">
                 <div class="form-floating flex-fill">
                     <input type="search"
@@ -170,65 +170,67 @@ require_once THEME_PATH . '/pages/_header.php';
         </form>
     </div>
 
-    <p class="small text-muted text-end">(Total: <?php echo $responses_count ?? 0 ?>)</p>
-    <table id="responses-table" class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <?php
-                $active_class = '';
-                $order = '';
-                $arrow = '';
-                if ('id' === ($_GET['sort'] ?? null)) {
-                    $active_class = 'active';
-                    $arrow = strtolower($_GET['order'] ?? '') === 'desc' ? "<i class='fas fa-arrow-down'></i>" : "<i class='fas fa-arrow-up'></i>";
-                    $order = strtolower($_GET['order'] ?? '') === 'desc' ? 'asc' : 'desc';
-                }
-                ?>
-                <th class="cursor-pointer <?= $active_class ?>" data-sort="id" data-order="<?= $order ?>"># <?= $arrow ?></th>
-                <?php
-                foreach ($form_map_keys as $key) {
-                    $sort_key = "{$registration_form_id}__{$form_map[$key]}";
-
+    <p class="small text-muted text-end mt-3">(Total: <?php echo $responses_count ?? 0 ?>)</p>
+    <div class="table-wrapper">
+        <table id="responses-table" class="table table-bordered mt-3 overflow-auto">
+            <thead>
+                <tr>
+                    <?php
                     $active_class = '';
+                    $order = '';
                     $arrow = '';
-                    $order = 'desc';
-
-                    if ($sort_key === ($_GET['sort'] ?? null)) {
+                    if ('id' === ($_GET['sort'] ?? null)) {
                         $active_class = 'active';
                         $arrow = strtolower($_GET['order'] ?? '') === 'desc' ? "<i class='fas fa-arrow-down'></i>" : "<i class='fas fa-arrow-up'></i>";
-
                         $order = strtolower($_GET['order'] ?? '') === 'desc' ? 'asc' : 'desc';
                     }
+                    ?>
+                    <th class="cursor-pointer <?= $active_class ?>" data-sort="id" data-order="<?= $order ?>"># <?= $arrow ?></th>
+                    <?php
+                    foreach ($form_map_keys as $key) {
+                        $sort_key = "{$registration_form_id}__{$form_map[$key]}";
 
-                    echo "<th class='text-capitalize text-center cursor-pointer $active_class' data-order='$order' data-sort='$sort_key'>$key $arrow</th>";
-                }
-                ?>
-            </tr>
-        </thead>
+                        $active_class = '';
+                        $arrow = '';
+                        $order = 'desc';
 
-        <tbody>
-        <?php
-        if ($responses === 0) {
-            echo "<tr><td colspan='100%' class='text-center'>No records to show</td></tr>";
-        }
-        foreach ($responses as $response) {
-            $td = "<th>{$response['id']}</th>";
-            foreach ($form_map_keys as $key) {
-                $form_key = "id__{$registration_form_id}__{$form_map[$key]}";
+                        if ($sort_key === ($_GET['sort'] ?? null)) {
+                            $active_class = 'active';
+                            $arrow = strtolower($_GET['order'] ?? '') === 'desc' ? "<i class='fas fa-arrow-down'></i>" : "<i class='fas fa-arrow-up'></i>";
 
-                $key_cap = ucfirst($key);
-                $td .=  isset($response[$form_key]) ? "<td class='text-center' title='$key_cap'>$response[$form_key]</td>" : '<td></td>';
+                            $order = strtolower($_GET['order'] ?? '') === 'desc' ? 'asc' : 'desc';
+                        }
+
+                        echo "<th class='text-capitalize text-center cursor-pointer $active_class' data-order='$order' data-sort='$sort_key'>$key $arrow</th>";
+                    }
+                    ?>
+                </tr>
+            </thead>
+
+            <tbody>
+            <?php
+            if ($responses === 0) {
+                echo "<tr><td colspan='100%' class='text-center'>No records to show</td></tr>";
             }
+            foreach ($responses as $response) {
+                $td = "<th>{$response['id']}</th>";
+                foreach ($form_map_keys as $key) {
+                    $form_key = "id__{$registration_form_id}__{$form_map[$key]}";
 
-            echo "<tr>$td</tr>";
-        }
-        ?>
-        </tbody>
-    </table>
+                    $key_cap = ucfirst($key);
+                    $td .=  isset($response[$form_key]) ? "<td class='text-center' title='$key_cap'>$response[$form_key]</td>" : '<td></td>';
+                }
+
+                echo "<tr>$td</tr>";
+            }
+            ?>
+            </tbody>
+        </table>
+    </div>
 
     <nav aria-label="Page navigation">
         <p class="small text-muted text-end">(Total: <?php echo $responses_count ?? 0 ?>)</p>
-        <ul class="pagination">
+        <ul class="pagination justify-content-center">
             <?php
             $active_class = $page == 1 ? 'disabled' : '';
             $target = $fn->update_query_string('page', $page-1);
@@ -243,8 +245,8 @@ require_once THEME_PATH . '/pages/_header.php';
             }
             else {
                 // 1,2,3,4,5...11
-                if ($page < 5) {
-                    for ($i=1; $i <= 5; $i++) {
+                if ($page < 3) {
+                    for ($i=1; $i <= 3; $i++) {
                         $active_class = $page == $i ? 'active' : '';
                         $target = $fn->update_query_string('page', $i);
                         echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>$i</a></li>";
@@ -255,7 +257,7 @@ require_once THEME_PATH . '/pages/_header.php';
                     echo "<li class='page-item'><a class='page-link' href='$target' target='_self'>$pages_count</li>";
                 }
                 // 1...7,8,9,10,11;
-                elseif ($page <= $pages_count && $page >= $pages_count - 5) {
+                elseif ($page <= $pages_count && $page >= $pages_count - 3) {
                     $target = $fn->update_query_string('page', 1);
                     echo "<li class='page-item'><a class='page-link' href='$target' target='_self'>1</a></li>";
                     echo "<li class='page-item disabled'><a class='page-link' href='#'>...</li>";
