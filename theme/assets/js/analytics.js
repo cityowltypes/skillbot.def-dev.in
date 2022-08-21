@@ -595,6 +595,7 @@ function sortResponsesTable(e) {
     let usp = new URLSearchParams(searchParam);
 
     usp.set('sort', th.dataset.sort);
+    usp.delete('page');
 
     if (!!th.dataset.order && th.dataset.order !== '') {
         usp.set('order', th.dataset.order);
@@ -604,4 +605,29 @@ function sortResponsesTable(e) {
     }
 
     location.replace(`${window.location.pathname}?${usp.toString()}`);
+}
+
+let searchForm = document.querySelector('#search_form');
+if (searchForm) {
+    searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        let fd = new FormData(e.target);
+        let search = fd.get('search').toString();
+        search = encodeURIComponent(search);
+
+        let usp = new URLSearchParams(window.location.search);
+        usp.delete('page');
+        usp.set('order', 'desc');
+        usp.set('sort', 'id');
+
+        if (!search) {
+            usp.delete('search');
+        }
+        else {
+            usp.set('search', search);
+        }
+
+        location.replace(`${window.location.pathname}?${usp.toString()}`);
+    })
 }

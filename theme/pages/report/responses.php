@@ -15,12 +15,19 @@ $responses = null; // responses
 $chatbot = null; // chatbot
 $form_map = null; // mapping of form keys to form fields
 $registration_form_id = null; // registration form id
+$page = $_GET['page'] ?? 1;
+$upper_limit = 50;
+$limit = ($page - 1) * $upper_limit;
+$pages_count = null; // pages to be calculated for responses listing
+$search_query = urldecode($_GET['search']) ?? null;
+$search = '';
+$query = null;
+$form_map_keys = ['age', 'state', 'district', 'gender', 'category'];
 
 /**
  * Chatbot
  */
-$query = "SELECT * FROM `data` WHERE type = 'chatbot' AND id = {$_GET['id']} LIMIT 0,1";
-$chatbot = $sql->executeSQL($query);
+$chatbot = $sql->executeSQL("SELECT * FROM `data` WHERE type = 'chatbot' AND id = {$_GET['id']} LIMIT 0,1");
 
 if (!$chatbot) {
     echo "No chatbot with this id found";
@@ -34,37 +41,9 @@ $registration_form_id = $chatbot['module_and_form_ids'][0];
 unset($chatbot['module_and_form_ids'][0]);
 
 /**
- * Responses
- */
-if ($_GET['sort']) {
-    if ($_GET['sort'] === 'id') {
-        $order = "id ";
-    }
-    else {
-        $order = "content->>'$.id__{$_GET['sort']}' ";
-    }
-
-    $order .= strtolower($_GET['order'] ?? '') === 'desc' ? 'DESC' : 'ASC';
-
-    $query = "SELECT * FROM `data` WHERE `type` = 'response' AND content->>'$.chatbot' = '{$chatbot['slug']}' order by $order LIMIT 0,50";
-}
-else {
-    $query = "SELECT * FROM `data` WHERE `type` = 'response' AND content->>'$.chatbot' = '{$chatbot['slug']}' LIMIT 0,50";
-}
-$responses = $sql->executeSQL($query);
-
-if (!$responses) {
-    echo "No responses for this chatbot yet";
-    die();
-}
-
-$responses = $dash->doContentCleanup($responses);
-
-/**
  * Form Map
  */
-$query = "SELECT * FROM `data` WHERE `type` = 'form_map' and content->>'$.chatbot' = '{$chatbot['slug']}' LIMIT 0,1";
-$form_map = $sql->executeSQL($query);
+$form_map = $sql->executeSQL("SELECT * FROM `data` WHERE `type` = 'form_map' and content->>'$.chatbot' = '{$chatbot['slug']}' LIMIT 0,1");
 
 if (!$form_map) {
     echo "Chatbot's form hasn't been mapped";
@@ -74,6 +53,97 @@ if (!$form_map) {
 $form_map = $dash->doContentCleanup($form_map);
 $form_map = array_pop($form_map);
 
+foreach ($form_map_keys as $index => $key) {
+    if (!$form_map[$key]) {
+        unset($form_map_keys[$index]);
+    }
+}
+
+/**
+ * Responses
+ */
+if (!$query && $search_query) {
+    $rephrase = strpos($search_query, '##');
+    if ($rephrase !== false) {
+        $rephrase = $fn->derephrase($search_query);
+        $search = [];
+        foreach ($rephrase as $item) {
+            if (is_string($item)) {
+                $key = $form_map[$item];
+                $key = $key = "id__{$registration_form_id}__{$key}";
+                $search[] = strtolower("(content->>'$.$key' IS NULL OR content->>'$.$key' = '')");
+                continue;
+            }
+
+            $key = $item[0];
+            unset($item[0]);
+
+            $value = implode("','", $item);
+            $value = "('$value')";
+            $key = $form_map[$key];
+            $key = "id__{$registration_form_id}__{$key}";
+            $search[] = strtolower("lower(content->>'$.$key') IN $value");
+        }
+
+        $search = implode(' AND ', $search);
+        $search = "AND $search";
+    }
+    else {
+        $search = [];
+
+        foreach ($form_map_keys as $key) {
+            $key = $form_map[$key];
+            $key = "id__{$registration_form_id}__{$key}";
+            $search[] = strtolower("lower(content->>'$.$key') like '%$search_query%'");
+        }
+
+        $search = implode(' OR ', $search);
+        $search = "AND ($search)";
+    }
+}
+
+if (!$query && $_GET['sort']) {
+    if ($_GET['sort'] === 'id') {
+        $order = "id ";
+    }
+    else {
+        $order = "content->>'$.id__{$_GET['sort']}' ";
+    }
+
+    $order .= strtolower($_GET['order'] ?? '') === 'desc' ? 'DESC' : 'ASC';
+
+    $query = "SELECT *, (SELECT count(*) FROM `data` WHERE type = 'response' AND content->>'$.chatbot' = '{$chatbot['slug']}' $search) as count
+        FROM `data` 
+WHERE `type` = 'response' AND 
+      content->>'$.chatbot' = '{$chatbot['slug']}' 
+      $search
+order by $order 
+LIMIT $limit,$upper_limit";
+}
+
+if (!$query) {
+    $query = "SELECT *, (SELECT count(*) FROM `data` WHERE type = 'response' AND content->>'$.chatbot' = '{$chatbot['slug']}' $search) as count
+        FROM `data` 
+WHERE `type` = 'response' AND 
+      content->>'$.chatbot' = '{$chatbot['slug']}'
+      $search
+ORDER BY id DESC
+LIMIT $limit,$upper_limit";
+}
+
+$responses = $sql->executeSQL($query);
+$responses_count = $responses[0]['count'] ?? null;
+$pages_count = ceil($responses_count / $upper_limit);
+
+if (!$responses) {
+    if (!$search) {
+        echo "No responses for this chatbot yet";
+        die();
+    }
+}
+
+$responses = $dash->doContentCleanup($responses);
+
 require_once THEME_PATH . '/pages/_header.php';
 ?>
 
@@ -81,8 +151,27 @@ require_once THEME_PATH . '/pages/_header.php';
     <h1><?= $chatbot['title'] ?></h1>
 </div>
 
-<div class="container mt-5">
-    <table id="responses-table" class="table table-bordered">
+<div class="container-fluid mt-5 pb-5">
+    <div class="container">
+        <form id="search_form" class="col-lg-5">
+            <div class="input-group">
+                <div class="form-floating flex-fill">
+                    <input type="search"
+                           id="search"
+                           class="form-control"
+                           name="search"
+                           placeholder="Search (Re-phrase supported)"
+                           value="<?= urldecode($search_query ?? '') ?>">
+                    <label for="search">Search (Re-phrase supported)</label>
+                </div>
+
+                <button class="btn btn-lg btn-primary-custom" type="submit"><i class="far fa-search"></i></button>
+            </div>
+        </form>
+    </div>
+
+    <p class="small text-muted text-end">(Total: <?php echo $responses_count ?? 0 ?>)</p>
+    <table id="responses-table" class="table table-bordered mt-3">
         <thead>
             <tr>
                 <?php
@@ -97,29 +186,21 @@ require_once THEME_PATH . '/pages/_header.php';
                 ?>
                 <th class="cursor-pointer <?= $active_class ?>" data-sort="id" data-order="<?= $order ?>"># <?= $arrow ?></th>
                 <?php
-                $form_map_keys = ['age', 'state', 'district', 'gender', 'category'];
+                foreach ($form_map_keys as $key) {
+                    $sort_key = "{$registration_form_id}__{$form_map[$key]}";
 
-                foreach ($form_map_keys as $index => $key) {
-                    if ($form_map[$key]) {
-                        $sort_key = "{$registration_form_id}__{$form_map[$key]}";
+                    $active_class = '';
+                    $arrow = '';
+                    $order = 'desc';
 
-                        $active_class = '';
-                        $arrow = '';
-                        $order = 'desc';
+                    if ($sort_key === ($_GET['sort'] ?? null)) {
+                        $active_class = 'active';
+                        $arrow = strtolower($_GET['order'] ?? '') === 'desc' ? "<i class='fas fa-arrow-down'></i>" : "<i class='fas fa-arrow-up'></i>";
 
-                        if ($sort_key === ($_GET['sort'] ?? null)) {
-                            $active_class = 'active';
-                            $arrow = strtolower($_GET['order'] ?? '') === 'desc' ? "<i class='fas fa-arrow-down'></i>" : "<i class='fas fa-arrow-up'></i>";
-
-                            $order = strtolower($_GET['order'] ?? '') === 'desc' ? 'asc' : 'desc';
-                        }
-
-                        echo "<th class='text-capitalize text-center cursor-pointer $active_class' data-order='$order' data-sort='$sort_key'>$key $arrow</th>";
+                        $order = strtolower($_GET['order'] ?? '') === 'desc' ? 'asc' : 'desc';
                     }
-                    else {
-                        // remove form_map_key value which hasn't been set
-                        unset($form_map_keys[$index]);
-                    }
+
+                    echo "<th class='text-capitalize text-center cursor-pointer $active_class' data-order='$order' data-sort='$sort_key'>$key $arrow</th>";
                 }
                 ?>
             </tr>
@@ -127,12 +208,16 @@ require_once THEME_PATH . '/pages/_header.php';
 
         <tbody>
         <?php
+        if ($responses === 0) {
+            echo "<tr><td colspan='100%' class='text-center'>No records to show</td></tr>";
+        }
         foreach ($responses as $response) {
             $td = "<th>{$response['id']}</th>";
             foreach ($form_map_keys as $key) {
                 $form_key = "id__{$registration_form_id}__{$form_map[$key]}";
 
-                $td .=  isset($response[$form_key]) ? "<td class='text-center' title='$key'>$response[$form_key]</td>" : '<td></td>';
+                $key_cap = ucfirst($key);
+                $td .=  isset($response[$form_key]) ? "<td class='text-center' title='$key_cap'>$response[$form_key]</td>" : '<td></td>';
             }
 
             echo "<tr>$td</tr>";
@@ -140,6 +225,71 @@ require_once THEME_PATH . '/pages/_header.php';
         ?>
         </tbody>
     </table>
+
+    <nav aria-label="Page navigation">
+        <p class="small text-muted text-end">(Total: <?php echo $responses_count ?? 0 ?>)</p>
+        <ul class="pagination">
+            <?php
+            $active_class = $page == 1 ? 'disabled' : '';
+            $target = $fn->update_query_string('page', $page-1);
+            echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>Previous</a></li>";
+
+            if ($pages_count <= 10) {
+                for ($i = 1; $i <= $pages_count; $i++) {
+                    $active_class = $page == $i ? 'active' : '';
+                    $target = $fn->update_query_string('page', $i);
+                    echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>$i</a></li>";
+                }
+            }
+            else {
+                // 1,2,3,4,5...11
+                if ($page < 5) {
+                    for ($i=1; $i <= 5; $i++) {
+                        $active_class = $page == $i ? 'active' : '';
+                        $target = $fn->update_query_string('page', $i);
+                        echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>$i</a></li>";
+                    }
+
+                    echo "<li class='page-item disabled'><a class='page-link' href='#'>...</li>";
+                    $target = $fn->update_query_string('page', $pages_count);
+                    echo "<li class='page-item'><a class='page-link' href='$target' target='_self'>$pages_count</li>";
+                }
+                // 1...7,8,9,10,11;
+                elseif ($page <= $pages_count && $page >= $pages_count - 5) {
+                    $target = $fn->update_query_string('page', 1);
+                    echo "<li class='page-item'><a class='page-link' href='$target' target='_self'>1</a></li>";
+                    echo "<li class='page-item disabled'><a class='page-link' href='#'>...</li>";
+
+                    for ($i = $pages_count - 5; $i <= $pages_count; $i++) {
+                        $active_class = $page == $i ? 'active' : '';
+                        $target = $fn->update_query_string('page', $i);
+                        echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>$i</a></li>";
+                    }
+                }
+                // 1...6,7,8...11
+                else {
+                    $target = $fn->update_query_string('page', 1);
+                    echo "<li class='page-item'><a class='page-link' href='$target' target='_self'>1</a></li>";
+                    echo "<li class='page-item disabled'><a class='page-link' href='#'>...</li>";
+
+                    for ($i = $page-2; $i <= $page+2; $i++) {
+                        $active_class = $page == $i ? 'active' : '';
+                        $target = $fn->update_query_string('page', $i);
+                        echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>$i</a></li>";
+                    }
+
+                    echo "<li class='page-item disabled'><a class='page-link' href='#'>...</li>";
+                    $target = $fn->update_query_string('page', $pages_count);
+                    echo "<li class='page-item'><a class='page-link' href='$target' target='_self'>$pages_count</a></li>";
+                }
+            }
+
+            $active_class = $page == $pages_count ? 'disabled' : 'enabled';
+            $target = $fn->update_query_string('page', $page+1);
+            echo "<li class='page-item $active_class'><a class='page-link' href='$target' target='_self'>Next</a></li>";
+            ?>
+        </ul>
+    </nav>
 </div>
 
 <?php

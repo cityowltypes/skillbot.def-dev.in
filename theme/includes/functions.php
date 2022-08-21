@@ -563,4 +563,13 @@ class Functions {
 
         return array_pop($registration_form);
     }
+
+    public function update_query_string($key, $value): string
+    {
+        $get_query = $_GET;
+        $get_query[$key] = $value;
+        $get_query = http_build_query($get_query);
+
+        return str_replace(http_build_query($_GET), $get_query, $_SERVER['REQUEST_URI']);
+    }
 }
