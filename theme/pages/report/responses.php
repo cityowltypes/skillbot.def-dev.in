@@ -197,7 +197,7 @@ require_once THEME_PATH . '/pages/_header.php';
 
     <p class="small text-muted text-end mt-3">(Total: <?php echo $responses_count ?? 0 ?>)</p>
     <div class="table-wrapper">
-        <table id="responses-table" class="table table-bordered mt-3 overflow-auto">
+        <table id="responses-table" class="table table-hover table-bordered mt-3 overflow-auto">
             <thead>
                 <tr>
                     <?php
