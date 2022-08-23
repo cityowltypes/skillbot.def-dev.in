@@ -579,32 +579,30 @@ if (responsesByDate) {
 
 let responsesTable = document.querySelector('#responses-table');
 if (responsesTable) {
-    let tableHeads = responsesTable.querySelectorAll('thead th');
+    let tableHeads = responsesTable.querySelectorAll('thead th.sortable');
     if (tableHeads) {
         tableHeads.forEach(th => {
-            th.addEventListener('click', (e) => sortResponsesTable(e));
+            th.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                let th = e.target.closest('th');
+                let searchParam = window.location.search;
+                let usp = new URLSearchParams(searchParam);
+
+                usp.set('sort', th.dataset.sort);
+                usp.delete('page');
+
+                if (!!th.dataset.order && th.dataset.order !== '') {
+                    usp.set('order', th.dataset.order);
+                }
+                else {
+                    usp.set('order', 'desc');
+                }
+
+                location.replace(`${window.location.pathname}?${usp.toString()}`);
+            });
         })
     }
-}
-
-function sortResponsesTable(e) {
-    e.preventDefault();
-
-    let th = e.target.closest('th');
-    let searchParam = window.location.search;
-    let usp = new URLSearchParams(searchParam);
-
-    usp.set('sort', th.dataset.sort);
-    usp.delete('page');
-
-    if (!!th.dataset.order && th.dataset.order !== '') {
-        usp.set('order', th.dataset.order);
-    }
-    else {
-        usp.set('order', 'desc');
-    }
-
-    location.replace(`${window.location.pathname}?${usp.toString()}`);
 }
 
 let searchForm = document.querySelector('#search_form');
@@ -645,4 +643,96 @@ if (exportBtn) {
 
         window.open(`${window.location.pathname}?${usp.toString()}`, '_blank');
     });
+}
+
+let editFormModal = document.querySelector('#edit-form-modal');
+if (editFormModal) {
+    let form = editFormModal.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            let fd = new FormData(form);
+            let res = await fetch(`/theme/api/response?id=${fd.get('id')}&chatbot=${fd.get('chatbot_id')}`, {
+                method: 'post',
+                body: fd
+            });
+
+            res = await res.json();
+            console.log(res);
+
+            for (let key in res) {
+                if (!res.hasOwnProperty(key)) {
+                    continue;
+                }
+
+                let td = document.querySelector(`td[data-name='${key}_${res.id}']`);
+                if (!td) continue;
+
+                td.innerText = res[key];
+            }
+
+            let badge = form.querySelector('.badge');
+            badge.classList.remove('d-none');
+
+            setTimeout(() => {
+                badge.classList.add('d-none');
+            }, 5000)
+        });
+    }
+
+    editFormModal = new bootstrap.Modal(editFormModal, {
+        backdrop: 'static',
+        focus: true,
+        keyboard: false
+    });
+}
+
+let tableEditBtn = document.querySelectorAll('td > button.edit-form');
+if (tableEditBtn) {
+    tableEditBtn.forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            let btn = e.target.closest('button');
+            if (editFormModal) {
+                let usp = new URLSearchParams(window.location.search);
+                let endpoint = `/theme/api/response?id=${btn.dataset.id}&chatbot=${usp.get('id')}`;
+                try {
+                    let res = await fetch(endpoint, {
+                        method: 'get'
+                    })
+
+                    if (res.status >= 400 && res.status < 600) {
+                        throw new Error (res.statusText);
+                    }
+
+                    res = await res.json();
+
+                    // reset form's last values
+                    let form = document.querySelector('#edit-form-modal form');
+                    if (form) form.reset();
+
+                    let modal = document.querySelector('#edit-form-modal');
+                    if (modal) {
+                        modal = modal.querySelector('.modal-title');
+                        modal.innerText = res.id;
+                    }
+
+                    for (let key in res) {
+                        if (res.hasOwnProperty(key)) {
+                            let form = document.querySelector(`input#${key}`);
+                            if (!form) continue;
+
+                            form.value = res[key];
+                        }
+                    }
+
+                    editFormModal.show();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        })
+    })
 }

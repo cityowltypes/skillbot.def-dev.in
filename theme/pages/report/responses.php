@@ -176,8 +176,8 @@ require_once THEME_PATH . '/pages/_header.php';
     <h1><?= $chatbot['title'] ?></h1>
 </div>
 
-<div class="container-fluid mt-5 pb-5">
-    <div class="container">
+<div class="container mt-5 pb-5">
+    <div>
         <form id="search_form" class="col-lg-5 mx-auto">
             <div class="input-group">
                 <div class="form-floating flex-fill">
@@ -196,6 +196,7 @@ require_once THEME_PATH . '/pages/_header.php';
     </div>
 
     <p class="small text-muted text-end mt-3">(Total: <?php echo $responses_count ?? 0 ?>)</p>
+
     <div class="table-wrapper">
         <table id="responses-table" class="table table-hover table-bordered mt-3 overflow-auto">
             <thead>
@@ -210,7 +211,7 @@ require_once THEME_PATH . '/pages/_header.php';
                         $order = strtolower($_GET['order'] ?? '') === 'desc' ? 'asc' : 'desc';
                     }
                     ?>
-                    <th class="cursor-pointer <?= $active_class ?>" data-sort="id" data-order="<?= $order ?>"># <?= $arrow ?></th>
+                    <th class="cursor-pointer sortable <?= $active_class ?>" data-sort="id" data-order="<?= $order ?>"># <?= $arrow ?></th>
                     <?php
                     foreach ($form_map_keys as $key) {
                         $sort_key = "{$registration_form_id}__{$form_map[$key]}";
@@ -226,9 +227,10 @@ require_once THEME_PATH . '/pages/_header.php';
                             $order = strtolower($_GET['order'] ?? '') === 'desc' ? 'asc' : 'desc';
                         }
 
-                        echo "<th class='text-capitalize text-center cursor-pointer $active_class' data-order='$order' data-sort='$sort_key'>$key $arrow</th>";
+                        echo "<th class='text-capitalize text-center cursor-pointer sortable $active_class' data-order='$order' data-sort='$sort_key'>$key $arrow</th>";
                     }
                     ?>
+                    <th></th>
                 </tr>
             </thead>
 
@@ -239,14 +241,17 @@ require_once THEME_PATH . '/pages/_header.php';
             }
             foreach ($responses as $response) {
                 $td = "<th>{$response['id']}</th>";
+
                 foreach ($form_map_keys as $key) {
                     $form_key = "id__{$registration_form_id}__{$form_map[$key]}";
 
                     $key_cap = ucfirst($key);
-                    $td .=  isset($response[$form_key]) ? "<td class='text-center' title='$key_cap'>$response[$form_key]</td>" : '<td></td>';
+                    $innerText =  isset($response[$form_key]) ? "$response[$form_key]" : '';
+                    $td .= "<td class='text-center' data-name='{$key}_{$response['id']}' title='$key_cap'>$innerText</td>";
                 }
 
-                echo "<tr>$td</tr>";
+                $_edit_button = "<td class='text-center'><button class='btn btn-outline-dark edit-form' data-id='{$response['id']}'><i class='far fa-edit'></i></button></td>";
+                echo "<tr>$td $_edit_button</tr>";
             }
             ?>
             </tbody>
@@ -321,6 +326,41 @@ require_once THEME_PATH . '/pages/_header.php';
             ?>
         </ul>
     </nav>
+</div>
+
+<div id="edit-form-modal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="id" name="id">
+                    <input type="hidden" name="chatbot_id" value="<?= $_GET['id'] ?? 0?>">
+
+                    <?php
+                    foreach ($form_map_keys as $key) {
+                        $key_cap = ucfirst($key);
+                        echo "<div class='form-floating mb-3'>
+                                <input type='text' class='form-control' name='$key' id='$key' placeholder='$key_cap'>
+                                <label for='$key'>$key_cap</label>
+                            </div>";
+                    }
+                    ?>
+
+                    <div class="text-center">
+                        <span class="badge bg-success text-white d-none"><i class="fas fa-check"></i> Saved</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="far fa-ban"></i> Discard</button>
+                    <button type="submit" class="btn btn-outline-success"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <?php
