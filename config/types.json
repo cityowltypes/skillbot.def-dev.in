@@ -550,27 +550,32 @@
             {
                 "input_slug": "state",
                 "input_type": "number",
-                "input_placeholder": "State Index"
+                "input_placeholder": "State's Index"
             },
             {
                 "input_slug": "district",
                 "input_type": "number",
-                "input_placeholder": "District Index"
+                "input_placeholder": "District's Index"
             },
             {
                 "input_slug": "age",
                 "input_type": "number",
-                "input_placeholder": "Age Index"
+                "input_placeholder": "Age's Index"
             },
             {
                 "input_slug": "gender",
                 "input_type": "number",
-                "input_placeholder": "Gender Index"
+                "input_placeholder": "Gender's Index"
             },
             {
                 "input_slug": "category",
                 "input_type": "number",
-                "input_placeholder": "Category Index"
+                "input_placeholder": "Category's Index"
+            },
+            {
+                "input_slug": "name",
+                "input_type": "number",
+                "input_placeholder": "Name's Index"
             }
         ]
     }

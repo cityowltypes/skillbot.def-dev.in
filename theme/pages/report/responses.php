@@ -22,7 +22,8 @@ $pages_count = null; // pages to be calculated for responses listing
 $search_query = urldecode($_GET['search']) ?? null;
 $search = '';
 $query = null;
-$form_map_keys = ['age', 'state', 'district', 'gender', 'category'];
+$query_limit = "LIMIT $limit,$upper_limit";
+$form_map_keys = ['name', 'age', 'state', 'district', 'gender', 'category'];
 
 /**
  * Chatbot
@@ -62,6 +63,10 @@ foreach ($form_map_keys as $index => $key) {
 /**
  * Responses
  */
+if (isset($_GET['export'])) {
+    $query_limit = '';
+}
+
 if (!$query && $search_query) {
     $rephrase = strpos($search_query, '##');
     if ($rephrase !== false) {
@@ -118,7 +123,7 @@ WHERE `type` = 'response' AND
       content->>'$.chatbot' = '{$chatbot['slug']}' 
       $search
 order by $order 
-LIMIT $limit,$upper_limit";
+$query_limit";
 }
 
 if (!$query) {
@@ -128,7 +133,7 @@ WHERE `type` = 'response' AND
       content->>'$.chatbot' = '{$chatbot['slug']}'
       $search
 ORDER BY id DESC
-LIMIT $limit,$upper_limit";
+$query_limit";
 }
 
 $responses = $sql->executeSQL($query);
@@ -143,6 +148,26 @@ if (!$responses) {
 }
 
 $responses = $dash->doContentCleanup($responses);
+
+if (isset($_GET['export'])) {
+    $columns[] = 'id';
+    $csv_array = array();
+    $columns = array_merge($columns, $form_map_keys);
+
+    foreach ($responses as $response) {
+        $_temp = array();
+
+        foreach($columns as $column) {
+            $_key = $column == 'id' ? $column : "id__{$registration_form_id}__{$form_map[$column]}";
+            $_temp[$column] = $response[$_key] ?? '';
+        }
+
+        $csv_array[] = $_temp;
+    }
+
+    $fn->array_to_csv($csv_array, array_keys($csv_array[0]), "export_responses_{$chatbot['slug']}");
+    die();
+}
 
 require_once THEME_PATH . '/pages/_header.php';
 ?>
@@ -229,8 +254,11 @@ require_once THEME_PATH . '/pages/_header.php';
     </div>
 
     <nav aria-label="Page navigation">
-        <p class="small text-muted text-end">(Total: <?php echo $responses_count ?? 0 ?>)</p>
-        <ul class="pagination justify-content-center flex-wrap">
+        <div class="d-flex justify-content-between">
+            <button id="export-table" class="btn btn-primary-custom"><i class="far fa-file-export"></i> Export</button>
+            <p class="small text-muted text-end">(Total: <?php echo $responses_count ?? 0 ?>)</p>
+        </div>
+        <ul class="pagination mt-4 justify-content-center flex-wrap">
             <?php
             $active_class = $page == 1 ? 'disabled' : '';
             $target = $fn->update_query_string('page', $page-1);

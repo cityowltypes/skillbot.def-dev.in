@@ -631,3 +631,18 @@ if (searchForm) {
         location.replace(`${window.location.pathname}?${usp.toString()}`);
     })
 }
+
+let exportBtn = document.querySelector('#export-table');
+if (exportBtn) {
+    exportBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        let usp = new URLSearchParams(window.location.search);
+        usp.set('sort', 'id');
+        usp.set('order', 'desc');
+        usp.delete('page');
+        usp.set('export', 'true');
+
+        window.open(`${window.location.pathname}?${usp.toString()}`, '_blank');
+    });
+}
