@@ -229,8 +229,10 @@ require_once THEME_PATH . '/pages/_header.php';
 
                         echo "<th class='text-capitalize text-center cursor-pointer sortable $active_class' data-order='$order' data-sort='$sort_key'>$key $arrow</th>";
                     }
+                    if (($_SESSION['role'] ?? null) == 'admin') {
+                        echo "<th></th>";
+                    }
                     ?>
-                    <th></th>
                 </tr>
             </thead>
 
@@ -250,7 +252,9 @@ require_once THEME_PATH . '/pages/_header.php';
                     $td .= "<td class='text-center' data-name='{$key}_{$response['id']}' title='$key_cap'>$innerText</td>";
                 }
 
-                $_edit_button = "<td class='text-center'><button class='btn btn-outline-dark edit-form' data-id='{$response['id']}'><i class='far fa-edit'></i></button></td>";
+                $_edit_button = ($_SESSION['role'] ?? null) == 'admin' ?
+                    "<td class='text-center'><button class='btn btn-outline-dark edit-form' data-id='{$response['id']}'><i class='far fa-edit'></i></button></td>" :
+                    '';
                 echo "<tr>$td $_edit_button</tr>";
             }
             ?>
