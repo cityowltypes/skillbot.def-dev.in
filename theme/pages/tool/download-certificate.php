@@ -6,6 +6,7 @@
 include_once THEME_PATH . '/pages/_header.php';
 
 use \Theme\PdfForm;
+use \Wildfire\Core\Console as cc;
 
 
 $response = $dash->getObject($_GET['response_id']);
@@ -28,11 +29,24 @@ if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && !$incomplete) 
         'name' => $response["id__{$registration_form_id}__{$name_ques_id}"]
     ];
 
-    $certificate_template = $chatbot['certificate_url'] ?? THEME_PATH . '/docs/certificate.pdf';
+    if (
+      isset($chatbot['certificate_url']) &&
+      trim($chatbot['certificate_url']) !== ''
+    ) {
+      $certificate_template = trim($chatbot['certificate_url']);
+    }
+    else {
+      $certificate_template = THEME_PATH . '/docs/certificate.pdf';
+    }
+
     $pdf_form = new PdfForm($certificate_template, $form_data);
 
     $output_file = time() . '.pdf';
-    $pdf_form->flatten()->save("/tmp/${output_file}")->download();
+
+    $pdf_form
+      ->flatten()
+      ->save("/tmp/${output_file}")
+      ->download();
 
     die();
 }
@@ -40,7 +54,7 @@ if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && !$incomplete) 
 <div class="card border-danger border-5 rounded-0" style="width: 100vw; height: 100vh;">
   <div class="d-flex align-content-between flex-wrap justify-content-center card-body text-center">
     <div class="card-title fw-light small text-muted text-uppercase border-bottom border-muted w-100 pb-3"><i class="fal fa-crosshairs"></i>&nbsp;Capture Screenshot<br>Response ID: <?=$response['id']?></div>
-    
+
     <div class="pb-5">
           <h1 class="card-title text-uppercase fw-bold mb-5"><span class="text-danger">Incomplete.</span><br><br>Please complete the course.</h1>
     </div>
