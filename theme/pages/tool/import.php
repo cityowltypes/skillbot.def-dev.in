@@ -5,7 +5,7 @@
 
 require_once THEME_PATH . '/pages/_header.php';
 
-use \Wildfire\Core\Dash;
+use \Wildfire\Core\{Console as cc, Dash};
 
 $dash = new Dash();
 $error = null;
@@ -32,11 +32,13 @@ if (!$error) {
         }
 
         $csv_records = array_column($csv_records, 0);
+        $title = str_replace(".csv", "", "{$_POST['title']} {$files['name'][$key]}");
 
 
         if ($_POST['type'] === 'form') {
             $form = [
                 'type' => 'form',
+                'title' => $title,
                 'questions' => $csv_records,
                 'content_privacy' => 'private'
             ];
@@ -46,6 +48,7 @@ if (!$error) {
         else if ($_POST['type'] === 'chapter') {
             $chapter = [
                 'type' => 'chapter',
+                'title' => $title,
                 'messages' => $csv_records,
                 'content_privacy' => 'private'
             ];
@@ -84,6 +87,11 @@ if (!$error) {
                         <option value="form">Form</option>
                         <option value="chapter">Chapter</option>
                     </select>
+                </div>
+
+                <div class="mt-3">
+                    <label for="title" class="form-lable">Title</label>
+                    <input type="text" name="title" id="title" class="form-control" placeholder="Title for record(s)">
                 </div>
 
                 <div class="mt-3">
