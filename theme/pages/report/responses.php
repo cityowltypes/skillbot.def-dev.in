@@ -255,7 +255,12 @@ require_once THEME_PATH . '/pages/_header.php';
                 $_edit_button = ($_SESSION['role'] ?? null) == 'admin' ?
                     "<td class='text-center'><button class='btn btn-outline-dark edit-form' data-id='{$response['id']}'><i class='far fa-edit'></i></button></td>" :
                     '';
-                echo "<tr>$td $_edit_button</tr>";
+
+                $_view_button = ($_SESSION['role'] ?? null) == 'admin' ?
+                    "<td class='text-center'><a target='new' class='btn btn-outline-dark edit-form' href='/response/{$response['slug']}'><i class='far fa-eye'></i></a></td>" :
+                    '';
+
+                echo "<tr>$td $_edit_button $_view_button</tr>";
             }
             ?>
             </tbody>
