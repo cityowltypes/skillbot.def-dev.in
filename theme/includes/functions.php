@@ -456,6 +456,9 @@ class Functions {
                 } else if ($response_options == '-') {
                     //$telegram_message['response']['id##'.$chatbot_id] = '';
                     $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
+                } else if ($response_options == 'mobile') {
+                    //$telegram_message['response']['id##'.$chatbot_id] = '';
+                    $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
                 } else if (filter_var(($arr_url = $response_options), FILTER_VALIDATE_URL)) {
                     if ($j == 1) {
                         //state

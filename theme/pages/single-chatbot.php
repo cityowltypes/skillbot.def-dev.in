@@ -69,8 +69,15 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
     		}
 
         	$this_id_type = $dash->getAttribute($tring[1], 'type');
+        	
         	if ($this_id_type == 'form') {
-	        	if ($telegram_response['text'] == '👉👉👉' && $tring[2]) {
+	        	$last_message_identifier_response_type_array = $functions->derephrase($last_message_identifier);
+	        	$last_message_identifier_response_type = $functions->derephrase(json_decode($dash->getAttribute($last_message_identifier_response_type_array[1], 'questions'), true)[($last_message_identifier_response_type_array[2] - 1)])[1][1];
+	        	
+        		if ($last_message_identifier_response_type == 'mobile' && strlen($telegram_response['text'])!=10) {
+	        		$next_message_identifier = $last_message_identifier;
+	        	}
+	        	else if ($telegram_response['text'] == '👉👉👉' && $tring[2]) {
 	        		$next_message_identifier = $last_message_identifier;
 	        	} else if (trim($telegram_response['text']) && $telegram_response['text']!='🏠') {
 	        		$next_message_identifier = $tring[0].'##'.$tring[1].'##'.((int)$tring[2]+1);

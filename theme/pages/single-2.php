@@ -1,31 +1,24 @@
-<?php
+<?php include_once __DIR__ . '/../_init.php';
 use BotMan\BotMan\BotMan;
 use BotMan\BotMan\BotManFactory;
 use BotMan\BotMan\Drivers\DriverManager;
+use BotMan\BotMan\Messages\Incoming\Answer;
+use BotMan\BotMan\Messages\Outgoing\Question;
+use BotMan\BotMan\Messages\Outgoing\Actions\Button;
+use BotMan\BotMan\Messages\Conversations\Conversation;
 use BotMan\Drivers\Telegram\Extensions;
 use BotMan\Drivers\Telegram\Extensions\Keyboard;
 use BotMan\Drivers\Telegram\Extensions\KeyboardButton;
 use BotMan\BotMan\Messages\Attachments\Image;
 use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
+
 use \Wildfire\Api;
 use \Wildfire\Core\Console;
-//use BotMan\BotMan\Cache\ArrayCache;
-//use BotMan\BotMan\Storages\Drivers\FileStorage;
-//use Symfony\Component\HttpFoundation\Request;
 
-
-$dash = new \Wildfire\Core\Dash();
-$functions = new \Wildfire\Theme\Functions();
 $api = new Api;
 
-
-
-$response = $api->body();
-$response = $response['message'];
-$user = ['user_id'=>$response['from']['id'], 'slug'=>$slug];
-
+$telegram_response = (array) $api->body()['message'];
 $chatbot = $dash->getObject(['type'=>'chatbot', 'slug'=>$slug]);
-
 
 $config = [
     // Your driver-specific configuration
@@ -40,39 +33,20 @@ DriverManager::loadDriver(\BotMan\Drivers\Telegram\TelegramDriver::class);
 // Create an instance
 $botman = BotManFactory::create($config);
 
-$message = array();
-$message['message'] = "hello";
-$message['image'] = "https://wildfiretech.co/theme/assets/img/logo-dark.png";
-$message['response'] = ['hello1', 'hello2'];
+$question = Keyboard::create()
+            ->type(Keyboard::TYPE_KEYBOARD)
+            ->oneTimeKeyboard()
+            ->resizeKeyboard();
 
-$message['is_image'] = false;
+$question = $question->addRow(KeyboardButton::create('Random dog photo')->value('random'));
+$question = $question->addRow(KeyboardButton::create('A photo by breed')->value('breed'));
 
-    
-    $botman->custom_msg = $message;
-    
-    $botman->hears('', function ($bot) {
-        $kb = Keyboard::create()
-                ->type(Keyboard::TYPE_KEYBOARD)
-                ->oneTimeKeyboard()
-                ->resizeKeyboard();
-        foreach ($bot->custom_msg['response'] as $response){
-            $kb = $kb->addRow(KeyboardButton::create($response));
-        }
-        
-        $kb = $kb->toArray();
-        if ($bot->custom_msg['is_image'] == true) {
-            $attachment = new Image($bot->custom_msg['image']);
-            
-    // Build message object
-            $message = OutgoingMessage::create('')
-                ->withAttachment($attachment);
-        }
-        else{
-            $message = $bot->custom_msg['message'];
-        }
-        $bot->reply($message, $kb);
+$question = $question->toArray();
 
-    });
+$botman->hears('hello', function ($bot) {
+    $bot->reply('dolly', $question);
+});
+
 
 $botman->listen();
 ?>
