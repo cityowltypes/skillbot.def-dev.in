@@ -18,6 +18,17 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 	//GET KEY OF LAST MESSAGE SENT
 	$response_id = $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = ".$telegram_user_id." AND `content`->'$.chatbot' = '".$chatbot_slug."' AND `content`->'$.type' = 'response'")[0]['id'];
 
+	/*
+	$current_user = ($dash->getAttribute($response_id , 'current_user') ?? '');
+	if ($current_user !== '' && $current_user !== 0 && $current_user !== false) {
+		$telegram_user_id .= '-'.$current_user;
+		$response_id = $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = ".$telegram_user_id." AND `content`->'$.chatbot' = '".$chatbot_slug."' AND `content`->'$.type' = 'response'")[0]['id'];
+	}
+	SWITCH USER
+	ADD USER
+	DELETE USER
+	*/
+
 	//DELETE DATA MESSAGE (FOR TESTING)
 	if ($response_id && strtolower(trim($telegram_response['text']))=='chatbot_reset') {
 		$dash->doDeleteObject($response_id);
@@ -124,6 +135,6 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 	}
 }
 else {
-	print_r($functions->derephrase(json_decode($dash->getAttribute(5, 'questions'), true)[1], 1, [], 1)['arr']);
+	//print_r($functions->derephrase(json_decode($dash->getAttribute(5, 'questions'), true)[1], 1, [], 1)['arr']);
 }
 ?>
