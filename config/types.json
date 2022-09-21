@@ -23,7 +23,7 @@
                 "slug": "admin",
                 "title": "Admin"
             },
-            "editor": {
+            "chatbot_admin": {
                 "role": "member",
                 "slug": "chatbot_admin",
                 "title": "Chatbot Admin"
