@@ -16,6 +16,7 @@ include_once __DIR__ . '/../_header.php';
 
 $role_slug = $_SESSION['role_slug'] ?? null;
 $allowed_roles = ['admin', 'chatbot_admin'];
+$allowed_chatbots = $_SESSION['chatbot'] ?? null;
 
 require_once 'includes/_nav.php';
 
@@ -77,7 +78,11 @@ echo "<style>
 
 <div class="main">
     <?php
-    if ($role_slug && in_array($role_slug, $allowed_roles)) {
+    if (
+            $role_slug &&
+            in_array($role_slug, $allowed_roles) &&
+            in_array($_GET['handle'] ?? '', $allowed_chatbots)
+    ) {
         require_once 'includes/_nav_aside.php';
     }
     ?>
