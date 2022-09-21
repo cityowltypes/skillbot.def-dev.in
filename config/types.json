@@ -58,6 +58,11 @@
                 "input_placeholder": "Enter password",
                 "input_type": "password",
                 "input_confirm": true
+            },
+            {
+                "input_slug": "chatbot",
+                "input_placeholder": "Chatbot access",
+                "input_type": "multi-select"
             }
         ]
     },

@@ -1,6 +1,13 @@
+<?php
+/**
+ * @var string $role_slug
+ * @var array $allowed_roles
+ */
+?>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary-custom sticky-top">
     <div class="container-fluid justify-content-start">
-        <?php if (isset($_GET['handle']) && ($_SESSION['role_slug'] ?? null) === 'admin'): ?>
+        <?php if (isset($_GET['handle']) && in_array($role_slug, $allowed_roles)): ?>
         <button id="toggle" class="hamburger ms-lg-2 px-0" data-expanded="false"><span></span></button>
         <?php endif; ?>
 

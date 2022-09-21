@@ -1,4 +1,7 @@
-<?php include_once __DIR__ . '/_header.php'?>
+<?php
+include_once __DIR__ . '/_header.php';
+\Wildfire\Core\Console::json($_SESSION);
+?>
 
 <div class="container py-5">
 	<a href="/admin" class="w-100 d-block btn btn-warning my-2 btn-lg">Admin Panel</a>

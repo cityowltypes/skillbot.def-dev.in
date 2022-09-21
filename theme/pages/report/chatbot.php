@@ -13,6 +13,10 @@ if (!isset($_GET['id'])) {
 }
 
 include_once __DIR__ . '/../_header.php';
+
+$role_slug = $_SESSION['role_slug'] ?? null;
+$allowed_roles = ['admin', 'chatbot_admin'];
+
 require_once 'includes/_nav.php';
 
 /**
@@ -73,7 +77,7 @@ echo "<style>
 
 <div class="main">
     <?php
-    if (($_SESSION['role_slug'] ?? null) === 'admin') {
+    if ($role_slug && in_array($role_slug, $allowed_roles)) {
         require_once 'includes/_nav_aside.php';
     }
     ?>
