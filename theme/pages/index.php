@@ -1,6 +1,5 @@
 <?php
 include_once __DIR__ . '/_header.php';
-\Wildfire\Core\Console::json($_SESSION);
 ?>
 
 <div class="container py-5">
