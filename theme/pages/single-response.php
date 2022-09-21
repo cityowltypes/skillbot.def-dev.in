@@ -1,4 +1,12 @@
-<?php include_once __DIR__ . '/_header.php'?>
+<?php
+/**
+ * @var array $postdata
+ * @var object $dash
+ * @var object $functions
+ */
+
+include_once __DIR__ . '/_header.php';
+?>
 
 <div class="container d-flex" style="min-height: 50vh;">
 

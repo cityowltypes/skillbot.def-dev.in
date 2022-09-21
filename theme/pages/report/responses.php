@@ -23,7 +23,6 @@ $search_query = urldecode($_GET['search']) ?? null;
 $search = '';
 $query = null;
 $query_limit = "LIMIT $limit,$upper_limit";
-$form_map_keys = ['name', 'age', 'state', 'district', 'gender', 'category'];
 
 /**
  * Chatbot
@@ -40,6 +39,20 @@ $chatbot = $chatbot[$_GET['id']];
 $chatbot['module_and_form_ids'] = $fn->derephrase($chatbot['module_and_form_ids']);
 $registration_form_id = $chatbot['module_and_form_ids'][0];
 unset($chatbot['module_and_form_ids'][0]);
+
+$module_ids = array_column($chatbot['module_and_form_ids'], 0);
+$module_ids = implode(",", $module_ids);
+
+$modules = $sql->executeSQL("select * from data where type = 'module' and id in ($module_ids)");
+$modules = $dash->doContentCleanup($modules);
+$modules = array_column($modules, 'title', 'id');
+
+foreach ($modules as $key => $module) {
+    $module = $fn->derephrase($module);
+    $modules[$key] = $module[0];
+}
+
+$form_map_keys = ['name', 'age', 'state', 'district', 'gender', 'category'];
 
 /**
  * Form Map
@@ -169,6 +182,8 @@ if (isset($_GET['export'])) {
     die();
 }
 
+$form_map_keys = array_merge($form_map_keys, $modules);
+
 require_once THEME_PATH . '/pages/_header.php';
 ?>
 
@@ -229,6 +244,7 @@ require_once THEME_PATH . '/pages/_header.php';
 
                         echo "<th class='text-capitalize text-center cursor-pointer sortable $active_class' data-order='$order' data-sort='$sort_key'>$key $arrow</th>";
                     }
+
                     if (($_SESSION['role'] ?? null) == 'admin') {
                         echo "<th></th>";
                     }
@@ -248,7 +264,16 @@ require_once THEME_PATH . '/pages/_header.php';
                     $form_key = "id__{$registration_form_id}__{$form_map[$key]}";
 
                     $key_cap = ucfirst($key);
-                    $innerText =  isset($response[$form_key]) ? "$response[$form_key]" : '';
+                    $module_key = array_search($key, $modules);
+                    if (
+                            isset($response["completed__$module_key"]) &&
+                            $response["completed__$module_key"] !== false
+                    ) {
+                        $innerText = "✔️";
+                    }
+                    else {
+                        $innerText =  isset($response[$form_key]) ? "$response[$form_key]" : "❌";
+                    }
                     $td .= "<td class='text-center' data-name='{$key}_{$response['id']}' title='$key_cap'>$innerText</td>";
                 }
 
