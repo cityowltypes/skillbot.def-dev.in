@@ -635,11 +635,14 @@ if (exportBtn) {
     exportBtn.addEventListener('click', (e) => {
         e.preventDefault();
 
+        let rows = document.querySelector('#row_count').value ?? 100;
+
         let usp = new URLSearchParams(window.location.search);
         usp.set('sort', 'id');
         usp.set('order', 'desc');
         usp.delete('page');
         usp.set('export', 'true');
+        usp.set('limit', String(rows));
 
         window.open(`${window.location.pathname}?${usp.toString()}`, '_blank');
     });

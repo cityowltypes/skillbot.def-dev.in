@@ -77,7 +77,12 @@ foreach ($form_map_keys as $index => $key) {
  * Responses
  */
 if (isset($_GET['export'])) {
-    $query_limit = '';
+    if (!isset($_GET['limit'])) {
+        $query_limit = '';
+    }
+    else {
+        $query_limit = "LIMIT 0,{$_GET['limit']}";
+    }
 }
 
 if (!$query && $search_query) {
@@ -162,6 +167,9 @@ if (!$responses) {
 
 $responses = $dash->doContentCleanup($responses);
 
+$form_map_keys = array_merge($form_map_keys, $modules);
+
+// export to csv
 if (isset($_GET['export'])) {
     $columns[] = 'id';
     $csv_array = array();
@@ -173,6 +181,18 @@ if (isset($_GET['export'])) {
         foreach($columns as $column) {
             $_key = $column == 'id' ? $column : "id__{$registration_form_id}__{$form_map[$column]}";
             $_temp[$column] = $response[$_key] ?? '';
+
+            $module_key = array_search($column, $modules);
+            $d = $response["completed__$module_key"];
+            if (
+                    isset($response["completed__{$module_key}"]) &&
+                    $response["completed__{$module_key}"] !== false
+            ) {
+                $_temp[$column] = "✅";
+            }
+            else {
+                $_temp[$column] = isset($response[$_key]) ? "$response[$_key]" : "❌";
+            }
         }
 
         $csv_array[] = $_temp;
@@ -181,8 +201,6 @@ if (isset($_GET['export'])) {
     $fn->array_to_csv($csv_array, array_keys($csv_array[0]), "export_responses_{$chatbot['slug']}");
     die();
 }
-
-$form_map_keys = array_merge($form_map_keys, $modules);
 
 require_once THEME_PATH . '/pages/_header.php';
 ?>
@@ -269,7 +287,7 @@ require_once THEME_PATH . '/pages/_header.php';
                             isset($response["completed__$module_key"]) &&
                             $response["completed__$module_key"] !== false
                     ) {
-                        $innerText = "✔️";
+                        $innerText = "✅";
                     }
                     else {
                         $innerText =  isset($response[$form_key]) ? "$response[$form_key]" : "❌";
@@ -294,7 +312,16 @@ require_once THEME_PATH . '/pages/_header.php';
 
     <nav aria-label="Page navigation">
         <div class="d-flex justify-content-between">
-            <button id="export-table" class="btn btn-primary-custom"><i class="far fa-file-export"></i> Export</button>
+            <div class="d-flex">
+                <select class="form-control rounded-0 rounded-start" name="row_count" id="row_count">
+                    <option value="100">100 Rows</option>
+                    <option value="500">500 Rows</option>
+                    <option value="1000">1000 Rows</option>
+                </select>
+                <button id="export-table" class="btn btn-primary-custom flex-shrink-0 rounded-0 rounded-end">
+                    <i class="far fa-file-export"></i> Export
+                </button>
+            </div>
             <p class="small text-muted text-end">(Total: <?php echo $responses_count ?? 0 ?>)</p>
         </div>
         <ul class="pagination mt-4 justify-content-center flex-wrap">
