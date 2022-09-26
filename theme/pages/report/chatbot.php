@@ -80,10 +80,14 @@ echo "<style>
     <?php
     if (
             $role_slug &&
-            in_array($role_slug, $allowed_roles) &&
-            in_array($_GET['handle'] ?? '', $allowed_chatbots)
+            in_array($role_slug, $allowed_roles)
     ) {
-        require_once 'includes/_nav_aside.php';
+        if (
+            $role_slug === 'admin' ||
+            in_array($_GET['handle'] ?? '', $allowed_chatbots)
+        ) {
+            require_once 'includes/_nav_aside.php';
+        }
     }
     ?>
 

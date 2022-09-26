@@ -11,10 +11,14 @@
         <?php
         if (
                 isset($_GET['handle']) &&
-                in_array($role_slug, $allowed_roles) &&
-                in_array($_GET['handle'] ?? '', $allowed_chatbots)
+                in_array($role_slug, $allowed_roles)
         ) {
-            echo "<button id='toggle' class='hamburger ms-lg-2 px-0' data-expanded='false'><span></span></button>";
+            if (
+                $role_slug === 'admin' ||
+                in_array($_GET['handle'] ?? '', $allowed_chatbots)
+            ) {
+                echo "<button id='toggle' class='hamburger ms-lg-2 px-0' data-expanded='false'><span></span></button>";
+            }
         }
         ?>
 
