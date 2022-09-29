@@ -52,6 +52,10 @@ foreach ($modules as $key => $module) {
     $modules[$key] = $module[0];
 }
 
+if ($chatbot['id'] == 3) {
+    $modules['6'] = 'Code';
+}
+
 $form_map_keys = ['name', 'age', 'state', 'district', 'gender', 'category'];
 
 /**
@@ -136,22 +140,22 @@ if (!$query && $_GET['sort']) {
     $order .= strtolower($_GET['order'] ?? '') === 'desc' ? 'DESC' : 'ASC';
 
     $query = "SELECT *, (SELECT count(*) FROM `data` WHERE type = 'response' AND content->>'$.chatbot' = '{$chatbot['slug']}' $search) as count
-        FROM `data` 
-WHERE `type` = 'response' AND 
-      content->>'$.chatbot' = '{$chatbot['slug']}' 
-      $search
-order by $order 
-$query_limit";
+        FROM `data`
+    WHERE `type` = 'response' AND
+        content->>'$.chatbot' = '{$chatbot['slug']}'
+        $search
+    order by $order
+    $query_limit";
 }
 
 if (!$query) {
     $query = "SELECT *, (SELECT count(*) FROM `data` WHERE type = 'response' AND content->>'$.chatbot' = '{$chatbot['slug']}' $search) as count
-        FROM `data` 
-WHERE `type` = 'response' AND 
-      content->>'$.chatbot' = '{$chatbot['slug']}'
-      $search
-ORDER BY id DESC
-$query_limit";
+        FROM `data`
+    WHERE `type` = 'response' AND
+        content->>'$.chatbot' = '{$chatbot['slug']}'
+        $search
+    ORDER BY id DESC
+    $query_limit";
 }
 
 $responses = $sql->executeSQL($query);
@@ -184,14 +188,21 @@ if (isset($_GET['export'])) {
 
             $module_key = array_search($column, $modules);
             $d = $response["completed__$module_key"];
+            if (!$form_map[$column]) {
+                $_key = $column == 'id' ? $column : "id__{$registration_form_id}__{$module}";
+            }
+
             if (
-                    isset($response["completed__{$module_key}"]) &&
-                    $response["completed__{$module_key}"] !== false
+                isset($response["completed__{$module_key}"]) &&
+                $response["completed__{$module_key}"] !== false
             ) {
                 $_temp[$column] = "✅";
             }
+            elseif (isset($response[$_key])) {
+                $_temp[$column] = "$response[$_key]";
+            }
             else {
-                $_temp[$column] = isset($response[$_key]) ? "$response[$_key]" : "❌";
+                $_temp = "❌";
             }
         }
 
@@ -283,15 +294,24 @@ require_once THEME_PATH . '/pages/_header.php';
 
                     $key_cap = ucfirst($key);
                     $module_key = array_search($key, $modules);
+
+                    if (!$form_map[$key]) {
+                        $form_key = "id__{$registration_form_id}__{$module_key}";
+                    }
+
                     if (
-                            isset($response["completed__$module_key"]) &&
-                            $response["completed__$module_key"] !== false
+                        isset($response["completed__$module_key"]) &&
+                        $response["completed__$module_key"] !== false
                     ) {
                         $innerText = "✅";
                     }
-                    else {
-                        $innerText =  isset($response[$form_key]) ? "$response[$form_key]" : "❌";
+                    elseif (isset($response[$form_key])) {
+                        $innerText =  $response[$form_key];
                     }
+                    else {
+                        $innerText = "❌";
+                    }
+
                     $td .= "<td class='text-center' data-name='{$key}_{$response['id']}' title='$key_cap'>$innerText</td>";
                 }
 
@@ -316,7 +336,9 @@ require_once THEME_PATH . '/pages/_header.php';
                 <select class="form-control rounded-0 rounded-start" name="row_count" id="row_count">
                     <option value="100">100 Rows</option>
                     <option value="500">500 Rows</option>
-                    <option value="1000">1000 Rows</option>
+                    <option value="1000">1,000 Rows</option>
+                    <option value="10000">10,000 Rows</option>
+                    <option value="50000">50,000 Rows</option>
                 </select>
                 <button id="export-table" class="btn btn-primary-custom flex-shrink-0 rounded-0 rounded-end">
                     <i class="far fa-file-export"></i> Export
