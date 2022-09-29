@@ -19,7 +19,7 @@ $page = $_GET['page'] ?? 1;
 $upper_limit = 50;
 $limit = ($page - 1) * $upper_limit;
 $pages_count = null; // pages to be calculated for responses listing
-$search_query = urldecode($_GET['search']) ?? null;
+$search_query = urldecode($_GET['search'] ?? null);
 $search = '';
 $query = null;
 $query_limit = "LIMIT $limit,$upper_limit";
@@ -129,7 +129,7 @@ if (!$query && $search_query) {
     }
 }
 
-if (!$query && $_GET['sort']) {
+if (!$query && isset($_GET['sort'])) {
     if ($_GET['sort'] === 'id') {
         $order = "id ";
     }
@@ -183,13 +183,14 @@ if (isset($_GET['export'])) {
         $_temp = array();
 
         foreach($columns as $column) {
-            $_key = $column == 'id' ? $column : "id__{$registration_form_id}__{$form_map[$column]}";
+            $module_key = $form_map[$column] ?? null;
+            $_key = $column == 'id' ? $column : "id__{$registration_form_id}__{$module_key}";
             $_temp[$column] = $response[$_key] ?? '';
 
             $module_key = array_search($column, $modules);
-            $d = $response["completed__$module_key"];
-            if (!$form_map[$column]) {
-                $_key = $column == 'id' ? $column : "id__{$registration_form_id}__{$module}";
+            $d = $response["completed__$module_key"] ?? null;
+            if (!($form_map[$column] ?? null)) {
+                $_key = "id__{$registration_form_id}__{$module_key}";
             }
 
             if (
@@ -202,7 +203,7 @@ if (isset($_GET['export'])) {
                 $_temp[$column] = "$response[$_key]";
             }
             else {
-                $_temp = "❌";
+                $_temp[$column] = "❌";
             }
         }
 
@@ -258,7 +259,13 @@ require_once THEME_PATH . '/pages/_header.php';
                     <th class="cursor-pointer sortable <?= $active_class ?>" data-sort="id" data-order="<?= $order ?>"># <?= $arrow ?></th>
                     <?php
                     foreach ($form_map_keys as $key) {
-                        $sort_key = "{$registration_form_id}__{$form_map[$key]}";
+                        if (isset($form_map[$key])) {
+                            $sort_key = "{$registration_form_id}__{$form_map[$key]}";
+                        }
+                        else {
+                            $m_key = array_search($key, $modules);
+                            $sort_key = "{$registration_form_id}__{$m_key}";
+                        }
 
                         $active_class = '';
                         $arrow = '';
@@ -290,12 +297,13 @@ require_once THEME_PATH . '/pages/_header.php';
                 $td = "<th>{$response['id']}</th>";
 
                 foreach ($form_map_keys as $key) {
-                    $form_key = "id__{$registration_form_id}__{$form_map[$key]}";
-
                     $key_cap = ucfirst($key);
                     $module_key = array_search($key, $modules);
 
-                    if (!$form_map[$key]) {
+                    if (isset($form_map[$key])) {
+                        $form_key = "id__{$registration_form_id}__{$form_map[$key]}";
+                    }
+                    else {
                         $form_key = "id__{$registration_form_id}__{$module_key}";
                     }
 
