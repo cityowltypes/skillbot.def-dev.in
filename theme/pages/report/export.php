@@ -30,7 +30,7 @@ if ($_GET['target'] === 'unfiltered') {
     $query = "SELECT * 
     FROM `data` 
     WHERE 
-          `content`->'$.type' = 'response' AND 
+          `type` = 'response' AND 
           `content`->'$.chatbot' = '{$chatbot['slug']}'
     ORDER BY `id` DESC";
 }
@@ -38,7 +38,7 @@ else {
     $query = "SELECT * 
     FROM `data` 
     WHERE 
-          `content`->'$.type' = 'response' AND 
+          `type` = 'response' AND 
           `content`->'$.chatbot' = '{$chatbot['slug']}' AND
           {$age_group}
     ORDER BY `id` DESC";
