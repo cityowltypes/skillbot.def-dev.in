@@ -57,14 +57,15 @@ $sql = new MySQL();
 // format csv values and create queries
 $queries = array();
 foreach ($file_data as $key => $value) {
-    if (
-        is_scalar($value) ||
-        empty($value['id'])
-    ) {
+    if (is_scalar($value)) {
         continue;
     }
 
     $value = set_array_keys($csv_keys, $value);
+
+    if (empty($value['id'])) {
+        continue;
+    }
 
     $json_set_values = array();
 
