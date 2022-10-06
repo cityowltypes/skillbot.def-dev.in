@@ -52,6 +52,8 @@ function set_array_keys($csv_keys, $values) {
     return $final_array;
 }
 
+$sql = new MySQL();
+
 // format csv values and create queries
 $queries = array();
 foreach ($file_data as $key => $value) {
@@ -64,22 +66,33 @@ foreach ($file_data as $key => $value) {
     $json_set_values = array();
 
     foreach ($value as $k => $v) {
+        $v = trim($v);
+
+        if (
+            empty($v) ||
+            strlen($v) === 0
+        ) {
+            continue;
+        }
+
+        $v = mysqli_real_escape_string($sql->databaseLink, $v);
         $json_set_values[] = "'$.$k', '$v'";
     }
 
     $json_set_values = implode(", ", $json_set_values);
-    $queries[] = "UPDATE data SET content = JSON_SET(content, $json_set_values) where id = {$value['id']}";
+
+    if (!empty($value['id'])) {
+        $queries[] = "UPDATE data SET content = JSON_SET(content, $json_set_values) where id = {$value['id']}";
+    }
 }
 
 $queries = implode(";", $queries);
-
-$sql = new MySQL();
 
 // had to use this to run multiple queries on a single connection
 $import_status = mysqli_multi_query($sql->databaseLink, $queries) ? 'ok' : 'error';
 
 // to debug errors
-// mysqli_error($sql->databaseLink);
+cc::debug(mysqli_error($sql->databaseLink));
 
 unset($queries);
 ?>

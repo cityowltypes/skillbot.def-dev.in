@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93e305212b973f37c2deb5fcfa67afbc",
+    "content-hash": "2cf9ff58e07d7cd146ace23b672d8d71",
     "packages": [
         {
             "name": "alsvanzelf/jsonapi",
@@ -3841,7 +3841,8 @@
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.4",
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-mysqli": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
