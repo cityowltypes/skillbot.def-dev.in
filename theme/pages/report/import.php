@@ -57,7 +57,10 @@ $sql = new MySQL();
 // format csv values and create queries
 $queries = array();
 foreach ($file_data as $key => $value) {
-    if (is_scalar($value)) {
+    if (
+        is_scalar($value) ||
+        empty($value['id'])
+    ) {
         continue;
     }
 
@@ -68,22 +71,13 @@ foreach ($file_data as $key => $value) {
     foreach ($value as $k => $v) {
         $v = trim($v);
 
-        if (
-            empty($v) ||
-            strlen($v) === 0
-        ) {
-            continue;
-        }
-
         $v = mysqli_real_escape_string($sql->databaseLink, $v);
         $json_set_values[] = "'$.$k', '$v'";
     }
 
     $json_set_values = implode(", ", $json_set_values);
 
-    if (!empty($value['id'])) {
-        $queries[] = "UPDATE data SET content = JSON_SET(content, $json_set_values) where id = {$value['id']}";
-    }
+    $queries[] = "UPDATE data SET content = JSON_SET(content, $json_set_values) where id = {$value['id']}";
 }
 
 $queries = implode(";", $queries);
