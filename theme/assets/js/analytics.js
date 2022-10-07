@@ -365,57 +365,61 @@ function drawAnalyticsCharts() {
     // chart for users by category
     chart = document.querySelector('canvas#users_per_category');
     if (chart) {
-        new Chart(chart, {
-            type: 'bar',
-            data: {
-                labels: analytics_data['users_per_category']['labels'],
-                datasets: [
-                    {
-                        label: 'Male',
-                        data: analytics_data['users_per_category']['male'],
-                        backgroundColor: '#36a2eb'
-                    },
-                    {
-                        label: 'Female',
-                        data: analytics_data['users_per_category']['female'],
-                        backgroundColor: '#ff6384',
-                    },
-                ],
-            },
-            options: {
-                plugins: {
-                    tooltip: {
-                        enabled: true
-                    },
-                    datalabels: {
-                        anchor: 'end',
-                        align: 'end',
-                        offset: 8,
-                        formatter: function (value, context) {
-                            return numberFormatter(value);
+        try {
+            new Chart(chart, {
+                type: 'bar',
+                data: {
+                    labels: analytics_data['users_per_category']['labels'],
+                    datasets: [
+                        {
+                            label: 'Male',
+                            data: analytics_data['users_per_category']['male'],
+                            backgroundColor: '#36a2eb'
                         },
-                    },
-                    legend: {
-                        display: true
-                    },
-                    scales: {
-                        x: {
-                            stacked: true
+                        {
+                            label: 'Female',
+                            data: analytics_data['users_per_category']['female'],
+                            backgroundColor: '#ff6384',
                         },
-                        y: {
-                            stacked: true
-                        }
-                    }
+                    ],
                 },
-                indexAxis: 'x',
-                skipNull: true,
-                minBarLength: 0,
-                maxBarThickness: 40
-            },
-            plugins: [
-                ChartDataLabels
-            ]
-        });
+                options: {
+                    plugins: {
+                        tooltip: {
+                            enabled: true
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            offset: 8,
+                            formatter: function (value, context) {
+                                return numberFormatter(value);
+                            },
+                        },
+                        legend: {
+                            display: true
+                        },
+                        scales: {
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true
+                            }
+                        }
+                    },
+                    indexAxis: 'x',
+                    skipNull: true,
+                    minBarLength: 0,
+                    maxBarThickness: 40
+                },
+                plugins: [
+                    ChartDataLabels
+                ]
+            });
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     // users per sex
