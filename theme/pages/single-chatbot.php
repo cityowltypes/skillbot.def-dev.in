@@ -14,20 +14,16 @@ $telegram_response = (array) $api->body()['message'];
 
 //GET TELEGRAM USER ID
 if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
-
+	
 	//GET KEY OF LAST MESSAGE SENT
 	$response_id = $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = ".$telegram_user_id." AND `content`->'$.chatbot' = '".$chatbot_slug."' AND `content`->'$.type' = 'response'")[0]['id'];
+	$main_response_id = $response_id;
 
-	/*
 	$current_user = ($dash->getAttribute($response_id , 'current_user') ?? '');
-	if ($current_user !== '' && $current_user !== 0 && $current_user !== false) {
-		$telegram_user_id .= '-'.$current_user;
-		$response_id = $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = ".$telegram_user_id." AND `content`->'$.chatbot' = '".$chatbot_slug."' AND `content`->'$.type' = 'response'")[0]['id'];
+	if (((int) $current_user) >= 2) {
+		$telegram_user_id = $telegram_user_id.'-'.$current_user;
+		$response_id = $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = '".$telegram_user_id."' AND `content`->'$.chatbot' = '".$chatbot_slug."' AND `content`->'$.type' = 'response'")[0]['id'];
 	}
-	SWITCH USER
-	ADD USER
-	DELETE USER
-	*/
 
 	//DELETE DATA MESSAGE (FOR TESTING)
 	if ($response_id && strtolower(trim($telegram_response['text']))=='chatbot_reset') {
@@ -43,10 +39,8 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 	}
 
 	else if ($response_id) {
-		
 		//GET LAST SENT MESSAGE
 		$last_message_identifier = $dash->getAttribute($response_id , 'last_message_identifier');
-
 		
 		//NEXT MESSAGE IDENTIFIER
 		if ($last_message_identifier == 'lang##'.$chatbot_id) {
@@ -57,6 +51,16 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 		}
 		else if ($last_message_identifier == 'cert##'.$chatbot_id) {
 			$dash->pushAttribute($response_id, 'cert', $telegram_response['text']);
+			$next_message_identifier = 'id##'.$chatbot_id;
+		}
+		else if ($last_message_identifier == 'multiuser##'.$chatbot_id) {
+			$dash->pushAttribute($response_id, 'multiuser', $telegram_response['text']);
+			$next_message_identifier = 'id##'.$chatbot_id;
+		}
+		else if (substr($last_message_identifier, 0, 12) == 'switchuser##') {
+			$dash->pushAttribute($main_response_id, implode('__', $functions->derephrase($last_message_identifier)), $telegram_response['text']);
+        	$current_user = $functions->derephrase($last_message_identifier)[2];
+        	$dash->pushAttribute($main_response_id, 'current_user', $current_user);
 			$next_message_identifier = 'id##'.$chatbot_id;
 		}
 		else {

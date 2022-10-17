@@ -231,6 +231,16 @@ class Functions {
             return $telegram_message;
         }
 
+        else if ($chain_of_ids[0] == 'multiuser') {
+            $telegram_message['message'] = 'Switch user';
+            $telegram_message['response']['switchuser##'.$chatbot_id.'##1'] = 'Main user';
+            $telegram_message['response']['switchuser##'.$chatbot_id.'##2'] = 'User No. 2';
+            $telegram_message['response']['switchuser##'.$chatbot_id.'##3'] = 'User No. 3';
+            $telegram_message['response']['switchuser##'.$chatbot_id.'##4'] = 'Add new user';
+            $telegram_message['response']['id##'.$chatbot_id] = '🏠';
+            return $telegram_message;
+        }
+
         else if ($obj['type']=='chatbot') {
             if ($obj['intro_message']) {
                 $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[$lang_id], $api_token);
@@ -286,6 +296,10 @@ class Functions {
             $telegram_message['response']['cert##'.$obj['id']] = '<download certificate>';
 
             $telegram_message['response']['lang##'.$obj['id']] = '<change language>';
+
+            if ($obj['allow_multiuser'] ?? false)
+                $telegram_message['response']['multiuser##'.$obj['id']] = '<multi-user>';
+
             return $telegram_message;
         }
 
