@@ -206,7 +206,7 @@ class Functions {
         return true;
     }
 
-    public function get_message_array($message_identifier, $chatbot_id, $language='english', $response_id=0, $api_token='') {
+    public function get_message_array($message_identifier, $chatbot_id, $language='english', $response_id=0, $api_token='', $main_response_id=0) {
         $dash = new Dash;
 
         $chain_of_ids = $this->derephrase($message_identifier);
@@ -234,9 +234,20 @@ class Functions {
         else if ($chain_of_ids[0] == 'multiuser') {
             $telegram_message['message'] = 'Switch user';
             $telegram_message['response']['switchuser##'.$chatbot_id.'##1'] = 'Main user';
-            $telegram_message['response']['switchuser##'.$chatbot_id.'##2'] = 'User No. 2';
-            $telegram_message['response']['switchuser##'.$chatbot_id.'##3'] = 'User No. 3';
-            $telegram_message['response']['switchuser##'.$chatbot_id.'##4'] = 'Add new user';
+
+            $multiuser_count = $dash->getAttribute($main_response_id, 'multiuser_count');
+            if ($multiuser_count ?? false) {
+                for ($ijk=2; $ijk <= (int) $multiuser_count; $ijk++) { 
+                    $telegram_message['response']['switchuser##'.$chatbot_id.'##'.$ijk] = 'User No. '.$ijk;
+                }
+            }
+            $telegram_message['response']['switchuser##'.$chatbot_id.'##new'] = 'Add new user';
+            $telegram_message['response']['id##'.$chatbot_id] = '🏠';
+            return $telegram_message;
+        }
+
+        else if ($chain_of_ids[0] == 'switchuser') {
+            $telegram_message['message'] = 'User switched successfully.';
             $telegram_message['response']['id##'.$chatbot_id] = '🏠';
             return $telegram_message;
         }
