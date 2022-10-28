@@ -81,7 +81,7 @@ foreach ($form_map_keys as $index => $key) {
  * Responses
  */
 if (isset($_GET['export'])) {
-    if (!isset($_GET['limit'])) {
+    if (!isset($_GET['limit']) || $_GET['limit'] === 'all') {
         $query_limit = '';
     }
     else {
@@ -347,6 +347,7 @@ require_once THEME_PATH . '/pages/_header.php';
                     <option value="1000">1,000 Rows</option>
                     <option value="10000">10,000 Rows</option>
                     <option value="50000">50,000 Rows</option>
+                    <option value="all">All</option>
                 </select>
                 <button id="export-table" class="btn btn-primary-custom flex-shrink-0 rounded-0 rounded-end">
                     <i class="far fa-file-export"></i> Export
