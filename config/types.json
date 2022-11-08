@@ -299,7 +299,7 @@
             {
                 "input_slug": "chapter_ids",
                 "input_type": "text",
-                "input_placeholder": "Chapter IDs (comma separated)",
+                "input_placeholder": "Chapter IDs (comma separated or rephrased)",
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true
