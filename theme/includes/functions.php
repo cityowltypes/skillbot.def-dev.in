@@ -385,17 +385,17 @@ class Functions {
             else {
 
                 $chapter_and_form_ids = $this->derephrase($obj['chapter_ids'], 1);
-                $assessment_form_id_for_this_chapter = $chapter_and_form_ids[$obj['id']];
+                $assessment_form_id_for_this_level = $chapter_and_form_ids[$obj['id']];
 
                 $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[$lang_id], $api_token);
 
-                $number_of_questions_in_assessment_form_id_for_this_chapter = count(json_decode($dash->getAttribute($assessment_form_id_for_this_chapter, 'questions'), 1));
+                $number_of_questions_in_assessment_form_id_for_this_level = count(json_decode($dash->getAttribute($assessment_form_id_for_this_level, 'questions'), 1));
 
                 //if last question in assessment form is not answered
-                if ($assessment_form_id_for_this_chapter && !$response['id__'.$assessment_form_id_for_this_chapter.'__'.$number_of_questions_in_assessment_form_id_for_this_chapter]) {
+                if ($assessment_form_id_for_this_level && !$response['id__'.$assessment_form_id_for_this_level.'__'.$number_of_questions_in_assessment_form_id_for_this_level]) {
 
-                    if ($title = trim($dash->getAttribute($assessment_form_id_for_this_chapter, 'title'))) {
-                        $telegram_message['response']['id##'.$assessment_form_id_for_this_chapter] = ($this->derephrase($chatbot['post_assessment_word'])[$lang_id] ?? 'Post-assessment');
+                    if ($title = trim($dash->getAttribute($assessment_form_id_for_this_level, 'title'))) {
+                        $telegram_message['response']['id##'.$assessment_form_id_for_this_level] = ($this->derephrase($chatbot['post_assessment_word'])[$lang_id] ?? 'Post-assessment');
                     }
                 }
 
@@ -417,7 +417,11 @@ class Functions {
                 }
                 
                 $telegram_message['response']['id##'.$chatbot_id] = '🏠';
-                $dash->pushAttribute($response_id, 'last_chapter_id', $obj['id']);
+                $dash->pushAttribute($response_id, 'last_level_id', $obj['id']);
+
+                if ($assessment_form_id_for_this_level)
+                    $dash->pushAttribute($response_id, 'last_assessment_id', $assessment_form_id_for_this_level);
+
                 return $telegram_message;
             }
         }
@@ -444,14 +448,23 @@ class Functions {
             if (trim($telegram_message['message']))
                 $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
             else {
-                $items = array_map('trim', explode(',', $dash->getAttribute($last_level_id, 'chapter_ids')));
-                $k = array_search($obj['id'], $items);
-                $k = $k + 1;
+                $chapter_ids = $dash->getAttribute($last_level_id, 'chapter_ids');
+                if (strstr($chapter_ids, ',')) {
+                    $items = array_map('trim', explode(',', $chapter_ids));
+                    $k = array_search($obj['id'], $items);
+                    $k = $k + 1;
+                    $next_chapter_or_form_id = $items[$k];
+                } else {
+                    $items = $this->derephrase($chapter_ids, 1);
+                    $item_keys = array_keys($items);
+                    $k = array_search($obj['id'], $item_keys);
+                    $items = array_values($items);
+                    $next_chapter_or_form_id = $items[$k];
+                }
 
                 if ($title = $dash->getAttribute($items[$k], 'title')) {
-                    $next_chapter_id = $items[$k];
                     $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[$lang_id], $api_token);
-                    $telegram_message['response']['id##'.$next_chapter_id.'##1'] = '👉👉👉';
+                    $telegram_message['response']['id##'.$next_chapter_or_form_id.'##1'] = '👉👉👉';
                 }
                 else if ($title = $dash->getAttribute($last_assessment_id, 'title')) {
                     $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($title)[$lang_id], $api_token);
