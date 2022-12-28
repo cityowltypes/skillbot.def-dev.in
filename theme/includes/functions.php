@@ -577,7 +577,7 @@ class Functions {
                     if ($obj['id'] == $last_post_assessment_form_id)
                         $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
 
-                    $telegram_message['message']=$this->send_multi_message_return_last_one(array('Score: '.$response['id__'.$obj['id'].'__score'].' / '.count($obj['questions']), '👉🏠'), $api_token);
+                    $telegram_message['message']=$this->send_multi_message_return_last_one(array('Score: '.$response['id__'.$obj['id'].'__score'].' / '.count($obj['questions']), $this->derephrase($obj['end_message'])[$lang_id], '👉🏠'), $api_token);
                 }
                 else {
                     $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['end_message'])[$lang_id].' 👉🏠', $api_token);
