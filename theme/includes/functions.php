@@ -547,8 +547,15 @@ class Functions {
                     }
                     else if ($j>1) {
                         //district or village
-                        if ($j == 2)
-                            $arr = array_combine(array_column($this->csv_to_array($arr_url), 'district'), array_column($this->csv_to_array($arr_url), 'state'));
+                        if ($j == 2) {
+                            $states = array_column($this->csv_to_array($arr_url), 'state');
+                            $districts = array_column($this->csv_to_array($arr_url), 'district');
+                            if ($districts ?? false)
+                                $arr = array_combine($districts, $states);
+                            else {
+                                $arr = array_combine(array_column($this->csv_to_array($arr_url), 'location'), array_column($this->csv_to_array($arr_url), 'state'));
+                            }
+                        }
                         else if ($j == 3)
                             $arr = array_combine(array_column($this->csv_to_array($arr_url), 'village'), array_column($this->csv_to_array($arr_url), 'district'));
 
