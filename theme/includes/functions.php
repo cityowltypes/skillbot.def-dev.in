@@ -187,7 +187,7 @@ class Functions {
             if ($is_link && ($ytid = $this->get_youtube_id($bot->custom_msg['message']))) {
                 $message = 'https://youtu.be/'.$ytid;
             }
-            else if ($is_link) {
+            else if ($is_link && exif_imagetype($is_link)) {
                 $attachment = new Image($bot->custom_msg['message']);
                 
             // Build message object
