@@ -38,8 +38,16 @@ $form_map = $functions->get_form_map($bot);
 $registration_form = $functions->get_registration_form($bot);
 $registration_form_id = $registration_form['id'];
 
-$state_list = $functions->derephrase($registration_form['questions'][$form_map['state'] - 1])[0][1] ?? null;
-$category_list = $functions->derephrase($registration_form['questions'][$form_map['category'] - 1])[0] ?? null;
+$state_list = null;
+if (is_numeric($form_map['state'])) {
+    $state_list = $functions->derephrase($registration_form['questions'][$form_map['state'] - 1])[0][1];
+}
+
+$category_list = null;
+if (is_numeric($form_map['category'])) {
+    $category_list = $functions->derephrase($registration_form['questions'][$form_map['category'] - 1])[0];
+}
+
 
 $date_range = '';
 if (isset($_GET['start_date'], $_GET['end_date'])) {
@@ -54,23 +62,31 @@ if ($category_list) {
     $category_list = strtolower(implode("','", $category_list));
 }
 
-$csv_handle = fopen($state_list, 'r');
-$state_list = [];
+if ($state_list) {
+    $csv_handle = fopen($state_list, 'r');
+    $state_list = [];
 
-while ($temp = fgetcsv($csv_handle, 0, ',')) {
-    $state_list[$temp[0]][$temp[1]][] = $temp[2];
+    while ($temp = fgetcsv($csv_handle, 0, ',')) {
+        $state_list[$temp[0]][$temp[1]][] = $temp[2];
+    }
+    unset($temp, $state_list['state']);
+    $state_list = strtolower(json_encode($state_list));
+    $state_list = json_decode($state_list, 1);
 }
-unset($temp, $state_list['state']);
-$state_list = strtolower(json_encode($state_list));
-$state_list = json_decode($state_list, 1);
 
-$district = urldecode($_GET['district']);
-$district = trim($district ?? '') ?: null;
+$district = null;
+if (isset($_GET['district'])) {
+    $district = trim(urldecode($_GET['district']));
+}
 
 $map_states = $dash->get_ids(['type' => 'map', 'chatbot_id' => $_GET['id']], '=', 'AND');
 $map_states = $dash->getObjects($map_states);
 $map_states = array_pop($map_states);
-$state = strtolower($map_states[$_GET['state']]) ?? null;
+
+$state = null;
+if (isset($_GET['state']) && $map_states[$_GET['state']]) {
+    $state = strtolower($map_states[$_GET['state']]);
+}
 $data['state'] = $state;
 
 if ($state) {
