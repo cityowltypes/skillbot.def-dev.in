@@ -6,6 +6,12 @@
 use Symfony\Component\VarDumper\VarDumper;
 use \Wildfire\Core\{Console as cc, Dash, MySQL};
 
+if ($_SESSION['role'] !== 'admin') {
+    echo "Not authorized";
+    header("Location: /admin");
+    die();
+}
+
 include_once THEME_PATH . '/pages/_header.php';
 
 $role_slug = $_SESSION['role_slug'] ?? null;
@@ -81,13 +87,26 @@ foreach ($file_data as $key => $value) {
     $queries[] = "UPDATE data SET content = JSON_SET(content, $json_set_values) where id = {$value['id']}";
 }
 
+// $query_groups = array_chunk($queries, 50);
+
+// foreach ($query_groups as $key => $group) {
+//     $_queries = implode(";", $group);
+
+//     $import_status = null;
+//     $import_status = mysqli_multi_query($sql->databaseLink, $_queries) ? 'ok' : 'error';
+//     unset($_queries);
+
+//     // to debug errors
+//     if ($import_status === 'error') {
+//         cc::debug($group);
+//         cc::debug(mysqli_error($sql->databaseLink), 1);
+//     }
+// }
+
 $queries = implode(";", $queries);
 
 // had to use this to run multiple queries on a single connection
 $import_status = mysqli_multi_query($sql->databaseLink, $queries) ? 'ok' : 'error';
-
-// to debug errors
-cc::debug(mysqli_error($sql->databaseLink));
 
 unset($queries);
 ?>
