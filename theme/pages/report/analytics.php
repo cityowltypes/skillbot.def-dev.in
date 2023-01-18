@@ -340,15 +340,16 @@ else {
     ");
 }
 
-if (!($data['users_per_category']['male'] && $data['users_per_category']['female'])) {
+if (!($data['users_per_category']['male'] || $data['users_per_category']['female'])) {
     unset($data['users_per_category']);
 }
 
 if (isset($data['users_per_category'])) {
     $data['users_per_category']['labels'] = array_merge(
-        array_column($data['users_per_category']['female'], 'category'),
-        array_column($data['users_per_category']['male'], 'category')
+        array_column($data['users_per_category']['female'], 'category') ?? [],
+        array_column($data['users_per_category']['male'], 'category') ?? []
     );
+
     $data['users_per_category']['labels'] = array_unique($data['users_per_category']['labels']);
     ksort($data['users_per_category']['labels']);
     $data['users_per_category']['labels'] = array_filter($data['users_per_category']['labels']);
