@@ -405,7 +405,13 @@ class Functions {
                     foreach ($items as $chapter_id=>$assessment_form_id) {
                         if ($chapter_id) {
                             if ($title = trim($dash->getAttribute($chapter_id, 'title'))) {
-                                $telegram_message['response']['id##'.$chapter_id] = $this->derephrase($title)[$lang_id];
+
+                                if ($response['completed__'.$assessment_form_id] == '1')
+                                    $chapter_title_prefix = '✅ ';
+                                else
+                                    $chapter_title_prefix = '';
+
+                                $telegram_message['response']['id##'.$chapter_id] = $chapter_title_prefix.$this->derephrase($title)[$lang_id];
                             }
                         }
                         else if ($assessment_form_id) {
@@ -583,6 +589,17 @@ class Functions {
                     $last_post_assessment_form_id = end(array_values($this->derephrase($dash->getAttribute($response['last_module_id'], 'level_and_form_ids'), 1)));
                     if ($obj['id'] == $last_post_assessment_form_id)
                         $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
+
+                    //if it's the LAST chapter post assessment form in the module
+                    $chapter_ids = $dash->getAttribute($response['last_level_id'], 'chapter_ids');
+                    
+                    if (!strstr($chapter_ids, ',')) {
+                        $chapter_post_assessment_form_ids = array_values($this->derephrase($chapter_ids, 1));    
+                        if (in_array($obj['id'], $chapter_post_assessment_form_ids)) {
+                            $chapter_post_assessment_form_id = $obj['id'];
+                            $dash->pushAttribute($response_id, 'completed__'.$chapter_post_assessment_form_id, '1');
+                        }
+                    }
 
                     $telegram_message['message']=$this->send_multi_message_return_last_one(array('Score: '.$response['id__'.$obj['id'].'__score'].' / '.count($obj['questions']), $this->derephrase($obj['end_message'])[$lang_id], '👉🏠'), $api_token);
                 }

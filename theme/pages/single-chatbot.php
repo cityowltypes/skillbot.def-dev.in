@@ -33,7 +33,7 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 
 	//GET MY CHATBOT ID
 	else if ($response_id && strtolower(trim($telegram_response['text']))=='chatbot_uid') {
-		$telegram_message['message'] = $telegram_user_id;
+		$telegram_message['message'] = $telegram_user_id.' ~ '.$response_id;
 		$telegram_message['response']['id##'.$chatbot_id] = '🏠';
 		$next_message_identifier = 'chatbot##uid';
 	}
