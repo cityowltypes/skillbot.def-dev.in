@@ -56,7 +56,7 @@ if (isset($_GET['start_date'], $_GET['end_date'])) {
     $date_range = "AND created_on BETWEEN {$start_date} AND {$end_date}";
 }
 
-if ($category_list) {
+if ($category_list && is_array($category_list)) {
     unset($category_list[0]);
     $category_list = array_values($category_list);
     $category_list = strtolower(implode("','", $category_list));

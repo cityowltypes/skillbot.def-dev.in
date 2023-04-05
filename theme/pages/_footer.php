@@ -18,7 +18,7 @@
 
 <?php
 if ($type === 'report') {
-    echo "<script src='/theme/assets/js/analytics.js'></script>";
+    echo "<script src='/theme/assets/js/data-report.js'></script>";
 }
 ?>
 

@@ -45,7 +45,7 @@ if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && !$incomplete) 
 
     $pdf_form
       ->flatten()
-      ->save("/tmp/${output_file}")
+      ->save("/tmp/$output_file")
       ->download();
 
     die();
