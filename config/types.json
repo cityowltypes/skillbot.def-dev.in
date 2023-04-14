@@ -194,6 +194,11 @@
                 "input_placeholder" : "Question number of NAME field in user registration form (for certificate)"
             },
             {
+                "input_slug": "allow_incomplete_certificate_download",
+                "input_type" : "checkbox",
+                "input_placeholder" : "Allow certificate downloads in incomplete user engagements"
+            },
+            {
                 "input_slug": "allow_multiuser",
                 "input_type" : "checkbox",
                 "input_placeholder" : "Allow multiple users with same mobile number"

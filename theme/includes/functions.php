@@ -530,6 +530,11 @@ class Functions {
             else if ($obj['questions'][$j]) {
                 //$question['fav'][0];
 
+                if (!$j) {
+                    $form_score_name = 'id__'.$obj['id'].'__score';
+                    $dash->pushAttribute($response_id, $form_score_name, '0');
+                }
+
                 $arr = $this->derephrase($obj['questions'][$j], 1, [], 1);
                 if (is_numeric(array_keys($arr['arr'])[$lang_id])) {
                     $question = array_values($arr['arr'])[$lang_id];
