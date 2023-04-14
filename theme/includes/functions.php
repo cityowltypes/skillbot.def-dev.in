@@ -385,8 +385,8 @@ class Functions {
                     $dash->pushAttribute($response_id, 'completed__'.$obj['id'], '1');
 
                     //if it's the LAST level in the module AND assessment_form_id_for_this_level is 0, mark MODULE complete
-                    $last_level_form_id = end(array_keys($this->derephrase($dash->getAttribute($response['last_module_id'], 'level_and_form_ids'), 1)));
-                    if ($obj['id'] == $last_level_form_id && (!$assessment_form_id_for_this_level || $assessment_form_id_for_this_level == '0'))
+                    $last_level_id = end(array_keys($this->derephrase($dash->getAttribute($response['last_module_id'], 'level_and_form_ids'), 1)));
+                    if ($obj['id'] == $last_level_id && (!$assessment_form_id_for_this_level || $assessment_form_id_for_this_level == '0'))
                         $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
                 }
                 
@@ -604,8 +604,10 @@ class Functions {
                     
                     //if it's the LAST level post assessment form in the module
                     $last_post_assessment_form_id = end(array_values($this->derephrase($dash->getAttribute($response['last_module_id'], 'level_and_form_ids'), 1)));
-                    if ($obj['id'] == $last_post_assessment_form_id)
+                    if ($obj['id'] == $last_post_assessment_form_id) {
                         $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
+                        $dash->pushAttribute($response_id, 'completed__'.$response['last_level_id'], '1');
+                    }
 
                     //if it's the LAST chapter post assessment form in the module
                     $chapter_ids = $dash->getAttribute($response['last_level_id'], 'chapter_ids');
@@ -615,6 +617,12 @@ class Functions {
                         if (in_array($obj['id'], $chapter_post_assessment_form_ids)) {
                             $chapter_post_assessment_form_id = $obj['id'];
                             $dash->pushAttribute($response_id, 'completed__'.$chapter_post_assessment_form_id, '1');
+
+                            //if it's the LAST chapter assessment form in level
+                            $last_chapter_assessment_form_id = end($chapter_post_assessment_form_ids);
+                            if ($obj['id'] == $last_chapter_assessment_form_id)
+                                $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
+                                $dash->pushAttribute($response_id, 'completed__'.$response['last_level_id'], '1');
                         }
                     }
 
