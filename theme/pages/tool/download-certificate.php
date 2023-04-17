@@ -24,7 +24,7 @@ foreach ($items as $module_id=>$assessment_form_id) {
     $i++;
 }
 
-if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && (!$incomplete || (($chatbot['allow_incomplete_certificate_download'] ?? false) == '1')) {
+if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && (!$incomplete || ($chatbot['allow_incomplete_certificate_download'] ?? false))) {
     $form_data = [
         'name' => $response["id__{$registration_form_id}__{$name_ques_id}"]
     ];
