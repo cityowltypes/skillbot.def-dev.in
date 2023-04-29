@@ -10,6 +10,11 @@ use \Wildfire\Core\Console as cc;
 
 include_once TRIBE_ROOT . '/theme/_init.php';
 
+$dev = false;
+if ($_GET['download'] ?? null === 'false') {
+    $dev = true;
+}
+
 $filename="{$slug}-" . time();
 $export = array();
 
@@ -27,38 +32,52 @@ if (trim($chatbot['min_age'] ?? '') && trim($chatbot['max_age'] ?? '')) {
 }
 
 if ($_GET['target'] === 'unfiltered') {
-    $query = "SELECT * 
-    FROM `data` 
-    WHERE 
-          `type` = 'response' AND 
+    $query = "SELECT *
+    FROM `data`
+    WHERE
+          `type` = 'response' AND
           `content`->'$.chatbot' = '{$chatbot['slug']}'
     ORDER BY `id` DESC";
 }
 else {
-    $query = "SELECT * 
-    FROM `data` 
-    WHERE 
-          `type` = 'response' AND 
+    $query = "SELECT *
+    FROM `data`
+    WHERE
+          `type` = 'response' AND
           `content`->'$.chatbot' = '{$chatbot['slug']}' AND
           {$age_group}
     ORDER BY `id` DESC";
 }
 
-$data = $sql->executeSQL($query);
+$responses = $sql->executeSQL($query);
 
-foreach ($data as $key => $value) {
-    $data[$key] = json_decode($value['content'], 1);
-    $data[$key]['created_on'] = $value['created_on'];
+foreach ($responses as $key => $value) {
+    $responses[$key] = json_decode($value['content'], 1);
+    $responses[$key]['created_on'] = $value['created_on'];
 }
 
 $i = 0;
-foreach ($data as $row) {
-	$export[$i]['response_id'] = $row['id'];
-	$export[$i]['created_on'] = date('d, M Y H:i', $row['created_on']);
+foreach ($responses as $response) {
+	$export[$i]['response_id'] = $response['id'] ?? '';
+	$export[$i]['created_on'] = date('d, M Y H:i', $response['created_on']);
 
 	for ($j=1; $j < 10 ; $j++) {
-        $export[$i]["id__{$user_form_id}__{$j}"] = $row["id__{$user_form_id}__{$j}"];
+        $export[$i]["id__{$user_form_id}__{$j}"] = $response["id__{$user_form_id}__{$j}"] ?? "";
 	}
+
+    $items = $functions->derephrase($chatbot['module_and_form_ids'], 1);
+
+    $k = 0;
+    $incomplete = false;
+    foreach ($items as $module_id => $assessment_form_id) {
+        if ($k && $module_id && !isset($response["completed__$module_id"])) {
+            $incomplete = true;
+            break;
+        }
+        $k++;
+    }
+
+    $export[$i]['certificate'] = $incomplete ? '❌' : '✅';
 
 	$i++;
 }
