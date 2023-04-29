@@ -46,12 +46,12 @@ class Functions {
         header('Content-Disposition: attachment;filename='.$filename.'.csv');
 
         $fp = fopen('php://output', 'w');
-          
+
         // Loop through file pointer and a line
         foreach ($data as $fields) {
             fputcsv($fp, $fields);
         }
-          
+
         fclose($fp);
     }
 
@@ -97,8 +97,8 @@ class Functions {
 
         if (strstr($rephrase_string, '##')) {
             $reph_array = array_values(
-                                array_filter ( 
-                                    array_map( 'trim', 
+                                array_filter (
+                                    array_map( 'trim',
                                         explode('##', $rephrase_string))
                                 )
                             );
@@ -107,12 +107,12 @@ class Functions {
             foreach ($reph_array as $reph) {
                 if (strstr($reph, '::')) {
                     $reph_temp = array_values(
-                            array_filter ( 
-                                array_map( 'trim', 
+                            array_filter (
+                                array_map( 'trim',
                                     explode('::', $reph))
                             )
                         );
-                    
+
                     if ($use_handle_slug) {
                         if ($handle_slug_preset_array)
                             $handle = $handle_slug_preset_array[$i];
@@ -153,7 +153,7 @@ class Functions {
             else
                 return $reph_available;
         }
-        else 
+        else
             return array($rephrase_string);
 
     }
@@ -178,10 +178,10 @@ class Functions {
                     ->type(Keyboard::TYPE_KEYBOARD)
                     ->oneTimeKeyboard()
                     ->resizeKeyboard();
-            foreach ($bot->custom_msg['response'] as $response){
+            foreach ($bot->custom_msg['response'] ?? [] as $response){
                 $kb = $kb->addRow(KeyboardButton::create($response));
             }
-            
+
             $kb = $kb->toArray();
             $is_link = filter_var($bot->custom_msg['message'], FILTER_VALIDATE_URL);
             if ($is_link && ($ytid = $this->get_youtube_id($bot->custom_msg['message']))) {
@@ -189,7 +189,7 @@ class Functions {
             }
             else if ($is_link && exif_imagetype($is_link)) {
                 $attachment = new Image($bot->custom_msg['message']);
-                
+
             // Build message object
                 $message = OutgoingMessage::create('')
                     ->withAttachment($attachment);
@@ -213,7 +213,7 @@ class Functions {
         $obj = $dash->getObject($chain_of_ids[1]);
         $chatbot = $dash->getObject($chatbot_id);
         $response = $dash->getObject($response_id);
-        
+
         $languages = $this->derephrase($chatbot['languages'], 1);
         $lang_id = array_search(strtolower($language), array_map('strtolower', array_values($languages)));
         if (!$lang_id)
@@ -237,7 +237,7 @@ class Functions {
 
             $multiuser_count = $dash->getAttribute($main_response_id, 'multiuser_count');
             if ($multiuser_count ?? false) {
-                for ($ijk=2; $ijk <= (int) $multiuser_count; $ijk++) { 
+                for ($ijk=2; $ijk <= (int) $multiuser_count; $ijk++) {
                     $telegram_message['response']['switchuser##'.$chatbot_id.'##'.$ijk] = 'User No. '.$ijk;
                 }
             }
@@ -258,13 +258,13 @@ class Functions {
             } else {
                 $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['title'])[$lang_id], $api_token);
             }
-            
+
             $items = $this->derephrase($obj['module_and_form_ids'], 1);
 
             $i = 0;
             foreach ($items as $module_id=>$assessment_form_id) {
                 if ($module_id) {
-                    
+
                     //it's the user registration form
                     if (!$i) {
                         $number_of_questions_in_user_registration = count(json_decode($dash->getAttribute($module_id, 'questions'), 1));
@@ -342,7 +342,7 @@ class Functions {
                     }
                 }
             }
-            
+
             $telegram_message['response']['id##'.$chatbot_id] = '🏠';
             $dash->pushAttribute($response_id, 'last_module_id', $obj['id']);
             return $telegram_message;
@@ -350,7 +350,7 @@ class Functions {
 
         else if ($obj['type']=='level') {
             $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[$lang_id], $api_token);
-            
+
             if (strstr($obj['chapter_ids'], ',')) {
                 $items = array_map('trim', explode(',', $obj['chapter_ids']));
 
@@ -389,7 +389,7 @@ class Functions {
                     if ($obj['id'] == $last_level_id && (!$assessment_form_id_for_this_level || $assessment_form_id_for_this_level == '0'))
                         $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
                 }
-                
+
                 $telegram_message['response']['id##'.$chatbot_id] = '🏠';
                 $dash->pushAttribute($response_id, 'last_level_id', $obj['id']);
 
@@ -433,7 +433,7 @@ class Functions {
                         }
                     }
                 }
-                
+
                 $telegram_message['response']['id##'.$chatbot_id] = '🏠';
                 $dash->pushAttribute($response_id, 'last_level_id', $obj['id']);
 
@@ -523,7 +523,7 @@ class Functions {
                 if (trim($telegram_message['message'])) {
                     $telegram_message['response']['id##'.$obj['id'].'##'.($i ?? '1')] = '👉👉👉';
                 }
-                
+
                 $telegram_message['response']['id##'.$chatbot_id] = '🏠';
             }
 
@@ -543,7 +543,7 @@ class Functions {
                 else if (array_keys($arr['arr'])[$lang_id]) {
                     $question = array_keys($arr['arr'])[$lang_id];
                     $response_options = array_values($arr['arr'])[$lang_id];
-                    if (array_values($arr['fav'])[$lang_id]) {
+                    if (array_values($arr['fav'] ?? [])[$lang_id]) {
                         $dash->pushAttribute($response_id, 'last_question_correct_response', array_values($arr['fav'])[$lang_id]);
                     }
                 }
@@ -600,13 +600,13 @@ class Functions {
                     }
                 }
                 else
-                    $telegram_message['response']['id##'.$chatbot_id] = 'Error in Re::phrase 😳';  
+                    $telegram_message['response']['id##'.$chatbot_id] = 'Error in Re::phrase 😳';
             }
 
             else {
                 $arr = $this->derephrase($obj['questions'][0], 1, [], 1);
-                if (array_values($arr['fav'])[$lang_id]) {
-                    
+                if (array_values($arr['fav'] ?? [])[$lang_id]) {
+
                     //if it's the LAST level post assessment form in the module
                     $last_post_assessment_form_id = end(array_values($this->derephrase($dash->getAttribute($response['last_module_id'], 'level_and_form_ids'), 1)));
                     if ($obj['id'] == $last_post_assessment_form_id) {
@@ -616,9 +616,9 @@ class Functions {
 
                     //if it's the LAST chapter post assessment form in the module
                     $chapter_ids = $dash->getAttribute($response['last_level_id'], 'chapter_ids');
-                    
+
                     if (!strstr($chapter_ids, ',')) {
-                        $chapter_post_assessment_form_ids = array_values($this->derephrase($chapter_ids, 1));    
+                        $chapter_post_assessment_form_ids = array_values($this->derephrase($chapter_ids, 1));
                         if (in_array($obj['id'], $chapter_post_assessment_form_ids)) {
                             $chapter_post_assessment_form_id = $obj['id'];
                             $dash->pushAttribute($response_id, 'completed__'.$chapter_post_assessment_form_id, '1');
