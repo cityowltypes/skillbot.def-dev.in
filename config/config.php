@@ -8,6 +8,7 @@
  */
 
 date_default_timezone_set($_ENV['DEFAULT_TIMEZONE']);
+error_reporting(E_ALL & ~E_NOTICE);
 
 if (file_exists(__DIR__ . '/vars.php')) {
 	include_once __DIR__ . '/vars.php';
