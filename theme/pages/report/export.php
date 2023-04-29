@@ -19,7 +19,7 @@ $filename="{$slug}-" . time();
 $export = array();
 
 $chatbot = $dash->getObject($_GET['id']);
-$items = $functions->derephrase($chatbot['module_and_form_ids'], 1);
+$modules_and_forms_ids = $functions->derephrase($chatbot['module_and_form_ids'], 1);
 
 $form_map = $functions->get_form_map($chatbot);
 $user_form_id = $functions->get_registration_form($chatbot);
@@ -61,15 +61,13 @@ foreach ($responses as $response) {
 	$export[$i]['response_id'] = $response['id'] ?? '';
 	$export[$i]['created_on'] = date('d, M Y H:i', $response['created_on']);
 
-	for ($j=1; $j < 10 ; $j++) {
+	for ($j=1; $j <= sizeof($modules_and_forms_ids) ; $j++) {
         $export[$i]["id__{$user_form_id}__{$j}"] = $response["id__{$user_form_id}__{$j}"] ?? "";
 	}
 
-    $items = $functions->derephrase($chatbot['module_and_form_ids'], 1);
-
     $k = 0;
     $incomplete = false;
-    foreach ($items as $module_id => $assessment_form_id) {
+    foreach ($modules_and_forms_ids as $module_id => $assessment_form_id) {
         if ($k && $module_id && !isset($response["completed__$module_id"])) {
             $incomplete = true;
             break;
