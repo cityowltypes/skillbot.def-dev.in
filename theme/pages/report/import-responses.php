@@ -77,8 +77,9 @@ foreach ($file_data as $key => $value) {
 
     foreach ($value as $k => $v) {
         $v = trim($v);
+        $k = trim($k);
 
-        if (!$k && $v) {
+        if (!$k) {
             continue;
         }
 
