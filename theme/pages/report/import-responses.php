@@ -78,6 +78,10 @@ foreach ($file_data as $key => $value) {
     foreach ($value as $k => $v) {
         $v = trim($v);
 
+        if (!$k && $v) {
+            continue;
+        }
+
         $v = mysqli_real_escape_string($sql->databaseLink, $v);
         $json_set_values[] = "'$.$k', '$v'";
     }
