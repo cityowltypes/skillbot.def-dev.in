@@ -56,12 +56,14 @@ foreach ($responses as $key => $value) {
     $responses[$key]['created_on'] = $value['created_on'];
 }
 
+$user_form = $dash->getObject($user_form_id);
+
 $i = 0;
 foreach ($responses as $response) {
 	$export[$i]['response_id'] = $response['id'] ?? '';
 	$export[$i]['created_on'] = date('d, M Y H:i', $response['created_on']);
 
-	for ($j=1; $j <= sizeof($modules_and_forms_ids) ; $j++) {
+	for ($j=1; $j <= sizeof($user_form['questions']) ; $j++) {
         $export[$i]["id__{$user_form_id}__{$j}"] = $response["id__{$user_form_id}__{$j}"] ?? "";
 	}
 
