@@ -353,6 +353,7 @@ if (isset($data['users_per_category'])) {
     $data['users_per_category']['labels'] = array_unique($data['users_per_category']['labels']);
     ksort($data['users_per_category']['labels']);
     $data['users_per_category']['labels'] = array_filter($data['users_per_category']['labels']);
+    $data['users_per_category']['labels'] = array_values($data['users_per_category']['labels']);
 
     $overlay = array_fill(0, count($data['users_per_category']['labels']), NULL);
 
