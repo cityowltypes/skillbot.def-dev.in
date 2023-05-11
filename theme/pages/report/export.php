@@ -19,6 +19,8 @@ $filename="{$slug}-" . time();
 $export = array();
 
 $chatbot = $dash->getObject($_GET['id']);
+$modules_and_forms_ids = $functions->derephrase($chatbot['module_and_form_ids']);
+$modules = array_column($modules_and_forms_ids, 0);
 $modules_and_forms_ids = $functions->derephrase($chatbot['module_and_form_ids'], 1);
 
 $form_map = $functions->get_form_map($chatbot);
@@ -69,6 +71,18 @@ foreach ($responses as $response) {
 
     $k = 0;
     $incomplete = false;
+    foreach ($modules as $_module_id) {
+        if (
+            isset($response["completed__$_module_id"]) &&
+            $response["completed__$_module_id"] !== false
+        ) {
+            continue;
+        }
+        else {
+            $incomplete = true;
+        }
+    }
+
     foreach ($modules_and_forms_ids as $module_id => $assessment_form_id) {
         if ($k && $module_id && !isset($response["completed__$module_id"])) {
             $incomplete = true;
