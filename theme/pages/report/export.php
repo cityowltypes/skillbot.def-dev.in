@@ -69,7 +69,6 @@ foreach ($responses as $response) {
         $export[$i]["id__{$user_form_id}__{$j}"] = $response["id__{$user_form_id}__{$j}"] ?? "";
 	}
 
-    $k = 0;
     $incomplete = false;
     foreach ($modules as $_module_id) {
         if (
@@ -81,14 +80,6 @@ foreach ($responses as $response) {
         else {
             $incomplete = true;
         }
-    }
-
-    foreach ($modules_and_forms_ids as $module_id => $assessment_form_id) {
-        if ($k && $module_id && !isset($response["completed__$module_id"])) {
-            $incomplete = true;
-            break;
-        }
-        $k++;
     }
 
     $export[$i]['certificate'] = $incomplete ? '❌' : '✅';
