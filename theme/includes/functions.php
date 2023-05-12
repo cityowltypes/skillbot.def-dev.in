@@ -231,6 +231,13 @@ class Functions {
             return $telegram_message;
         }
 
+        else if ($chain_of_ids[0] == 'reset') {
+            $telegram_message['message'] = 'ARE YOU SURE?? All you data will be deleted and you will have to restart.';
+            $telegram_message['response']['confirmReset##'.$chatbot_id] = 'YES, RESET NOW';
+            $telegram_message['response']['id##'.$chatbot_id] = '🏠 No, do not reset';
+            return $telegram_message;
+        }
+
         else if ($chain_of_ids[0] == 'multiuser') {
             $telegram_message['message'] = 'Switch user';
             $telegram_message['response']['switchuser##'.$chatbot_id.'##1'] = 'Main user';
@@ -305,6 +312,8 @@ class Functions {
             }
 
             $telegram_message['response']['cert##'.$obj['id']] = '<download certificate>';
+
+            $telegram_message['response']['reset##'.$obj['id']] = '<reset chatbot>';
 
             $telegram_message['response']['lang##'.$obj['id']] = '<change language>';
 

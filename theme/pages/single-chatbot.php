@@ -53,6 +53,11 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 			$dash->pushAttribute($response_id, 'cert', $telegram_response['text']);
 			$next_message_identifier = 'id##'.$chatbot_id;
 		}
+		else if ($last_message_identifier == 'confirmReset##'.$chatbot_id) {
+			$dash->doDeleteObject($response_id);
+			$response_id = false;
+			$next_message_identifier = 'id##'.$chatbot_id;
+		}
 		else {
 			//GET USER LANGUAGE
 			$telegram_user_lang = $dash->getAttribute($response_id , 'lang');
@@ -112,7 +117,8 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 		}
 
 	}
-	else  {
+	
+	if (!$response_id)  {
 		$next_message_identifier = 'lang##'.$chatbot_id;
 		$telegram_user_lang = '';
 		
