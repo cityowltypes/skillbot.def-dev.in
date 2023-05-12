@@ -199,6 +199,11 @@
                 "input_placeholder" : "Allow certificate downloads in incomplete user engagements"
             },
             {
+                "input_slug": "pass_percentage",
+                "input_type" : "number",
+                "input_placeholder" : "Pass percentage eg. 33 (do not put % sign)"
+            },
+            {
                 "input_slug": "emoji_home",
                 "input_type" : "text",
                 "input_placeholder" : "Emoji for home 🏠"
