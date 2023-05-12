@@ -199,6 +199,26 @@
                 "input_placeholder" : "Allow certificate downloads in incomplete user engagements"
             },
             {
+                "input_slug": "emoji_home",
+                "input_type" : "text",
+                "input_placeholder" : "Emoji for home 🏠"
+            },
+            {
+                "input_slug": "emoji_done",
+                "input_type" : "text",
+                "input_placeholder" : "Emoji for done ✅"
+            },
+            {
+                "input_slug": "emoji_next",
+                "input_type" : "text",
+                "input_placeholder" : "Emoji for next 👉"
+            },
+            {
+                "input_slug": "emoji_youwerehere",
+                "input_type" : "text",
+                "input_placeholder" : "Emoji for 'you were here' ➡️"
+            },
+            {
                 "input_slug": "allow_multiuser",
                 "input_type" : "checkbox",
                 "input_placeholder" : "Allow multiple users with same mobile number"

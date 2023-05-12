@@ -9,6 +9,12 @@ include_once __DIR__ . '/../_init.php';
 $chatbot_slug = $postdata['slug'];
 $chatbot_id = $postdata['id'];
 
+$emojis = array();
+$emojis['done'] = $postdata['emoji_done'] ?? '✅';
+$emojis['next'] = $postdata['emoji_next'] ?? '👉';
+$emojis['home'] = $postdata['emoji_home'] ?? '🏠';
+$emojis['youwerehere'] = $postdata['emoji_youwerehere'] ?? '➡️';
+
 //CHECK IF ANY RESPONSE HAS BEEN RECEIVED FROM TELEGRAM
 $telegram_response = (array) $api->body()['message'];
 
@@ -34,7 +40,7 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 	//GET MY CHATBOT ID
 	else if ($response_id && strtolower(trim($telegram_response['text']))=='chatbot_uid') {
 		$telegram_message['message'] = $telegram_user_id.' ~ '.$response_id;
-		$telegram_message['response']['id##'.$chatbot_id] = '🏠';
+		$telegram_message['response']['id##'.$chatbot_id] = $emojis['home'];
 		$next_message_identifier = 'chatbot##uid';
 	}
 
@@ -103,13 +109,13 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
         		if ($last_message_identifier_response_type == 'mobile' && strlen($telegram_response['text'])!=10) {
 	        		$next_message_identifier = $last_message_identifier;
 	        	}
-	        	else if ($telegram_response['text'] == '👉👉👉' && $tring[2]) {
+	        	else if ($telegram_response['text'] == ($emojis['next'].$emojis['next'].$emojis['next']) && $tring[2]) {
 	        		$next_message_identifier = $last_message_identifier;
 	        	}
-	        	else if (array_values($last_message_response_options)[0] != '👉👉👉' && !in_array($telegram_response['text'], array_values($last_message_response_options))) {
+	        	else if (array_values($last_message_response_options)[0] != ($emojis['next'].$emojis['next'].$emojis['next']) && !in_array($telegram_response['text'], array_values($last_message_response_options))) {
 					$next_message_identifier = $last_message_identifier;
 	        	}
-	        	else if (trim($telegram_response['text']) && $telegram_response['text']!='🏠') {
+	        	else if (trim($telegram_response['text']) && $telegram_response['text']!=$emojis['home']) {
 	        		$next_message_identifier = $tring[0].'##'.$tring[1].'##'.((int)$tring[2]+1);
 	        	}
 	        }
