@@ -1,7 +1,19 @@
 <?php
 require __DIR__ . '/_init.php';
+$uploads = new \Tribe\Uploads;
+$api = new \Tribe\API;
 
-if ($_ENV['S3_UPLOADS_BUCKET_CDN_URL'] ?? false) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST')
+	$_POST = $api->requestBody;
+
+/* New code that handles file uploading */
+if (($_FILES ?? false) || ($_POST ?? false)) {
+	header('Content-type: application/json; charset=utf-8');
+	echo json_encode($uploads->handleUpload(($_FILES ?? []), ($_POST ?? []), ($_GET ?? [])));
+}
+
+/* Old code that handles S3 CDN redirection for uploads folder */
+else if ($_ENV['S3_UPLOADS_BUCKET_CDN_URL'] ?? false) {
 	$url = $_ENV['S3_UPLOADS_BUCKET_CDN_URL'].'/'.explode('/uploads/', $_SERVER['REQUEST_URI'])[1];
 	$cnt = file_get_contents($url, false, stream_context_create(array('ssl' => array('verify_peer' => false, 'verify_peer_name' => false))));
 	$mime_type = getMimeType($cnt, 'str');  //get the mime-type of the content in $cnt
@@ -11,19 +23,8 @@ if ($_ENV['S3_UPLOADS_BUCKET_CDN_URL'] ?? false) {
 	echo $cnt;
 	exit;
 }
+
 else 'File not found.';
-
-
-
-//SET PERMISSION PUBLIC
-
-//linux_command('sudo s3cmd setacl s3://' . $_ENV['S3_UPLOADS_BUCKET_NAME'] . ' --acl-public -r --host="' . $_ENV['S3_UPLOADS_HOST_BASE'] . '" --access_key="' . $_ENV['S3_UPLOADS_ACCESS_KEY'] . '" --secret_key="' . $_ENV['S3_UPLOADS_SECRET_KEY'] . '" --host-bucket="' . $_ENV['S3_UPLOADS_HOST_BUCKET'] . '"');
-
-//GET FOLDER BACK FROM S3 TO LOCAL
-
-//linux_command('sudo s3cmd get s3://<s3-folder-path> <local-folder-path> -r --host="s3.wasabisys.com" --access_key="" --secret_key="" --host-bucket="%(bucket)s.s3.wasabisys.com"');
-
-
 
 function linux_command($cmd) {
 	ob_start();

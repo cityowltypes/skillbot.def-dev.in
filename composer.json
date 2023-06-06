@@ -41,7 +41,12 @@
         "landrok/language-detector": "^1.3",
         "ext-json": "*",
         "friendsofphp/php-cs-fixer": "^3.10",
-        "ext-mysqli": "*"
+        "ext-mysqli": "*",
+        "tribe/core": "^4.0",
+        "tribe/auth": "^3.0",
+        "tribe/api": "^1.0",
+        "tribe/uploads": "^1.0",
+        "tribe/backup": "^2.0"
     },
     "autoload": {
         "psr-4": {
