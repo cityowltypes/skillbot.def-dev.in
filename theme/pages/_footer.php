@@ -20,7 +20,13 @@
 if ($type === 'report') {
     echo "<script src='/theme/assets/js/data-report.js'></script>";
 }
+
+$endtime = microtime(true);
+
+$timediff = $endtime - $starttime;
 ?>
+
+<p class="d-none"><?php echo $timediff ?></p>
 
 </body>
 </html>

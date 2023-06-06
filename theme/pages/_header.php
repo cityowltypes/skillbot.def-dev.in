@@ -2,6 +2,7 @@
 <!doctype html>
 <html lang="<?=$types['webapp']['lang'] ?? 'en'?>">
 <head>
+	<?php $starttime = microtime(true); ?>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 

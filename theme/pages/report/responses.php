@@ -294,6 +294,8 @@ require_once THEME_PATH . '/pages/_header.php';
                 echo "<tr><td colspan='100%' class='text-center'>No records to show</td></tr>";
             }
             foreach ($responses as $response) {
+                // echo sizeof($response);
+
                 $td = "<th>{$response['id']}</th>";
 
                 foreach ($form_map_keys as $key) {

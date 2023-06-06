@@ -16,22 +16,15 @@ if (($_SESSION['role_slug'] ?? null) !== 'admin') {
 $sql = new MySQL;
 $fn = new Functions();
 
-$stats = array_merge(
-    $sql->executeSQL("select count(*) as 'response' from data where type = 'response'")[0],
-    $sql->executeSQL("select count(*) as 'form' from data where type = 'form'")[0],
-    $sql->executeSQL("select count(*) as 'module' from data where type = 'module'")[0],
-    $sql->executeSQL("select count(*) as 'chapter' from data where type = 'chapter'")[0],
-    $sql->executeSQL("select count(*) as 'level' from data where type = 'level'")[0],
-    $sql->executeSQL("select count(*) as 'chatbot' from data where type = 'chatbot'")[0]
-);
+$stats = $sql->executeSQL("select count(*) as `count`, `type` from data where type in ('response', 'form', 'module', 'chapter', 'level', 'chatbot') group by type order by count desc");
 
 $traffic_stat = $sql->executeSQL(
     "select
-        date(from_unixtime(created_on)) as creation_date,
-        count(*) as 'count'
-    from data
-    where type = 'response'
-    group by creation_date"
+    date(from_unixtime(created_on)) as creation_date,
+    count(*) as 'count'
+from data
+where type = 'response' and date(from_unixtime(created_on)) >= ( CURDATE() - INTERVAL 14 DAY )
+group by creation_date"
 );
 
 unset($temp);
@@ -78,15 +71,15 @@ const TRAFFIC = {$traffic_stat};
                     <tbody>
                     <?php
                     $i = 0;
-                    foreach ($stats as $key => $value) {
+                    foreach ($stats as $value) {
                         $i++;
-                        $value = $fn->format_to_thousands($value);
-                        $key = ucwords($key);
+                        $value['count'] = $fn->format_to_thousands($value['count']);
+                        $value['type'] = ucwords($value['type']);
 
                         echo "<tr>
                             <th scope='row'>{$i}</th>
-                            <td>{$key}s</td>
-                            <td>{$value}</td>
+                            <td>{$value['type']}s</td>
+                            <td>{$value['count']}</td>
                         </tr>";
                     }
                     ?>
