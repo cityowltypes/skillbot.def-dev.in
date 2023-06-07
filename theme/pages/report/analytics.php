@@ -66,12 +66,14 @@ if ($state_list) {
     $csv_handle = fopen($state_list, 'r');
     $state_list = [];
 
-    while ($temp = fgetcsv($csv_handle, 0, ',')) {
-        $state_list[$temp[0]][$temp[1]][] = $temp[2];
+    if ($csv_handle) {
+        while ($temp = fgetcsv($csv_handle, 0, ',')) {
+            $state_list[$temp[0]][$temp[1]][] = $temp[2];
+        }
+        unset($temp, $state_list['state']);
+        $state_list = strtolower(json_encode($state_list));
+        $state_list = json_decode($state_list, 1);
     }
-    unset($temp, $state_list['state']);
-    $state_list = strtolower(json_encode($state_list));
-    $state_list = json_decode($state_list, 1);
 }
 
 $district = null;
@@ -345,10 +347,19 @@ if (!($data['users_per_category']['male'] || $data['users_per_category']['female
 }
 
 if (isset($data['users_per_category'])) {
-    $data['users_per_category']['labels'] = array_merge(
-        array_column($data['users_per_category']['female'], 'category') ?? [],
-        array_column($data['users_per_category']['male'], 'category') ?? []
-    );
+    try {
+        $array_female = array_column($data['users_per_category']['female'], 'category') ?? [];
+    } catch (Error){
+        $array_female = [];
+    }
+
+    try {
+        $array_male = array_column($data['users_per_category']['male'], 'category') ?? [];
+    } catch (Error) {
+        $array_male = [];
+    }
+
+    $data['users_per_category']['labels'] = array_merge($array_female, $array_male);
 
     $data['users_per_category']['labels'] = array_unique($data['users_per_category']['labels']);
     ksort($data['users_per_category']['labels']);
@@ -358,10 +369,18 @@ if (isset($data['users_per_category'])) {
     $overlay = array_fill(0, count($data['users_per_category']['labels']), NULL);
 
     foreach (['male', 'female'] as $sex) {
-        $data['users_per_category'][$sex] = array_combine(
-            array_column($data['users_per_category'][$sex], 'category'),
-            array_column($data['users_per_category'][$sex], 'count')
-        );
+        try {
+            $array_category = array_column($data['users_per_category'][$sex], 'category');
+        } catch (Error) {
+            $array_category = [];
+        }
+        try {
+            $array_count = array_column($data['users_per_category'][$sex], 'count');
+        } catch (Error) {
+            $array_count = [];
+        }
+
+        $data['users_per_category'][$sex] = array_combine($array_category, $array_count);
         ksort($data['users_per_category'][$sex]);
 
         unset($temp);
