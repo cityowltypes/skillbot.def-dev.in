@@ -142,8 +142,9 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 	if ($next_message_identifier) {
 		
 		//PREPARE TELEGRAM MESSAGE AND RESPONSE OPTIONS
-		if ($next_message_identifier != 'chatbot##uid')
-			$telegram_message = $functions->get_message_array($next_message_identifier, $chatbot_id, $telegram_user_lang, $response_id, $postdata['api_token'], $main_response_id);
+		if ($next_message_identifier != 'chatbot##uid') {
+			$telegram_message = $functions->get_message_array($next_message_identifier, (int) $chatbot_id, $telegram_user_lang, (int) $response_id, $postdata['api_token'], (int) $main_response_id);
+		}
 
 		//SEND THE MESSAGE
 		if ($telegram_message['message'] ?? false) {
