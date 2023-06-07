@@ -3,11 +3,13 @@
  * @var object $dash;
  * @var object $functions;
  */
-include_once THEME_PATH . '/pages/_header.php';
+// include_once THEME_PATH . '/pages/_header.php';
+include_once TRIBE_ROOT . '_init.php';
+include_once __DIR__ . '/includes/functions.php';
 
-use \Theme\PdfForm;
+use mikehaertl\pdftk\Pdf;
 use \Wildfire\Core\Console as cc;
-
+$functions = new \Wildfire\Theme\Functions();
 
 $response = $dash->getObject($_GET['response_id']);
 $chatbot = $dash->getObject($_GET['chatbot_id']);
@@ -26,7 +28,9 @@ foreach ($items as $module_id=>$assessment_form_id) {
 
 if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && (!$incomplete || ($chatbot['allow_incomplete_certificate_download'] ?? false))) {
     $form_data = [
-        'name' => $response["id__{$registration_form_id}__{$name_ques_id}"]
+        'name' => $response["id__{$registration_form_id}__{$name_ques_id}"],
+        'Name' => $response["id__{$registration_form_id}__{$name_ques_id}"],
+        'NAME' => $response["id__{$registration_form_id}__{$name_ques_id}"]
     ];
 
     if (
@@ -39,28 +43,11 @@ if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && (!$incomplete 
       $certificate_template = THEME_PATH . '/docs/certificate.pdf';
     }
 
-    $pdf_form = new PdfForm($certificate_template, $form_data);
+    $certificate_template = urldecode($certificate_template);
+    $certificate_template = str_replace($_ENV['WEB_URL'], TRIBE_ROOT, $certificate_template);
 
-    $output_file = time() . '.pdf';
-
-    $pdf_form
-      ->flatten()
-      ->save("/tmp/$output_file")
-      ->download();
-
-    die();
+    $pdf = new Pdf($certificate_template);
+    $pdf->fillForm($form_data)->needAppearances()->send("certificate.pdf");
 }
-?>
-<div class="card border-danger border-5 rounded-0" style="width: 100vw; height: 100vh;">
-  <div class="d-flex align-content-between flex-wrap justify-content-center card-body text-center">
-    <div class="card-title fw-light small text-muted text-uppercase border-bottom border-muted w-100 pb-3"><i class="fal fa-crosshairs"></i>&nbsp;Capture Screenshot<br>Response ID: <?=$response['id']?></div>
 
-    <div class="pb-5">
-          <h1 class="card-title text-uppercase fw-bold mb-5"><span class="text-danger">Incomplete.</span><br><br>Please complete the course.</h1>
-    </div>
-    <div class="pb-5">
-        <img src="<?=$chatbot['logos_footer']?>" class="img-fluid">
-    </div>
-  </div>
-</div>
-<?php include_once THEME_PATH . '/pages/_footer.php';?>
+die();
