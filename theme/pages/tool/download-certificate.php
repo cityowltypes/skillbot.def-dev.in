@@ -47,7 +47,7 @@ if ($response['id__'.$registration_form_id.'__'.$name_ques_id] && (!$incomplete 
     $certificate_template = str_replace($_ENV['WEB_URL'], TRIBE_ROOT, $certificate_template);
 
     $pdf = new Pdf($certificate_template);
-    $pdf->fillForm($form_data)->needAppearances()->send("certificate.pdf");
+    $pdf->fillForm($form_data)->send("certificate.pdf");
 }
 
 die();
