@@ -67,8 +67,8 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 		else {
 			//GET USER LANGUAGE
 			$telegram_user_lang = $dash->getAttribute($response_id , 'lang');
-			$last_message_response_options = json_decode($dash->getAttribute($response_id, 'last_message_response_options'), true);
-        	$next_message_identifier = array_search($telegram_response['text'], $last_message_response_options);
+			$last_message_response_options = json_decode($dash->getAttribute($response_id, 'last_message_response_options'), true) ?? [];
+			$next_message_identifier = array_search($telegram_response['text'], ($last_message_response_options ?? []));
         	
         	if (substr($next_message_identifier, 0, 12) == 'switchuser##') {
 				$dash->pushAttribute($main_response_id, implode('__', $functions->derephrase($next_message_identifier)), $telegram_response['text']);
@@ -100,7 +100,8 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
     			$dash->pushAttribute($response_id, $form_score_name, $form_score);
     		}
 
-        	$this_id_type = $dash->getAttribute($tring[1], 'type');
+    		if (is_int($tring[1]))
+	        	$this_id_type = $dash->getAttribute($tring[1], 'type');
         	
         	if ($this_id_type == 'form') {
 	        	$last_message_identifier_response_type_array = $functions->derephrase($last_message_identifier);
@@ -150,7 +151,7 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 
 			//SET NEW MESSAGE IDENTIFIER, for 'last_message_identifier'
 			$dash->pushAttribute($response_id, 'last_message_identifier', $next_message_identifier);
-			$dash->pushAttribute($response_id, $next_message_identifier, '##');
+			$dash->pushAttribute($response_id, implode('__', $functions->derephrase($next_message_identifier)), '##');
 			//SAVE LAST MESSAGE RESPONSE OPTIONS
 			$dash->pushAttribute($response_id, 'last_message_response_options', json_encode($telegram_message['response']));
 		}

@@ -206,7 +206,7 @@ class Functions {
         return true;
     }
 
-    public function get_message_array($message_identifier, $chatbot_id, $language='english', $response_id=0, $api_token='', $main_response_id=0) {
+    public function get_message_array($message_identifier='', $chatbot_id=0, $language='english', $response_id=0, $api_token='', $main_response_id=0) {
         $dash = new Dash;
 
         $chain_of_ids = $this->derephrase($message_identifier);
@@ -336,7 +336,7 @@ class Functions {
 
             $telegram_message['message'] = $this->send_multi_message_return_last_one($this->derephrase($obj['intro_message'])[$lang_id], $api_token);
 
-            $number_of_questions_in_assessment_form_id_for_this_module = count(json_decode($dash->getAttribute($assessment_form_id_for_this_module, 'questions'), 1));
+            $number_of_questions_in_assessment_form_id_for_this_module = count(json_decode($dash->getAttribute($assessment_form_id_for_this_module, 'questions'), 1) ?? []);
 
             //if last question in assessment form is not answered
             if ($assessment_form_id_for_this_module && !$response['id__'.$assessment_form_id_for_this_module.'__'.$number_of_questions_in_assessment_form_id_for_this_module]) {
