@@ -48,6 +48,11 @@ if (is_numeric($form_map['category'])) {
     $category_list = $functions->derephrase($registration_form['questions'][$form_map['category'] - 1])[0];
 }
 
+$language_index = 0;
+if (is_numeric($form_map['language_index'])) {
+    $language_index = $form_map['language_index'];
+}
+
 
 $date_range = '';
 if (isset($_GET['start_date'], $_GET['end_date'])) {
@@ -403,7 +408,7 @@ foreach ($bot_module_ids as $key => $_id) {
 
     // get title of module
     $data['per_module_users'][$_id]['module_name'] = $dash->getAttribute($_id, 'title');
-    $data['per_module_users'][$_id]['module_name'] = $functions->derephrase($data['per_module_users'][$_id]['module_name'])[0];
+    $data['per_module_users'][$_id]['module_name'] = $functions->derephrase($data['per_module_users'][$_id]['module_name'])[$language_index];
 
     // get count of users who've completed these modules
     if (!$state) {
@@ -492,6 +497,8 @@ if ($state && !$district) {
         order by district
     ");
 }
+
+$data['language_index'] = $language_index ?? 0;
 
 function is_valid_number ($array) {
     if (filter_var($array['age'], FILTER_VALIDATE_INT) !== false) {

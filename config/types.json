@@ -616,6 +616,11 @@
                 "input_slug": "name",
                 "input_type": "number",
                 "input_placeholder": "Name's Index"
+            },
+            {
+                "input_slug": "language_index",
+                "input_type": "number",
+                "input_placeholder": "Index of primary language (english)"
             }
         ]
     }
