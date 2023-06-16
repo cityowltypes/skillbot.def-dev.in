@@ -199,6 +199,11 @@
                 "input_placeholder" : "Allow certificate downloads in incomplete user engagements"
             },
             {
+                "input_slug": "do_not_allow_duplicate_mobile_numbers",
+                "input_type" : "checkbox",
+                "input_placeholder" : "Do not allow duplicate mobile numbers"
+            },
+            {
                 "input_slug": "pass_percentage",
                 "input_type" : "number",
                 "input_placeholder" : "Pass percentage eg. 33 (do not put % sign)"

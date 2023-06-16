@@ -110,6 +110,15 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
         		if ($last_message_identifier_response_type == 'mobile' && strlen($telegram_response['text'])!=10) {
 	        		$next_message_identifier = $last_message_identifier;
 	        	}
+	        	else if (
+	        		$last_message_identifier_response_type == 'mobile' 
+	        		&& ($postdata['do_not_allow_duplicate_mobile_numbers'] ?? false) 
+	        		&& strlen($telegram_response['text']) == 10
+	        		&& (($thisMobileNumbersID = ((int) ($core->getIDs(["chatbot"=>$chatbot_slug, "{$last_message_identifier}"=>$telegram_response['text']], "0, 1", "id", "DESC", false)[0]['id']) ?? 0)) > 0)
+	        		&& $thisMobileNumbersID != $response_id
+	        	) {
+	        		$next_message_identifier = $last_message_identifier;
+	        	}
 	        	else if (($telegram_response['text'] == ($emojis['next'].$emojis['next'].$emojis['next'])) && $tring[2]) {
 	        		$next_message_identifier = $last_message_identifier;
 	        	}

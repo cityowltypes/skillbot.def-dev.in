@@ -306,6 +306,9 @@ class Functions {
                             $module_title_prefix = '';
 
                         $telegram_message['response']['id##'.$module_id] = $module_title_prefix.$this->derephrase($title)[$lang_id];
+
+                        if ($response['completed__'.$module_id] != '1')
+                            break;
                     }
                 }
                 else if ($assessment_form_id) {
