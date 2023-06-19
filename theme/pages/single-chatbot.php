@@ -31,6 +31,11 @@ if ($telegram_user_id = $telegram_response['from']['id'] ?? false) {
 		$response_id = $sql->executeSQL("SELECT `id` FROM `data` WHERE `content_privacy`='private' AND `content`->'$.telegram_user_id' = '".$telegram_user_id."' AND `content`->'$.chatbot' = '".$chatbot_slug."' AND `content`->'$.type' = 'response'")[0]['id'];
 	}
 
+	if (($response_id ?? false) && !($randomisation_factor = $dash->getAttribute((int) $response_id , 'randomisation_factor') ?? false)) {
+		$randomisation_factor = rand(1000,9999);
+		$dash->pushAttribute($response_id, 'randomisation_factor', $randomisation_factor);
+	}
+
 	//DELETE DATA MESSAGE (FOR TESTING)
 	if ($response_id && strtolower(trim($telegram_response['text']))=='chatbot_reset') {
 		$dash->doDeleteObject($response_id);

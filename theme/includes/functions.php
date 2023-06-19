@@ -527,6 +527,38 @@ class Functions {
             $i = ($chain_of_ids[2] ?? 1) - 1;
             $j = $i;
 
+            if (!$j) {
+                $form_score_name = 'id__'.$obj['id'].'__score';
+                $dash->pushAttribute($response_id, $form_score_name, '0');
+
+                //if (($obj['randomise'] ?? false) == "1" || ($obj['randomise'] ?? false) === true) {
+                if (false) {
+                    $rfactor = ((int) $response['randomisation_factor']) % (count($obj['questions']));
+                    $j = $rfactor;
+                }
+            }
+
+            //if (($obj['randomise'] ?? false) == "1" || ($obj['randomise'] ?? false) === true) {
+            if (false) {
+                $number_of_questions_answered = 0;
+                foreach (array_keys($response) as $key) {
+                    if (strstr($key, 'id__'.$obj['id'].'__') && $key != 'id__'.$obj['id'].'__score')
+                        $number_of_questions_answered++;
+                }
+                
+                if ($j > (count($obj['questions']) - 1)) {
+                    $j = 0;
+                }
+
+                if ($number_of_questions_answered == count($obj['questions']))
+                    $form_questions_completed = true;
+                else
+                    $form_questions_completed = false;
+
+            } else {
+                $form_questions_completed = false;
+            }
+
             if (count($chain_of_ids) == 2) {
                 if ($obj['intro_message'] ?? false)
                     $telegram_message['message']=$this->send_multi_message_return_last_one(($this->derephrase($obj['intro_message'])[$lang_id] ?? $emojis['next']), $api_token);
@@ -545,13 +577,7 @@ class Functions {
                 $telegram_message['response']['id##'.$chatbot_id] = $emojis['home'];
             }
 
-            else if ($obj['questions'][$j]) {
-                //$question['fav'][0];
-
-                if (!$j) {
-                    $form_score_name = 'id__'.$obj['id'].'__score';
-                    $dash->pushAttribute($response_id, $form_score_name, '0');
-                }
+            else if ($obj['questions'][$j] && !$form_questions_completed) {
 
                 $arr = $this->derephrase($obj['questions'][$j], 1, [], 1);
                 if (is_numeric(array_keys($arr['arr'])[$lang_id])) {
