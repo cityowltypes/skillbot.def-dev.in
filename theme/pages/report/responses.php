@@ -47,17 +47,6 @@ $modules = $sql->executeSQL("select * from data where type = 'module' and id in 
 $modules = $dash->doContentCleanup($modules);
 $modules = array_column($modules, 'title', 'id');
 
-foreach ($modules as $key => $module) {
-    $module = $fn->derephrase($module);
-    $modules[$key] = $module[0];
-}
-
-if ($chatbot['id'] == 3) {
-    $modules['6'] = 'Code';
-}
-
-$form_map_keys = ['name', 'age', 'state', 'district', 'gender', 'category'];
-
 /**
  * Form Map
  */
@@ -70,6 +59,22 @@ if (!$form_map) {
 
 $form_map = $dash->doContentCleanup($form_map);
 $form_map = array_pop($form_map);
+
+$language_index = 0;
+if (is_numeric($form_map['language_index'])) {
+    $language_index = $form_map['language_index'];
+}
+
+foreach ($modules as $key => $module) {
+    $module = $fn->derephrase($module);
+    $modules[$key] = $module[$language_index];
+}
+
+if ($chatbot['id'] == 3) {
+    $modules['6'] = 'Code';
+}
+
+$form_map_keys = ['name', 'age', 'state', 'district', 'gender', 'category'];
 
 foreach ($form_map_keys as $index => $key) {
     if (!$form_map[$key]) {
