@@ -423,12 +423,6 @@
                 "list_field": false
             },
             {
-                "input_slug": "randomise",
-                "input_type" : "checkbox",
-                "input_placeholder" : "Randomised?",
-                "list_field": false
-            },
-            {
                 "input_slug": "questions",
                 "input_type": "multi_textarea",
                 "input_placeholder": "Questions (messages) of the form"
