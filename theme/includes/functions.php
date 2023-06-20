@@ -649,7 +649,7 @@ class Functions {
                         }
                     }
 
-                    $telegram_message['message']=$this->send_multi_message_return_last_one(array('Score: '.$response['id__'.$obj['id'].'__score'].' / '.count($obj['questions']), $this->derephrase($obj['end_message'])[$lang_id], $emojis['next'].$emojis['home']), $api_token);
+                    $telegram_message['message']=$this->send_multi_message_return_last_one(array('Score: '.$response['id__'.$obj['id'].'__score'].' / '.count($obj['questions']), $this->derephrase($obj['end_message'])[$lang_id], $this->get_answer_sheet($obj, $lang_id), $emojis['next'].$emojis['home']), $api_token);
                 }
                 else {
                     $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['end_message'])[$lang_id].' '.$emojis['next'].$emojis['home'], $api_token);
@@ -664,6 +664,25 @@ class Functions {
         else {
             return [];
         }
+    }
+
+    public function get_answer_sheet($obj, $lang_id) {
+        $op = '';
+
+        /*
+        foreach ($obj['questions'] as $question) {
+            $arr = $this->derephrase($question, 1, [], 1);
+            if (array_keys($arr['arr'])[$lang_id]) {
+                $q = array_keys($arr['arr'])[$lang_id];
+                $op. = 'Q: '.$q;
+                if (array_values($arr['fav'] ?? [])[$lang_id]) {
+                    $op .= 'A: '.array_values($arr['fav'])[$lang_id];
+                }
+            }
+        }
+        */
+
+        return $op.'------';
     }
 
     public function send_multi_message_return_last_one($messages, $api_token) {
