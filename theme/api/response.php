@@ -64,6 +64,19 @@ if ($api->method('get')) {
         }
     }
 
+    $chatbot['module_and_form_ids'] = $fn->derephrase($chatbot['module_and_form_ids']);
+    $registration_form_id = $chatbot['module_and_form_ids'][0];
+    unset($chatbot['module_and_form_ids'][0]);
+    $module_ids = array_column($chatbot['module_and_form_ids'], 0);
+
+    foreach ($module_ids as $module_id) {
+        $key = "completed__{$module_id}";
+
+        if (isset($response[$key])) {
+            $res[$key] = $response[$key];
+        }
+    }
+
     $api->json($res)->send();
 }
 
@@ -92,6 +105,19 @@ if ($api->method('post')) {
 
         if (isset($_POST[$index])) {
             $dash->pushAttribute($_POST['id'], $key, $_POST[$index]);
+        }
+    }
+
+    $chatbot['module_and_form_ids'] = $fn->derephrase($chatbot['module_and_form_ids']);
+    $registration_form_id = $chatbot['module_and_form_ids'][0];
+    unset($chatbot['module_and_form_ids'][0]);
+    $module_ids = array_column($chatbot['module_and_form_ids'], 0);
+    
+    foreach ($module_ids as $module_id) {
+        $key = "completed__{$module_id}";
+
+        if (isset($_POST[$key]) && $_POST[$key] == "1") {
+            $dash->pushAttribute($_POST['id'], $key, "1");
         }
     }
 

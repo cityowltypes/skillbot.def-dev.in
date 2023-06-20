@@ -727,6 +727,13 @@ if (tableEditBtn) {
                     }
 
                     for (let key in res) {
+                        if (key.substring(0,11) == 'completed__') {
+                            let form = document.querySelector(`input#${key}`);
+                            if (!form) continue;
+
+                            form.checked = true;
+                        }
+
                         if (res.hasOwnProperty(key)) {
                             let form = document.querySelector(`input#${key}`);
                             if (!form) continue;

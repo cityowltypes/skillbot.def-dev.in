@@ -441,10 +441,21 @@ require_once THEME_PATH . '/pages/_header.php';
 
                     <?php
                     foreach ($form_map_keys as $key) {
-                        $key_cap = ucfirst($key);
-                        echo "<div class='form-floating mb-3'>
-                                <input type='text' class='form-control' name='$key' id='$key' placeholder='$key_cap'>
-                                <label for='$key'>$key_cap</label>
+                        if (in_array($key, $modules) !== true) {
+                            $key_cap = ucfirst($key);
+                            echo "<div class='form-floating mb-3'>
+                                    <input type='text' class='form-control' name='$key' id='$key' placeholder='$key_cap'>
+                                    <label for='$key'>$key_cap</label>
+                                </div>";
+                        }
+                    }
+
+                    echo '<div class="mb-3 fw-bold">Online and offline (hybrid) completion:</div>';
+
+                    foreach ($modules as $key => $module) {
+                        echo "<div class='mb-3 form-check'>
+                                <input type='checkbox' value='1' class='form-check-input' name='completed__$key' id='completed__$key' placeholder='$key_cap'>
+                                <label for='completed__$key' class='form-check-label'>Completed $module?</label>
                             </div>";
                     }
                     ?>
@@ -453,9 +464,12 @@ require_once THEME_PATH . '/pages/_header.php';
                         <span class="badge bg-success text-white d-none"><i class="fas fa-check"></i> Saved</span>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="far fa-ban"></i> Discard</button>
-                    <button type="submit" class="btn btn-outline-success"><i class="fas fa-save"></i> Save</button>
+                <div class="modal-footer d-flex align-content-center justify-content-between">
+                    <button type="button" class="btn btn-outline-danger"><i class="far fa-trash-alt"></i></button>
+                    <div>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="far fa-ban"></i> Discard changes</button>
+                        <button type="submit" class="btn btn-outline-success"><i class="fas fa-save"></i> Save</button>
+                    </div>
                 </div>
             </form>
         </div>
