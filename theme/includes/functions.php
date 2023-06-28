@@ -686,8 +686,6 @@ class Functions {
             }
         }
 
-        error_log($op);
-
         return $op.'------';
     }
 

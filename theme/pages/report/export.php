@@ -5,7 +5,7 @@
  * @var object $dash
  * @var object $functions
  */
-
+set_time_limit(600);
 use \Wildfire\Core\Console as cc;
 
 include_once TRIBE_ROOT . '/theme/_init.php';
