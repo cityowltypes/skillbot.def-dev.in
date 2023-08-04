@@ -108,12 +108,11 @@ foreach ($file_data as $key => $value) {
 //     }
 // }
 
+$query_length = sizeof($queries);
 $queries = implode(";", $queries);
 
 // had to use this to run multiple queries on a single connection
 $import_status = mysqli_multi_query($sql->databaseLink, $queries) ? 'ok' : 'error';
-
-unset($queries);
 ?>
 
 <?php
@@ -133,7 +132,7 @@ form_ui:
             <?php if (!empty($_FILES)): ?>
                 <?php if ($import_status === 'ok'): ?>
             <div class="mt-3 alert alert-success" role="alert">
-                <i class="fas fa-check me-2"></i>Imported
+                <i class="fas fa-check me-2"></i><?php echo mysqli_affected_rows($sql->databaseLink). "/" . $query_length ?> records updated
             </div>
                 <?php endif; ?>
 
