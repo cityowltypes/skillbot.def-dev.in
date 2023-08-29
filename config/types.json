@@ -411,6 +411,12 @@
                 "list_sortable": true
             },
             {
+                "input_slug": "time_limit",
+                "input_type" : "number",
+                "input_placeholder" : "Time limit in minutes",
+                "list_field": true
+            },
+            {
                 "input_slug": "intro_message",
                 "input_type" : "textarea",
                 "input_placeholder" : "Introduction message",
