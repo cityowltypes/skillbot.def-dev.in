@@ -279,6 +279,12 @@
                 "list_field": false
             },
             {
+                "input_slug": "time_limit",
+                "input_type" : "number",
+                "input_placeholder" : "Minimum time for completion (in seconds)",
+                "list_field": true
+            },
+            {
                 "input_slug": "level_and_form_ids",
                 "input_type": "text",
                 "input_placeholder": "Level and assessment form IDs (rephrase)",
@@ -409,12 +415,6 @@
                 "list_field": true,
                 "list_searchable": true,
                 "list_sortable": true
-            },
-            {
-                "input_slug": "time_limit",
-                "input_type" : "number",
-                "input_placeholder" : "Time limit in minutes",
-                "list_field": true
             },
             {
                 "input_slug": "intro_message",

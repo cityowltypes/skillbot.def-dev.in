@@ -463,6 +463,9 @@ class Functions {
             if (count($chain_of_ids)==2) {
                 $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['title'])[$lang_id], $api_token);
                 $i = 1;
+
+                //start of module timer
+                $dash->pushAttribute($response_id, 'moduleTimerStart__'.$response['last_module_id'], time());
             }
             else {
                 $i = ($chain_of_ids[2] ?? 1) - 1;
@@ -625,37 +628,63 @@ class Functions {
                 $arr = $this->derephrase($obj['questions'][0], 1, [], 1);
                 if (array_values($arr['fav'] ?? [])[$lang_id]) {
 
-                    $answer_sheet_text = '';
+                    //If it took too less time, then repeat module
+                    $timeTaken = (time() - ((int) $dash->getAttribute($response_id, 'moduleTimerStart__'.$response['last_module_id'])));
 
-                    //if it's the LAST level post assessment form in the module
-                    $last_post_assessment_form_id = end(array_values($this->derephrase($dash->getAttribute((int) $response['last_module_id'], 'level_and_form_ids'), 1)));
-                    if ($obj['id'] == $last_post_assessment_form_id) {
-                        $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
-                        $dash->pushAttribute($response_id, 'completed__'.$response['last_level_id'], '1');
+                    if ($timeTaken < ((int) ($dash->getAttribute($response['last_module_id'], 'time_limit') ?? 0)))
+                        $allowCompletion = false;
+                    else
+                        $allowCompletion = true;
 
-                        $answer_sheet_text = $this->get_answer_sheet($obj, $lang_id);
-                    }
+                    $dash->pushAttribute($response_id, 'moduleTimerTotal__'.$response['last_module_id'], $timeTaken);
 
-                    //if it's the LAST chapter post assessment form in the module
-                    $chapter_ids = $dash->getAttribute((int) $response['last_level_id'], 'chapter_ids');
+                    //If it took too less time, then repeat module
+                    if ($allowCompletion) {
+                        $answer_sheet_text = '';
 
-                    if (!strstr($chapter_ids, ',')) {
-                        $chapter_post_assessment_form_ids = array_values($this->derephrase($chapter_ids, 1));
-                        if (in_array($obj['id'], $chapter_post_assessment_form_ids)) {
-                            $chapter_post_assessment_form_id = $obj['id'];
-                            $dash->pushAttribute($response_id, 'completed__'.$chapter_post_assessment_form_id, '1');
+                        //if it's the LAST level post assessment form in the module
+                        $last_post_assessment_form_id = end(array_values($this->derephrase($dash->getAttribute((int) $response['last_module_id'], 'level_and_form_ids'), 1)));
+                        if ($obj['id'] == $last_post_assessment_form_id) {
+                            $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
+                            $dash->pushAttribute($response_id, 'completed__'.$response['last_level_id'], '1');
 
-                            //if it's the LAST chapter assessment form in level
-                            $last_chapter_assessment_form_id = end($chapter_post_assessment_form_ids);
-                            if ($obj['id'] == $last_chapter_assessment_form_id)
-                                $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
-                                $dash->pushAttribute($response_id, 'completed__'.$response['last_level_id'], '1');
+                            //end of module timer
+                            $dash->pushAttribute($response_id, 'moduleTimerEnd__'.$response['last_module_id'], time());
 
                             $answer_sheet_text = $this->get_answer_sheet($obj, $lang_id);
                         }
+
+                        //if it's the LAST chapter post assessment form in the module
+                        $chapter_ids = $dash->getAttribute((int) $response['last_level_id'], 'chapter_ids');
+
+                        if (!strstr($chapter_ids, ',')) {
+                            $chapter_post_assessment_form_ids = array_values($this->derephrase($chapter_ids, 1));
+                            if (in_array($obj['id'], $chapter_post_assessment_form_ids)) {
+                                $chapter_post_assessment_form_id = $obj['id'];
+                                $dash->pushAttribute($response_id, 'completed__'.$chapter_post_assessment_form_id, '1');
+
+                                //if it's the LAST chapter assessment form in level
+                                $last_chapter_assessment_form_id = end($chapter_post_assessment_form_ids);
+                                if ($obj['id'] == $last_chapter_assessment_form_id) {
+                                    $dash->pushAttribute($response_id, 'completed__'.$response['last_module_id'], '1');
+                                    $dash->pushAttribute($response_id, 'completed__'.$response['last_level_id'], '1');
+
+                                    //end of module timer
+                                    $dash->pushAttribute($response_id, 'moduleTimerEnd__'.$response['last_module_id'], time());
+
+                                    $answer_sheet_text = $this->get_answer_sheet($obj, $lang_id);
+                                }
+                            }
+                        }
+
+                        $telegram_message['message']=$this->send_multi_message_return_last_one(array('Score: '.$response['id__'.$obj['id'].'__score'].' / '.count($obj['questions']), $this->derephrase($obj['end_message'])[$lang_id], $answer_sheet_text, $emojis['next'].$emojis['home']), $api_token);
                     }
 
-                    $telegram_message['message']=$this->send_multi_message_return_last_one(array('Score: '.$response['id__'.$obj['id'].'__score'].' / '.count($obj['questions']), $this->derephrase($obj['end_message'])[$lang_id], $answer_sheet_text, $emojis['next'].$emojis['home']), $api_token);
+                    //If it took too less time, then repeat module
+                    //!$allowCompletion
+                    else {
+                        $telegram_message['message']=$this->send_multi_message_return_last_one('ERROR: Please slow down and reattempt the module. Module completed too fast. '.$emojis['next'].$emojis['home'], $api_token);
+                    }
                 }
                 else {
                     $telegram_message['message']=$this->send_multi_message_return_last_one($this->derephrase($obj['end_message'])[$lang_id].' '.$emojis['next'].$emojis['home'], $api_token);
