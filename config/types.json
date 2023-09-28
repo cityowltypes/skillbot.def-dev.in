@@ -624,6 +624,16 @@
                 "input_placeholder": "Category's Index"
             },
             {
+                "input_slug": "type_of_service",
+                "input_type": "number",
+                "input_placeholder": "Index of Type of Service"
+            },
+            {
+                "input_slug": "amount_paid",
+                "input_type": "number",
+                "input_placeholder": "Index of Amount Paid"
+            },
+            {
                 "input_slug": "name",
                 "input_type": "number",
                 "input_placeholder": "Name's Index"
