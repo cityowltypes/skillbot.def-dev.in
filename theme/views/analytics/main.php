@@ -72,6 +72,9 @@
                 </div>
             </div>
 
+            <?php
+            if ($data['per_module_users']):
+            ?>
             <div class="card px-0 shadow-sm">
                 <div class="card-header small fw-bold">
                     Distribution by Module
@@ -86,6 +89,7 @@
                     <?= $functions->format_to_thousands($data['users_who_completed_all']) ?> users certified
                 </div>
             </div>
+            <?php endif ?>
 
             <?php if (isset($data['users_per_category'])) : ?>
             <div class="card px-0 shadow-sm">

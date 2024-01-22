@@ -68,6 +68,9 @@ if ($category_list && is_array($category_list)) {
 }
 
 if ($state_list) {
+    // error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+
+    // $_st = urldecode($state_list);
     $csv_handle = fopen($state_list, 'r');
     $state_list = [];
 
@@ -452,10 +455,14 @@ foreach ($bot_module_ids as $_json_key) {
 
 $_search_pattern = implode(' and ', $_search_pattern);
 if (!$state) {
+    if ($_search_pattern) {
+        $_search_pattern = " and {$_search_pattern}";
+    }
+
     $data['users_who_completed_all'] = $sql->executeSQL("SELECT count(*) as count from data
         where type = 'response' and
             {$age_group} and
-            content->>'$.chatbot' = '{$bot['slug']}' and
+            content->>'$.chatbot' = '{$bot['slug']}'
             {$_search_pattern} {$date_range}
     ")[0]['count'] ?? null;
 }

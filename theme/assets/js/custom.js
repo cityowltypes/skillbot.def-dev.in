@@ -41,6 +41,8 @@ function numberFormatter (value, decimal) {
 };
 
 function getColumn (anArray, columnNumber) {
+    if (!anArray) return [];
+
     if (typeof anArray === 'object') {
         anArray = Object.values(anArray);
     }
