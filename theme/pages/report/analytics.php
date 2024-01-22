@@ -202,7 +202,9 @@ foreach ($data['users_by_age'] as $user) {
     $user_age += $user['age'] * $user['age_count'];
 }
 
-$data['average_age'] = floor($user_age / $data['user_count']);
+if ($data['user_count']) {
+    $data['average_age'] = floor($user_age / $data['user_count']);
+}
 unset($user_age);
 
 /** BY GENDER */
