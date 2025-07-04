@@ -8,7 +8,7 @@
 
 ### Docker Installation
 
-DEF Skillbot can be easily deployed using Tribe Framework's official Docker template, which provides a complete containerized environment with all dependencies pre-configured.
+DEF Skillbot can be easily deployed using it's official Docker template, which provides a complete containerized environment with all dependencies pre-configured.
 
 #### Prerequisites
 - **Docker** and **Docker Compose** installed
@@ -71,7 +71,6 @@ The installation provides these containerized services:
 **Application Container (`docker-skillbot-template`)**:
 - PHP 8.3-FPM with all required extensions
 - Nginx web server with optimized configuration
-- Tribe Framework pre-installed
 - BotMan framework for Telegram integration
 - phpMyAdmin for database administration
 
@@ -186,7 +185,7 @@ Test the bot by sending a message to your Telegram bot to ensure the webhook is 
 
 ### Tribe Framework Integration
 
-DEF Skillbot leverages several key components:
+DEF Skillbot leverages the following classes:
 - **Core Class** - Primary data management and object handling
 - **MySQL Class** - Secure database operations with prepared statements
 - **Config Class** - Content type definitions and configuration management
@@ -331,7 +330,7 @@ Chatbot (Content Type)
 
 ### 1. Multi-language Support
 - Dynamic language selection at start stored via Core class
-- All content supports multiple languages through Tribe Framework's content system
+- All content supports multiple languages
 - Language-specific message routing with persistent preferences
 
 ### 2. Progress Tracking
