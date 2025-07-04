@@ -4,6 +4,179 @@
 
 **DEF Skillbot** is a comprehensive PHP-based Telegram chatbot system designed for educational and training purposes. Built on the **Tribe Framework**, it provides an interactive learning environment with multi-language support, progress tracking, assessments, and certificate generation. The system supports complex learning hierarchies including modules, levels, chapters, and assessments.
 
+## Installation
+
+### Docker Installation
+
+DEF Skillbot can be easily deployed using Tribe Framework's official Docker template, which provides a complete containerized environment with all dependencies pre-configured.
+
+#### Prerequisites
+- **Docker** and **Docker Compose** installed
+- **Git** for cloning repository
+- **Minimum 2GB RAM** for containers
+- **Port availability** for web services
+
+#### Quick Start Installation
+
+1. **Clone the Docker Template**:
+```bash
+git clone https://github.com/tribe-framework/docker-tribe-template.git def-skillbot
+cd def-skillbot
+```
+
+2. **Run the Setup Script**:
+```bash
+./run
+# Choose option 1 to build/configure
+```
+
+3. **Fill in the Configuration Form**:
+When prompted, provide the following information:
+```
+Application name: DEF Skillbot
+Application unique ID: def-skillbot
+Database name: skillbot_db
+Database user: skillbot_user
+Database password: [secure_password]
+Port for Tribe: 8080
+Port for Junction: 8081
+Junction password: [admin_password]
+Domain for APP: your-domain.com
+Enable HTTPS for Tribe? (y/n): y
+```
+
+4. **Deploy the Application**:
+```bash
+./run
+# Choose option 2 to deploy
+```
+
+The script will automatically:
+- Set up Docker containers for PHP 8.3, MySQL 8.4, and Nginx
+- Configure database with proper schema
+- Set up SSL certificates for development
+- Configure phpMyAdmin for database management
+- Create proper network isolation
+
+#### Docker Services Included
+
+The installation provides these containerized services:
+
+**Database Container (`def-skillbot-db`)**:
+- MySQL 8.4 with JSON support
+- Automatic schema creation
+- Persistent data storage in `./.db` directory
+- Health checks for container readiness
+
+**Application Container (`docker-skillbot-template`)**:
+- PHP 8.3-FPM with all required extensions
+- Nginx web server with optimized configuration
+- Tribe Framework pre-installed
+- BotMan framework for Telegram integration
+- phpMyAdmin for database administration
+
+#### Post-Installation Setup
+
+After successful Docker deployment:
+
+1. **Access the Application**:
+   - Tribe API: `http://localhost:8080` (or your configured port)
+   - Junction Admin: `http://localhost:8081`
+   - phpMyAdmin: `http://localhost:8080/phpmyadmin`
+
+2. **Configure Telegram Webhook**:
+After deployment, manually activate the Telegram webhook by accessing:
+```
+https://your-domain.com/tool/botman-webhook.php
+```
+
+This step must be performed by the development team to connect your Telegram bot to the application..
+
+5. **Set File Permissions**:
+```bash
+# The setup script handles this automatically, but if needed:
+docker exec docker-skillbot-template chown -R www-data:www-data /var/www
+```
+
+#### Environment Configuration
+
+The Docker setup automatically creates a `.env` file with all necessary configurations:
+
+```env
+# Application Settings
+APP_NAME=DEF Skillbot
+JUNCTION_SLUG=def-skillbot
+WEBSITE_NAME=DEF Skillbot
+CONTACT_NAME=Your Name
+CONTACT_EMAIL=your@email.com
+
+# Database Configuration
+DB_HOST=def-skillbot-db
+DB_NAME=skillbot_db
+DB_USER=skillbot_user
+DB_PASS=your_secure_password
+DB_PORT=3306
+
+# Web Configuration
+WEB_BARE_URL=tribe.your-domain.com
+WEB_URL=https://tribe.your-domain.com
+APP_URL=https://your-domain.com
+JUNCTION_URL=https://junction.your-domain.com
+
+# Security
+TRIBE_API_SECRET_KEY=auto_generated_secret
+SSL=true
+ENV=prod
+
+# Docker Networking
+TRIBE_PORT=8080
+JUNCTION_PORT=8081
+DOCKER_SUBNET=172.80.0.0/29
+```
+
+#### Docker Management Commands
+
+**Start Services**:
+```bash
+docker compose up -d
+```
+
+**Stop Services**:
+```bash
+docker compose down
+```
+
+**View Logs**:
+```bash
+docker compose logs -f tribe  # Application logs
+docker compose logs -f db     # Database logs
+```
+
+**Access Container Shell**:
+```bash
+docker exec -it docker-skillbot-template bash
+```
+
+**Database Backup**:
+```bash
+docker exec def-skillbot-db mysqldump -u skillbot_user -p skillbot_db > backup.sql
+```
+
+### Telegram Bot Activation
+
+After successful deployment, the Telegram webhook must be manually activated by the development team:
+
+1. **Access Webhook Tool**:
+Navigate to `https://your-domain.com/tool/botman-webhook.php` in your browser
+
+2. **Webhook Configuration**:
+This tool will automatically configure the Telegram webhook to point to your `single-chatbot.php` endpoint
+
+3. **Verification**:
+Test the bot by sending a message to your Telegram bot to ensure the webhook is properly configured
+
+**Note**: This is a manual step that must be performed by the coding team each time a new bot is deployed or the webhook URL changes.
+
 ## System Architecture
 
 ### Core Components
@@ -194,16 +367,6 @@ Chatbot (Content Type)
 
 ## Configuration
 
-### Environment Setup (.env)
-```env
-DB_HOST=localhost
-DB_NAME=skillbot_database
-DB_USER=your_username
-DB_PASS=your_password
-TRIBE_API_SECRET_KEY=your_secret_key
-SSL=false
-```
-
 ### Emoji Configuration
 - `emoji_done` (✅) - Completed items
 - `emoji_next` (👉) - Next action
@@ -219,188 +382,6 @@ SSL=false
 - `languages` - Available language options in derephrase format
 - `pre_assessment_word` - Label for pre-assessments per language
 - `post_assessment_word` - Label for post-assessments per language
-
-### Telegram Bot Activation
-
-After successful deployment, the Telegram webhook must be manually activated by the development team:
-
-1. **Access Webhook Tool**:
-Navigate to `https://your-domain.com/tool/botman-webhook.php` in your browser
-
-2. **Webhook Configuration**:
-This tool will automatically configure the Telegram webhook to point to your `single-chatbot.php` endpoint
-
-3. **Verification**:
-Test the bot by sending a message to your Telegram bot to ensure the webhook is properly configured
-
-**Note**: This is a manual step that must be performed by the coding team each time a new bot is deployed or the webhook URL changes.
-
-## Security Features (Tribe Framework Enhanced)
-
-1. **Input Validation**: All user inputs validated through Tribe Framework's type system
-2. **SQL Injection Prevention**: Uses Tribe Framework's prepared statements
-3. **Data Isolation**: Users can only access their own data through privacy controls
-4. **Time-based Validation**: Prevents rapid completion abuse
-5. **Content Privacy**: Leverages Tribe Framework's privacy levels (public, private, draft, pending)
-6. **API Security**: Optional API key authentication for advanced features
-
-## Installation
-
-### Docker Installation
-
-DEF Skillbot can be easily deployed using Tribe Framework's official Docker template, which provides a complete containerized environment with all dependencies pre-configured.
-
-#### Prerequisites
-- **Docker** and **Docker Compose** installed
-- **Git** for cloning repository
-- **Minimum 2GB RAM** for containers
-- **Port availability** for web services
-
-#### Quick Start Installation
-
-1. **Clone the Docker Template**:
-```bash
-git clone https://github.com/tribe-framework/docker-tribe-template.git def-skillbot
-cd def-skillbot
-```
-
-2. **Run the Setup Script**:
-```bash
-./run
-# Choose option 1 to build/configure
-```
-
-3. **Fill in the Configuration Form**:
-When prompted, provide the following information:
-```
-Application name: DEF Skillbot
-Application unique ID: def-skillbot
-Database name: skillbot_db
-Database user: skillbot_user
-Database password: [secure_password]
-Port for Tribe: 8080
-Port for Junction: 8081
-Junction password: [admin_password]
-Domain for APP: your-domain.com
-Enable HTTPS for Tribe? (y/n): y
-```
-
-4. **Deploy the Application**:
-```bash
-./run
-# Choose option 2 to deploy
-```
-
-The script will automatically:
-- Set up Docker containers for PHP 8.3, MySQL 8.4, and Nginx
-- Configure database with proper schema
-- Set up SSL certificates for development
-- Configure phpMyAdmin for database management
-- Create proper network isolation
-
-#### Docker Services Included
-
-The installation provides these containerized services:
-
-**Database Container (`def-skillbot-db`)**:
-- MySQL 8.4 with JSON support
-- Automatic schema creation
-- Persistent data storage in `./.db` directory
-- Health checks for container readiness
-
-**Application Container (`docker-skillbot-template`)**:
-- PHP 8.3-FPM with all required extensions
-- Nginx web server with optimized configuration
-- Tribe Framework pre-installed
-- BotMan framework for Telegram integration
-- phpMyAdmin for database administration
-
-#### Post-Installation Setup
-
-After successful Docker deployment:
-
-1. **Access the Application**:
-   - Tribe API: `http://localhost:8080` (or your configured port)
-   - Junction Admin: `http://localhost:8081`
-   - phpMyAdmin: `http://localhost:8080/phpmyadmin`
-
-2. **Configure Telegram Webhook**:
-After deployment, manually activate the Telegram webhook by accessing:
-```
-https://your-domain.com/tool/botman-webhook.php
-```
-
-This step must be performed by the development team to connect your Telegram bot to the application..
-
-5. **Set File Permissions**:
-```bash
-# The setup script handles this automatically, but if needed:
-docker exec docker-skillbot-template chown -R www-data:www-data /var/www
-```
-
-#### Environment Configuration
-
-The Docker setup automatically creates a `.env` file with all necessary configurations:
-
-```env
-# Application Settings
-APP_NAME=DEF Skillbot
-JUNCTION_SLUG=def-skillbot
-WEBSITE_NAME=DEF Skillbot
-CONTACT_NAME=Your Name
-CONTACT_EMAIL=your@email.com
-
-# Database Configuration
-DB_HOST=def-skillbot-db
-DB_NAME=skillbot_db
-DB_USER=skillbot_user
-DB_PASS=your_secure_password
-DB_PORT=3306
-
-# Web Configuration
-WEB_BARE_URL=tribe.your-domain.com
-WEB_URL=https://tribe.your-domain.com
-APP_URL=https://your-domain.com
-JUNCTION_URL=https://junction.your-domain.com
-
-# Security
-TRIBE_API_SECRET_KEY=auto_generated_secret
-SSL=true
-ENV=prod
-
-# Docker Networking
-TRIBE_PORT=8080
-JUNCTION_PORT=8081
-DOCKER_SUBNET=172.80.0.0/29
-```
-
-#### Docker Management Commands
-
-**Start Services**:
-```bash
-docker compose up -d
-```
-
-**Stop Services**:
-```bash
-docker compose down
-```
-
-**View Logs**:
-```bash
-docker compose logs -f tribe  # Application logs
-docker compose logs -f db     # Database logs
-```
-
-**Access Container Shell**:
-```bash
-docker exec -it docker-skillbot-template bash
-```
-
-**Database Backup**:
-```bash
-docker exec def-skillbot-db mysqldump -u skillbot_user -p skillbot_db > backup.sql
-```
 
 ## Performance Optimization
 
