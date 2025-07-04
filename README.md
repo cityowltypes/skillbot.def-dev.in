@@ -1,180 +1,430 @@
-# Tribe - a web project management framework by wildfire.
+# DEF Skillbot Documentation
 
-Tribe is a project management framework that allows us to build our clients' vision using a modular approach that is friendly to various tech stacks (php, nodejs and python) and provides a coherent language for UX and design collaborations. Currently powering 30+ projects in production.
+## Overview
 
-## Minimum system requirements
-- independent cloud or dedicated server
-- 1gb ram
-- 1 core
-- ubuntu 20.04
-- make your server ready for tribe using - https://github.com/wil-ldf-ire/server-wildfire
+**DEF Skillbot** is a comprehensive PHP-based Telegram chatbot system designed for educational and training purposes. Built on the **Tribe Framework**, it provides an interactive learning environment with multi-language support, progress tracking, assessments, and certificate generation. The system supports complex learning hierarchies including modules, levels, chapters, and assessments.
 
-## Install instructions
+## System Architecture
+
+### Core Components
+
+1. **single-chatbot.php** - Main webhook handler for Telegram messages
+2. **functions.php** - Core functionality and business logic
+
+### Tribe Framework Integration
+
+DEF Skillbot leverages several key components:
+- **Core Class** - Primary data management and object handling
+- **MySQL Class** - Secure database operations with prepared statements
+- **Config Class** - Content type definitions and configuration management
+
+## File Breakdown
+
+### 1. single-chatbot.php (Main Webhook Handler)
+
+This is the primary entry point for processing Telegram webhook messages, built on PHP 8.0+.
+
+#### Key Features:
+- **Telegram Integration**: Receives and processes incoming Telegram messages
+- **User Session Management**: Tracks user progress across conversations using Core class
+- **Multi-user Support**: Handles multiple users on the same device with isolated data
+- **Language Support**: Manages user language preferences with persistent storage
+- **Progress Tracking**: Monitors completion status of modules and assessments
+
+#### Core Workflow:
+
 ```
-sudo bash -c "$(wget --no-cache --no-cookie https://raw.githubusercontent.com/wil-ldf-ire/tribe/master/install/install.sh -O -)"
-```
-#### Export instructions
-```
-sudo bash -c "$(wget --no-cache --no-cookie https://raw.githubusercontent.com/wil-ldf-ire/tribe/master/install/export.sh -O -)"
-```
-#### Import instructions
-```
-sudo bash -c "$(wget --no-cache --no-cookie https://raw.githubusercontent.com/wil-ldf-ire/tribe/master/install/import.sh -O -)"
-```
-#### Upgrade instructions
-- In composer.json use latest versions of admin (2.x), auth (2.x) and core (3.x)
-- In MySQL database, using the following code:
-```
-ALTER TABLE `data` ADD `user_id` VARCHAR(6) AS (`content`->>'$.user_id') VIRTUAL NULL AFTER `created_on`, ADD INDEX (`user_id`);
-ALTER TABLE `data` ADD `role_slug` VARCHAR(100) AS (`content`->>'$.role_slug') VIRTUAL NULL AFTER `user_id`;
-ALTER TABLE `data` ADD `slug` VARCHAR(255) AS (`content`->>'$.slug') VIRTUAL NULL AFTER `role_slug`, ADD INDEX (`slug`);
-ALTER TABLE `data` ADD `content_privacy` VARCHAR(100) AS (`content`->>'$.content_privacy') VIRTUAL NULL AFTER `slug`;
-ALTER TABLE `data` ADD `type` VARCHAR(100) AS (`content`->>'$.type') VIRTUAL NULL AFTER `content_privacy`;
+Incoming Telegram Message → User Identification → Session Management → Message Processing → Response Generation → Telegram Reply
 ```
 
-## Quick config
+#### Framework Integration:
+```php
+use Tribe\Core\Core as Core;
+use Tribe\Core\MySQL as MySQL;
 
-1. install folder contains all installation scripts, gets deleted on installation. make sure it is not available in your host's folder structure.
-
-2. a few config files to get started with Tribe quickly.
-- define msyql variables in .env file
-- visit your BASE_URL
-- visit /admin, log in using combination of email address and database password stored in .env file
-- modify /theme/pages/index.php
-- modify types.json to define content data types and user roles
-- modify /assets/css/custom.css and /assets/js/custom.js
-
-## Advanced usage
-
-### Architecture overview
-![Tribe architecture](https://wildfiretech.co/theme/assets/img/tribe.png "Our approach")
-
-### Config files
-1. use /.env for defining environment variables you need to use, like db connection, third-party APIs
-2. use /config/types.json to update post-type and user-role details
-3. have a look at /config/config.php, you might need it for advanced usage
-
-### Terminology, ideas and definitions
-
-#### Variables available
-1. $\_ENV['BASE_URL'] - the website url
-2. $\_ENV['TRIBE_ROOT'] - absolute path to your website's directory
-3. $\_ENV['THEME_URL'] - web link to theme folder
-
-#### Data-types
-3. post type - a content datatype
-4. post - a single content piece
-5. user - a single person
-6. user role - people can be assigned roles
-
-#### Definitions
-1. tribe is folder structure currently in active development, through the project we're trying to build a coherent framework for design, ux and tech people to work collaboratively
-2. our admin is called junction - it's where people of your tribe meet everyday, it's a content management system
-3. theme is the front-end interface that is executed using php, more on this in theme section below
-4. applications are front-end interfaces executed using nodejs
-5. our nginx config and folder structure support emberjs applications without any server-side configuration, more on this in applications section below
-6. types.json is a config file that can be used to configure data-types, once configured those data-types are available in junction and you can start adding data and users from there
-7. assets are things that developers add themselves to the app, like images and fonts
-8. dependencies are resources that come from third-party libraries
-
-#### Post types in detail
-1. single.php is general post layout
-2. create single-&lt;ID&gt;.php for layout for specific post
-3. archive.php is general multiple-stories list layout for any post-type
-4. archive-&lt;type-name&gt;.php is list layout of a particular type
-5. single-&lt;type-name&gt;.php is layout for individual post of a particular post-type
-
-#### User roles in detail
-1. there are 4 broad user-roles
-2. admin users have access to everything
-3. crew users have access to junction at /admin, but do not have ability to make things public
-4. member users and visitor users do not have access to dashboard
-5. member and visitor user roles can be differentiated in the theme usage
-6. user interface for member users can be modified by including php files in theme folder with these names: user-header.php, user-footer.php, user-index.php, user-dashboard.php and so on. file name references from https://github.com/wil-ldf-ire/auth repository.
-
-### Tribe utilities
-1. most important functions from core features are $dash->push_content(array) and $dash->get_content($id)
-2. when using $dash->push_content, the array passed needs to have 'type' and 'content_privacy'. if 'id' is available in the array, it modifies the exiting row
-3. have a look at https://github.com/wil-ldf-ire/core for more details on available classes
-4. visit /admin in the browser - a backend CMS called junction, log in using email address and database password defined in /.env file, visit https://github.com/wil-ldf-ire/admin for more info about it's codebase
-5. our user authentication code is available at https://github.com/wil-ldf-ire/auth
-6. /logs/ folder gives access to nginx access and error logs, these files cannot be accessed by the public, need root access
-
-### Theme
-1. within /theme folder, pages/index.php is the file that loads on the root URL. pages/\_header.php, pages/\_footer.php are what they sound like. you can create more files like \_nav.php, \_blog.php etc, based on your requirements.
-2. includes/\_init.php makes wildfire/core functions available to the theme.
-3. functions.php offers a Functions class that can be used for theme-specific use.
-
-### Bootstrap
-1. our latest theme uses bootstrap version 5
-2. bootstrap is installed using npm
-3. css and js files are included in /theme/pages/\_header.php and /theme/pages/\_footer.php
-
-### SASS/SCSS Compiler
-1. scss compiler is available at /theme/assets/scss/init.php
-2. bootstrap scss is available at /node_modules/bootstrap/scss/
-3. read more about bootstrap scss here - https://getbootstrap.com/docs/5.0/getting-started/introduction/
-
-### Database structure
-1. there are 2 tables - data and trac. both tables have same table structure
-2. tribe uses json heavily, the need for creating new tables is eleminated by use of json
-3. the column 'content' uses json, example usage:
-```$sql->executeSQL("SELECT \`id\` FROM \`data\` WHERE \`content\`->'$.type'='user'");```
-4. data table stores all posts', post-types' and users' data
-5. trac table is for plugins to use as the developers deem fit, it can be used for web analytics data, to store user sessions or any other developer-defined use-case directly using mysql class available as $sql
-
-### Documentation
-1. all documentation of the project, client references, presentations, design files etc. to be maintained in /theme/docs/ folder
-2. tribe documentation is currently only available on this README.md file
-
-### Assets and dependencies
-1. for theme assets use /theme/assets/
-2. for nodejs dependencies use /package.json and cli command ```npm install <package-name>```
-3. for php dependencies use /composer.json and cli command ```composer update```
-4. any dependency not available in npm and composer, add it to /theme/assets/ folder manually
-
-### Applications in NodeJS
-1. in tribe, any nodejs front-end framework is called an app
-2. to add an ember app, create a sub-folder in /applications/, the sub-folder must have 'dist', 'assets', 'package.json' and 'node_modules', the 'dist' folder's index.html will be executed when you visit the url &lt;domain.tld&gt;/app/&lt;sub-folder&gt;
-3. front-end apps must *not* use the package.json available in tribe's root folder
-4. every app must have their own package.json
-5. to add any other nodejs app based on vue or svelte or react, create a sub-folder in /applications/, then modify the '/app' location block in the nginx config file to make sure the application is executed when you visit the url &lt;domain.tld&gt;/app/&lt;sub-folder&gt;
-6. install or update package.json using
-```sudo npm install```
-7. for accessing the json-api to our database from the front-end application, you'll need to add the api url in your app, for which host is the BASE_URL and namespace is 'api', basically the adapter must fetch json results from BASE_URL/api
-8. get started quickly with emberjs on your local machine https://guides.emberjs.com/release/getting-started/quick-start/, create it in /applications/ folder
-9. build the app for production before pushing it to the server, once built push 'dist', 'assets', 'package.json' and 'node_modules' to the server, visit https://cli.emberjs.com/release/basic-use/deploying/
-10. other important ember tutorials:<br>
-https://guides.emberjs.com/release/getting-started/anatomy-of-an-ember-app/<br>
-https://guides.emberjs.com/release/models/<br>
-https://guides.emberjs.com/release/models/customizing-adapters/
-
-### NginX config
-- nginx config is available at /etc/nginx/sites-available/&lt;domain.tld&gt;
-
-### phpMyAdmin access
-- URL to phpMyAdmin: &lt;domain.tld&gt;/vendor/wildfire/admin/plugins/phpmyadmin
-
-## Dependencies built by Wildfire
-packages built by us for tribe will be available in 3 ways:
-1. composer package, available in /vendor/wildfire/ folder
-2. npm package, available in /node_modules/ folder
-3. as front-end apps that can be saved to /applications/ folder
-
-## Uninstall
+$core = new Core;
+$sql = new MySQL;
 ```
-sudo bash -c "$(wget --no-cache --no-cookie https://raw.githubusercontent.com/wil-ldf-ire/tribe-uninstall/master/uninstall.sh -O -)"
+
+#### Special Commands:
+- `chatbot_reset` - Deletes all user data and restarts
+- `chatbot_uid` - Returns user ID and response ID for debugging
+- Home emoji (🏠) - Returns to main menu
+
+#### Multi-user Functionality:
+- Users can switch between multiple profiles on the same device
+- Each user maintains separate progress and responses
+- Supports adding new users dynamically
+- User data isolation ensured through privacy controls
+
+### 2. functions.php (Core Business Logic)
+
+This file contains the `Functions` class with all the core chatbot functionality.
+
+#### Key Methods:
+
+##### Message Processing
+- **`get_message_array()`** - Generates appropriate message and response options based on current state
+- **`send_message()`** - Sends messages to Telegram using BotMan framework
+- **`send_multi_message_return_last_one()`** - Handles sending multiple sequential messages
+
+##### Data Handling
+- **`derephrase()`** - Parses complex string formats (e.g., "option1##option2##option3")
+- **`csv_to_array()`** - Converts CSV files to arrays for location/option data
+- **`array_to_csv()`** - Exports data to CSV format
+
+##### Content Management
+- **`get_youtube_id()`** - Extracts YouTube video IDs from URLs
+- **`get_answer_sheet()`** - Generates answer sheets for assessments
+- **`join_images()`** - Combines multiple images using ImageMagick
+- **`get_form_map()`** - Retrieves form mappings
+- **`get_registration_form()`** - Fetches registration forms through Core class
+
+#### Content Type Handlers:
+
+##### Chatbot (Main Menu)
+- Displays intro message using content system
+- Shows available modules with completion status tracked via Core class
+- Provides access to certificates, language settings, and reset options
+- Manages multi-user switching functionality
+
+##### Module
+- Contains multiple levels managed through hierarchical content structure
+- Tracks completion status using Core class attributes
+- Manages pre-assessments with automated progression logic
+
+##### Level
+- Contains chapters or direct assessments
+- Tracks chapter completion using persistent storage
+- Handles post-assessments with score calculation
+
+##### Chapter
+- Contains sequential messages/content delivered progressively
+- Navigates through content step-by-step
+- Marks completion when finished using Core class methods
+
+##### Form (Assessment)
+- Handles questions and responses with validation
+- Supports multiple question types:
+  - Multiple choice with single/multiple selection
+  - Text input with format validation
+  - Mobile number validation with duplicate prevention
+  - Location-based dropdowns (state/district/village) from CSV data
+- Calculates scores with real-time tracking
+- Prevents duplicate mobile numbers (configurable)
+- Implements time limits for completion with fraud prevention
+
+## Data Integration
+
+### Data Structure
+
+#### User Response Object (Stored via Core Class)
+Each user interaction creates a response object containing:
+```php
+$obj = [
+    'title' => $chatbot_slug.' '.$telegram_user_id,
+    'type' => 'response',
+    'content_privacy' => 'private',
+    'chatbot' => $chatbot_slug,
+    'telegram_user_id' => $telegram_user_id,
+    'slug' => $core->slugify($chatbot_slug.' '.$telegram_user_id)
+];
+$response_id = $core->pushObject($obj);
 ```
-more info on uninstall - https://github.com/wil-ldf-ire/tribe-uninstall
 
-## Versioning and Release cycle management
-- versioning is based on semvar - https://semver.org/
-- we're starting to follow a 6-week release cycle, releasing a new version every 6th monday
-- latest releases - https://github.com/wil-ldf-ire/tribe/releases
-- we have 2 types of releases - beta and production
+#### Core Class Methods Used:
+- **`$core->getObject($id)`** - Retrieve content objects
+- **`$core->pushObject($array)`** - Create/update objects
+- **`$core->pushAttribute($id, $key, $value)`** - Update specific attributes
+- **`$core->getAttribute($id, $key)`** - Retrieve specific attributes
+- **`$core->getIDs($search_array, $limit, $sort_field, $sort_order)`** - Advanced search
 
-## More info and contact
-https://wildfiretech.co/page/our-approach<br>
-https://github.com/wil-ldf-ire
+### Content Hierarchy
+```
+Chatbot (Content Type)
+├── Module 1 (Content Object)
+│   ├── Pre-assessment Form (Assessment Object)
+│   ├── Level 1 (Content Object)
+│   │   ├── Chapter 1 (Content Object)
+│   │   ├── Chapter 2 (Content Object)
+│   │   └── Post-assessment Form (Assessment Object)
+│   └── Level 2 (Content Object)
+│       └── ...
+└── Module 2 (Content Object)
+    └── ...
+```
 
-![Wildfire logo](https://wildfiretech.co/theme/assets/img/logo-bg.png "Wildfire logo")
+## Key Features
+
+### 1. Multi-language Support
+- Dynamic language selection at start stored via Core class
+- All content supports multiple languages through Tribe Framework's content system
+- Language-specific message routing with persistent preferences
+
+### 2. Progress Tracking
+- Module completion status tracked as object attributes
+- Chapter progression with real-time updates
+- Assessment scores stored and calculated automatically
+- Time tracking for modules with fraud prevention
+
+### 3. Assessment System
+- Pre and post assessments managed through the system
+- Multiple question types with validation
+- Score calculation with real-time updates
+- Answer sheet generation with detailed feedback
+- Time limit enforcement to prevent cheating
+
+### 4. User Management
+- Session persistence through Core class methods
+- Multi-user support on single device with data isolation
+- User switching functionality with secure data separation
+- Privacy controls through content_privacy system
+
+### 5. Content Delivery
+- Sequential content navigation with state management
+- Rich media support (images, YouTube videos)
+- Keyboard-based navigation with dynamic options
+- Emoji-enhanced interface with customizable icons
+
+### 6. Data Validation
+- Mobile number format validation with regex patterns
+- Duplicate prevention using Core class search methods
+- Required field enforcement through content type definitions
+- Time-based completion validation with fraud detection
+
+## Configuration
+
+### Environment Setup (.env)
+```env
+DB_HOST=localhost
+DB_NAME=skillbot_database
+DB_USER=your_username
+DB_PASS=your_password
+TRIBE_API_SECRET_KEY=your_secret_key
+SSL=false
+```
+
+### Emoji Configuration
+- `emoji_done` (✅) - Completed items
+- `emoji_next` (👉) - Next action
+- `emoji_home` (🏠) - Home/main menu
+- `emoji_youwerehere` (➡️) - Current position indicator
+
+### Behavioral Settings
+- `do_not_allow_duplicate_mobile_numbers` - Prevents duplicate mobile registrations
+- `allow_multiuser` - Enables multi-user functionality
+- `time_limit` - Minimum time required for module completion (seconds)
+
+### Language Configuration
+- `languages` - Available language options in derephrase format
+- `pre_assessment_word` - Label for pre-assessments per language
+- `post_assessment_word` - Label for post-assessments per language
+
+### Telegram Bot Activation
+
+After successful deployment, the Telegram webhook must be manually activated by the development team:
+
+1. **Access Webhook Tool**:
+Navigate to `https://your-domain.com/tool/botman-webhook.php` in your browser
+
+2. **Webhook Configuration**:
+This tool will automatically configure the Telegram webhook to point to your `single-chatbot.php` endpoint
+
+3. **Verification**:
+Test the bot by sending a message to your Telegram bot to ensure the webhook is properly configured
+
+**Note**: This is a manual step that must be performed by the coding team each time a new bot is deployed or the webhook URL changes.
+
+## Security Features (Tribe Framework Enhanced)
+
+1. **Input Validation**: All user inputs validated through Tribe Framework's type system
+2. **SQL Injection Prevention**: Uses Tribe Framework's prepared statements
+3. **Data Isolation**: Users can only access their own data through privacy controls
+4. **Time-based Validation**: Prevents rapid completion abuse
+5. **Content Privacy**: Leverages Tribe Framework's privacy levels (public, private, draft, pending)
+6. **API Security**: Optional API key authentication for advanced features
+
+## Installation
+
+### Docker Installation
+
+DEF Skillbot can be easily deployed using Tribe Framework's official Docker template, which provides a complete containerized environment with all dependencies pre-configured.
+
+#### Prerequisites
+- **Docker** and **Docker Compose** installed
+- **Git** for cloning repository
+- **Minimum 2GB RAM** for containers
+- **Port availability** for web services
+
+#### Quick Start Installation
+
+1. **Clone the Docker Template**:
+```bash
+git clone https://github.com/tribe-framework/docker-tribe-template.git def-skillbot
+cd def-skillbot
+```
+
+2. **Run the Setup Script**:
+```bash
+./run
+# Choose option 1 to build/configure
+```
+
+3. **Fill in the Configuration Form**:
+When prompted, provide the following information:
+```
+Application name: DEF Skillbot
+Application unique ID: def-skillbot
+Database name: skillbot_db
+Database user: skillbot_user
+Database password: [secure_password]
+Port for Tribe: 8080
+Port for Junction: 8081
+Junction password: [admin_password]
+Domain for APP: your-domain.com
+Enable HTTPS for Tribe? (y/n): y
+```
+
+4. **Deploy the Application**:
+```bash
+./run
+# Choose option 2 to deploy
+```
+
+The script will automatically:
+- Set up Docker containers for PHP 8.3, MySQL 8.4, and Nginx
+- Configure database with proper schema
+- Set up SSL certificates for development
+- Configure phpMyAdmin for database management
+- Create proper network isolation
+
+#### Docker Services Included
+
+The installation provides these containerized services:
+
+**Database Container (`def-skillbot-db`)**:
+- MySQL 8.4 with JSON support
+- Automatic schema creation
+- Persistent data storage in `./.db` directory
+- Health checks for container readiness
+
+**Application Container (`docker-skillbot-template`)**:
+- PHP 8.3-FPM with all required extensions
+- Nginx web server with optimized configuration
+- Tribe Framework pre-installed
+- BotMan framework for Telegram integration
+- phpMyAdmin for database administration
+
+#### Post-Installation Setup
+
+After successful Docker deployment:
+
+1. **Access the Application**:
+   - Tribe API: `http://localhost:8080` (or your configured port)
+   - Junction Admin: `http://localhost:8081`
+   - phpMyAdmin: `http://localhost:8080/phpmyadmin`
+
+2. **Configure Telegram Webhook**:
+After deployment, manually activate the Telegram webhook by accessing:
+```
+https://your-domain.com/tool/botman-webhook.php
+```
+
+This step must be performed by the development team to connect your Telegram bot to the application..
+
+5. **Set File Permissions**:
+```bash
+# The setup script handles this automatically, but if needed:
+docker exec docker-skillbot-template chown -R www-data:www-data /var/www
+```
+
+#### Environment Configuration
+
+The Docker setup automatically creates a `.env` file with all necessary configurations:
+
+```env
+# Application Settings
+APP_NAME=DEF Skillbot
+JUNCTION_SLUG=def-skillbot
+WEBSITE_NAME=DEF Skillbot
+CONTACT_NAME=Your Name
+CONTACT_EMAIL=your@email.com
+
+# Database Configuration
+DB_HOST=def-skillbot-db
+DB_NAME=skillbot_db
+DB_USER=skillbot_user
+DB_PASS=your_secure_password
+DB_PORT=3306
+
+# Web Configuration
+WEB_BARE_URL=tribe.your-domain.com
+WEB_URL=https://tribe.your-domain.com
+APP_URL=https://your-domain.com
+JUNCTION_URL=https://junction.your-domain.com
+
+# Security
+TRIBE_API_SECRET_KEY=auto_generated_secret
+SSL=true
+ENV=prod
+
+# Docker Networking
+TRIBE_PORT=8080
+JUNCTION_PORT=8081
+DOCKER_SUBNET=172.80.0.0/29
+```
+
+#### Docker Management Commands
+
+**Start Services**:
+```bash
+docker compose up -d
+```
+
+**Stop Services**:
+```bash
+docker compose down
+```
+
+**View Logs**:
+```bash
+docker compose logs -f tribe  # Application logs
+docker compose logs -f db     # Database logs
+```
+
+**Access Container Shell**:
+```bash
+docker exec -it docker-skillbot-template bash
+```
+
+**Database Backup**:
+```bash
+docker exec def-skillbot-db mysqldump -u skillbot_user -p skillbot_db > backup.sql
+```
+
+## Performance Optimization
+
+### Tribe Framework Advantages
+- **JSON Storage**: Flexible schema evolution without migrations
+- **Prepared Statements**: Optimized database queries
+- **Object Caching**: Built-in caching for frequently accessed content
+- **Bulk Operations**: Efficient batch processing for related objects
+
+### Recommended Optimizations
+1. **Database Indexing**: Index frequently searched fields
+2. **Content Caching**: Cache static content and configuration
+3. **Image Optimization**: Use appropriate image sizes for Telegram
+4. **Background Processing**: Handle heavy operations asynchronously
+
+## Monitoring and Maintenance
+
+### Health Checks
+- Database connectivity
+- Telegram API response times
+- File system permissions
+- Memory usage monitoring
+
+### Backup Strategy
+- **Database Backups**: Regular MySQL dumps
+- **File Backups**: User uploads and configuration files
+- **Version Control**: Code changes and configuration updates
