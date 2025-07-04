@@ -20,7 +20,7 @@ DEF Skillbot can be easily deployed using it's official Docker template, which p
 
 1. **Clone the Docker Template**:
 ```bash
-git clone https://github.com/tribe-framework/docker-tribe-template.git def-skillbot
+git clone https://github.com/tribe-framework/docker-skillbot-template.git def-skillbot
 cd def-skillbot
 ```
 
