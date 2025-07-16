@@ -30,7 +30,7 @@ if [[ "${OVERWRITE_ENV,,}" == "yes" ]]; then
     JUNCTION_PASS=$(random_password)
 
     read -p "Website URL: " WEB_BARE_URL
-    read -p "Bot name: " APP_NAME
+    read -p "Application name: " APP_NAME
     read -p "Enter a port number for Junction: " JUNCTION_PORT
     read -p "Enter a port number for Tribe: " TRIBE_PORT
 
@@ -40,8 +40,8 @@ if [[ "${OVERWRITE_ENV,,}" == "yes" ]]; then
 
     APP_UID=$(random_name)
 
-    DB_NAME=$APP_UID
-    DB_USER="skillbot"
+    DB_NAME="skillbot_db"
+    DB_USER="skillbot_user"
     DB_PASS=$(random_password)
     DB_HOST="${APP_UID}_db"
 

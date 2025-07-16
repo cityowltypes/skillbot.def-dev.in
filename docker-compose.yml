@@ -19,7 +19,7 @@ services:
       - MYSQL_DATABASE=${DB_NAME}
 
   junction:
-    image: tribeframework/tribe:v1.2.7
+    image: ajyotirmay/skillbot:v1.2.7
     container_name: ${APP_UID}_tribe
     restart: 'unless-stopped'
     working_dir: /var/www/
