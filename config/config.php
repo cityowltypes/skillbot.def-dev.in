@@ -8,37 +8,39 @@
  */
 
 date_default_timezone_set($_ENV['DEFAULT_TIMEZONE']);
-// error_reporting(E_ALL & ~E_NOTICE);
-error_reporting(E_ERROR);
-
-if (file_exists(__DIR__ . '/vars.php')) {
-	include_once __DIR__ . '/vars.php';
-}
-
-if (!defined('VAR_NAME')) {
-	define(
-		'UPLOAD_FILE_TYPES',
-		'/\.(zip|svg|png|jpe?g|gif|pdf|doc|docx|xls|xlsx|csv|mov|mp4|vtt|srt)$/i'
-	);
-}
 
 // set cors headers in PHP server
 if ($_ENV['ALLOW_CROSS_ORIGIN'] === 'true') {
+    if ($_ENV['ENV'] == 'prod') {
+        $allowed_origins = [
+            $_ENV['WEB_URL'],
+            $_ENV['APP_URL'],
+            $_ENV['JUNCTION_URL'],
+            $_ENV['DOCKER_INTERNAL_TRIBE_URL'],
+            $_ENV['DOCKER_INTERNAL_JUNCTION_URL'],
+            $_ENV['DOCKER_EXTERNAL_TRIBE_URL'],
+            $_ENV['DOCKER_EXTERNAL_JUNCTION_URL'],
+        ];
 
-	//in dev environment, allowing cross origin * for localhost
-	if ($_ENV['ENV'] == 'dev') {
-		header("Access-Control-Allow-Origin: *");
-	}
 
-	//in prod environment, if cross origin access is required, uncomment the following and modify cross_origin_url
-	/*
-	if ($_ENV['ENV'] == 'prod') {
-		$cross_origin_url = 'domain.tld';
-		header("Access-Control-Allow-Origin: $cross_origin_url");
-	}
-	*/
+        if (array_key_exists('HTTP_ORIGIN', $_SERVER)) {
+            $_origin = $_SERVER["HTTP_ORIGIN"];
+        } else if (array_key_exists('HTTP_HOST', $_SERVER)) {
+            $_origin = $_SERVER["HTTP_HOST"];
+        } else {
+            $_origin = "";
+        }
 
-	unset($cross_origin_url);
+        header("Access-Control-Allow-Origin: $_origin");
+        header("Access-Control-Allow-Headers: *");
+        header("Access-Control-Allow-Methods: *");
+    }
+    //in dev environment, allowing cross origin *
+    else {
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Headers: *");
+        header("Access-Control-Allow-Methods: *");
+    }
 }
 
 define('TRIBE_ROOT', dirname(__DIR__, 1));
@@ -59,5 +61,3 @@ define('S3_BKUP_ACCESS_KEY', ($_ENV['S3_BKUP_ACCESS_KEY'] ?? ''));
 define('S3_BKUP_SECRET_KEY', ($_ENV['S3_BKUP_SECRET_KEY'] ?? ''));
 define('S3_BKUP_FOLDER_NAME', ($_ENV['S3_BKUP_FOLDER_NAME'] ?? ''));
 define('BASE_URL', ($_ENV['SSL'] !== 'false' ? 'https' : 'http') . '://' . BARE_URL);
-define('THEME_URL', BASE_URL . '/theme');
-define('THEME_PATH', ABSOLUTE_PATH . '/theme');
