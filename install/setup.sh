@@ -58,6 +58,7 @@ if [[ "${OVERWRITE_ENV,,}" == "yes" ]]; then
     sed -i "s/\$DB_USER/$DB_USER/g" .env
     sed -i "s/\$DB_PASS/$DB_PASS/g" .env
     sed -i "s/\$DB_HOST/$DB_HOST/g" .env
+    sed -i "s/\$DB_HOST/$DB_HOST/g" config/phpmyadmin/config.inc.php
 
     sed -i "s/\$APP_NAME/$APP_NAME/g" .env
     sed -i "s/\$TRIBE_API_SECRET_KEY/$TRIBE_API_SECRET_KEY/g" .env
