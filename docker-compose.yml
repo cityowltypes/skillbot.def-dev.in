@@ -19,8 +19,8 @@ services:
       - MYSQL_DATABASE=${DB_NAME}
 
   junction:
-    image: ghcr.io/tribe-framework/junction:latest
-    container_name: ${JUNCTION_SLUG}_tribe
+    image: tribeframework/tribe:v1.2.7
+    container_name: ${APP_UID}_tribe
     restart: 'unless-stopped'
     working_dir: /var/www/
     depends_on:
@@ -42,4 +42,4 @@ services:
 networks:
   default:
     driver: bridge
-    name: ${JUNCTION_SLUG}_network
+    name: ${APP_UID}_network
