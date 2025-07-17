@@ -26,49 +26,33 @@ cd def-skillbot
 
 2. **Run the Setup Script**:
 ```bash
-./run
-# Choose option 1 to build/configure
+bash scripts/setup.sh
 ```
 
 3. **Fill in the Configuration Form**:
 When prompted, provide the following information:
 ```
+Website URL: your-domain.com
 Application name: DEF Skillbot
-Application unique ID: def-skillbot
-Database name: skillbot_db
-Database user: skillbot_user
-Database password: [secure_password]
-Port for Tribe: 8080
-Port for Junction: 8081
-Junction password: [admin_password]
-Domain for APP: your-domain.com
-Enable HTTPS for Tribe? (y/n): y
-```
-
-4. **Deploy the Application**:
-```bash
-./run
-# Choose option 2 to deploy
+Enter a port number for Tribe: any available port on your system or 8080
 ```
 
 The script will automatically:
 - Set up Docker containers for PHP 8.3, MySQL 8.4, and Nginx
 - Configure database with proper schema
-- Set up SSL certificates for development
 - Configure phpMyAdmin for database management
-- Create proper network isolation
 
 #### Docker Services Included
 
 The installation provides these containerized services:
 
-**Database Container (`def-skillbot-db`)**:
+**Database Container (`db`)**:
 - MySQL 8.4 with JSON support
 - Automatic schema creation
-- Persistent data storage in `./.db` directory
+- Persistent data storage in `./lc/mysql/db` directory
 - Health checks for container readiness
 
-**Application Container (`docker-skillbot-template`)**:
+**Application Container (`tribe`)**:
 - PHP 8.3-FPM with all required extensions
 - Nginx web server with optimized configuration
 - BotMan framework for Telegram integration
@@ -80,8 +64,6 @@ After successful Docker deployment:
 
 1. **Access the Application**:
    - Tribe API: `http://localhost:8080` (or your configured port)
-   - Junction Admin: `http://localhost:8081`
-   - phpMyAdmin: `http://localhost:8080/phpmyadmin`
 
 2. **Configure Telegram Webhook**:
 After deployment, manually activate the Telegram webhook by accessing:
@@ -90,12 +72,6 @@ https://your-domain.com/tool/botman-webhook.php
 ```
 
 This step must be performed by the development team to connect your Telegram bot to the application..
-
-5. **Set File Permissions**:
-```bash
-# The setup script handles this automatically, but if needed:
-docker exec docker-skillbot-template chown -R www-data:www-data /var/www
-```
 
 #### Environment Configuration
 

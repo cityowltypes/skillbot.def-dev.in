@@ -31,6 +31,7 @@ RUN apt-get update && \
         nginx \
         git \
         pdftk \
+        nodejs npm \
         poppler-utils && \
     # setup composer for php
     curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php && \
@@ -46,29 +47,20 @@ RUN sed -i 's/post_max_size = 8M/post_max_size = 1024M/' "${PHP_INI_DIR}/php.ini
     sed -i 's/memory_limit = 128M/memory_limit = 2048M/' "${PHP_INI_DIR}/php.ini" && \
     sed -i "\|include /etc/nginx/sites-enabled/\*;|d" "/etc/nginx/nginx.conf"
 
-## setup tribe
-RUN curl -L -o tribe.tar.gz https://github.com/tribe-framework/tribe/archive/refs/tags/v3.1.9.tar.gz && \
-    tar -xzf tribe.tar.gz -C /var/www --strip-components=1 && \
-    rm tribe.tar.gz
+COPY . .
 
-COPY composer.json ./
-COPY composer.lock ./
-
-RUN composer i && \
+RUN npm i && composer i && \
     ## phpmyadmin
     curl https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.tar.gz -o pma.tar.gz && \
     mkdir /var/www/phpmyadmin && \
     tar -xzf pma.tar.gz -C /var/www/phpmyadmin --strip-components=1 && \
     rm pma.tar.gz
 
-## junction
-COPY "applications/junction" "junction/dist"
-
-RUN chown -R www-data: uploads/ logs/ && \
+RUN mkdir uploads logs && \
+    chown -R www-data: uploads/ logs/ && \
     service php8.3-fpm restart;
 
 EXPOSE 80
-EXPOSE 81
 
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

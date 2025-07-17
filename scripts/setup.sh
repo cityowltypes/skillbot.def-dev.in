@@ -26,12 +26,8 @@ else
 fi
 
 if [[ "${OVERWRITE_ENV,,}" == "yes" ]]; then
-    # Generate values
-    JUNCTION_PASS=$(random_password)
-
     read -p "Website URL: " WEB_BARE_URL
     read -p "Application name: " APP_NAME
-    read -p "Enter a port number for Junction: " JUNCTION_PORT
     read -p "Enter a port number for Tribe: " TRIBE_PORT
 
     # remove http(s):// from WEB_BARE_URL
@@ -47,12 +43,9 @@ if [[ "${OVERWRITE_ENV,,}" == "yes" ]]; then
 
     TRIBE_API_SECRET_KEY=$(random_password)
 
-    sed -i "s/\$JUNCTION_PASS/$JUNCTION_PASS/g" .env
-
     sed -i "s/\$WEB_BARE_URL/$WEB_BARE_URL/g" .env
 
     sed -i "s/\$TRIBE_PORT/$TRIBE_PORT/g" .env
-    sed -i "s/\$JUNCTION_PORT/$JUNCTION_PORT/g" .env
 
     sed -i "s/\$DB_NAME/$DB_NAME/g" .env
     sed -i "s/\$DB_USER/$DB_USER/g" .env
