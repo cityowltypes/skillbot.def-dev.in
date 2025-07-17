@@ -129,12 +129,13 @@ docker compose logs -f db     # Database logs
 
 **Access Container Shell**:
 ```bash
-docker exec -it docker-skillbot-template bash
+docker compose exec tribe bash
 ```
 
 **Database Backup**:
 ```bash
-docker exec def-skillbot-db mysqldump -u skillbot_user -p skillbot_db > backup.sql
+set -a && source .env && set +a && \
+docker compose exec db mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" > backup.sql
 ```
 
 ### Telegram Bot Activation
