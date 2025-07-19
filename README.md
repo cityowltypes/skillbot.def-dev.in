@@ -18,7 +18,7 @@ DEF Skillbot can be easily deployed using it's official Docker template, which p
 
 #### Quick Start Installation
 
-1. **Clone the Docker Template**:
+**Clone the Docker Template**:
 ```bash
 sudo apt update
 sudo apt install docker.io
