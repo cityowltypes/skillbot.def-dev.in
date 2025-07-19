@@ -20,50 +20,35 @@ DEF Skillbot can be easily deployed using it's official Docker template, which p
 
 1. **Clone the Docker Template**:
 ```bash
-git clone https://github.com/tribe-framework/docker-skillbot-template.git def-skillbot
+sudo apt update
+sudo apt install docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+```
+(You'll need to log out and back in after adding yourself to the docker group)
+```
+git clone https://github.com/azeemkhandef/skillbot.def-dev.in.git def-skillbot
 cd def-skillbot
+docker build -t def-skillbot .
+docker run -d -p 4040:80 --name skillbot-container def-skillbot
 ```
+#### Useful Docker commands for management:
+- View running containers: `docker ps`
+- View all containers: `docker ps -a`
+- Stop container: `docker stop skillbot-container`
+- Start stopped container: `docker start skillbot-container`
+- Remove container: `docker rm skillbot-container`
+- View logs: `docker logs skillbot-container`
 
-2. **Run the Setup Script**:
-```bash
-bash scripts/setup.sh
-```
-
-3. **Fill in the Configuration Form**:
-When prompted, provide the following information:
-```
-Website URL: your-domain.com
-Application name: DEF Skillbot
-Enter a port number for Tribe: any available port on your system or 8080
-```
-
-The script will automatically:
-- Set up Docker containers for PHP 8.3, MySQL 8.4, and Nginx
-- Configure database with proper schema
-- Configure phpMyAdmin for database management
-
-#### Docker Services Included
-
-The installation provides these containerized services:
-
-**Database Container (`db`)**:
-- MySQL 8.4 with JSON support
-- Automatic schema creation
-- Persistent data storage in `./lc/mysql/db` directory
-- Health checks for container readiness
-
-**Application Container (`tribe`)**:
-- PHP 8.3-FPM with all required extensions
-- Nginx web server with optimized configuration
-- BotMan framework for Telegram integration
-- phpMyAdmin for database administration
+Your application will be accessible at `http://localhost:4040` once the container is running. The Dockerfile sets up a complete LEMP stack (Linux, Nginx, MySQL/MariaDB, PHP) with various tools and phpMyAdmin.
 
 #### Post-Installation Setup
 
 After successful Docker deployment:
 
 1. **Access the Application**:
-   - Tribe API: `http://localhost:8080` (or your configured port)
+   - Skillbot: `http://localhost:4040` (or your configured port)
 
 2. **Configure Telegram Webhook**:
 After deployment, manually activate the Telegram webhook by accessing:
@@ -71,68 +56,12 @@ After deployment, manually activate the Telegram webhook by accessing:
 https://your-domain.com/tool/botman-webhook.php
 ```
 
-This step must be performed by the development team to connect your Telegram bot to the application..
-
-#### Environment Configuration
-
-The Docker setup automatically creates a `.env` file with all necessary configurations:
-
-```env
-# Application Settings
-APP_NAME=DEF Skillbot
-JUNCTION_SLUG=def-skillbot
-WEBSITE_NAME=DEF Skillbot
-CONTACT_NAME=Your Name
-CONTACT_EMAIL=your@email.com
-
-# Database Configuration
-DB_HOST=def-skillbot-db
-DB_NAME=skillbot_db
-DB_USER=skillbot_user
-DB_PASS=your_secure_password
-DB_PORT=3306
-
-# Web Configuration
-WEB_BARE_URL=tribe.your-domain.com
-WEB_URL=https://tribe.your-domain.com
-APP_URL=https://your-domain.com
-JUNCTION_URL=https://junction.your-domain.com
-
-# Security
-TRIBE_API_SECRET_KEY=auto_generated_secret
-SSL=true
-ENV=prod
-
-# Docker Networking
-TRIBE_PORT=8080
-JUNCTION_PORT=8081
-DOCKER_SUBNET=172.80.0.0/29
-```
-
-#### Docker Management Commands
-
-**Start Services**:
-```bash
-docker compose up -d
-```
-
-**Stop Services**:
-```bash
-docker compose down
-```
-
-**View Logs**:
-```bash
-docker compose logs -f tribe  # Application logs
-docker compose logs -f db     # Database logs
-```
-
-**Access Container Shell**:
+3. **Access Container Shell**:
 ```bash
 docker compose exec tribe bash
 ```
 
-**Database Backup**:
+4. **Database Backup**:
 ```bash
 set -a && source .env && set +a && \
 docker compose exec db mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" > backup.sql
