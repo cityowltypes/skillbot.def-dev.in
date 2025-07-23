@@ -28,7 +28,7 @@
         }
     },
     "require": {
-        "php" : ">=7.4",
+        "php": "^7.4",
         "vlucas/phpdotenv": "^5.2",
         "wildfire/core": "^3.0",
         "wildfire/auth": "^2.0",
@@ -40,8 +40,8 @@
         "botman/driver-telegram": "^1.6",
         "landrok/language-detector": "^1.3",
         "ext-json": "*",
-        "friendsofphp/php-cs-fixer": "^3.10",
         "ext-mysqli": "*",
+        "friendsofphp/php-cs-fixer": "^3.10",
         "tribe/core": "^4.0",
         "tribe/auth": "^3.0",
         "tribe/api": "^1.0",
@@ -49,9 +49,22 @@
         "tribe/backup": "^2.0",
         "mikehaertl/php-pdftk": "^0.13.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
     "autoload": {
         "psr-4": {
             "Theme\\": "src/"
         }
-    }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "platform": {
+            "php": "7.4.33"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
