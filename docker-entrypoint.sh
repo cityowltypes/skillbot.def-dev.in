@@ -26,16 +26,16 @@ print_status "Starting Tribe application container..."
 
 # Set proper ownership and permissions
 print_status "Setting up file permissions..."
-chown -R www-data:www-data /var/www/uploads /var/www/logs
-chmod -R 755 /var/www/uploads
-chmod -R 755 /var/www/logs
+chown -R www-data:www-data ./uploads ./logs
+chmod -R 755 ./uploads
+chmod -R 755 ./logs
 
 # Create necessary directories if they don't exist
-mkdir -p /var/www/uploads /var/www/logs /var/www/cache /var/www/sessions
-chown -R www-data:www-data /var/www/uploads /var/www/logs /var/www/cache /var/www/sessions
+mkdir -p ./uploads ./logs ./cache ./sessions
+chown -R www-data:www-data ./uploads ./logs ./cache ./sessions
 
 # Check if .env file exists
-if [ ! -f /var/www/.env ]; then
+if [ ! -f ./.env ]; then
     print_warning ".env file not found. Application may not work correctly."
 fi
 
@@ -57,7 +57,7 @@ done
 print_status "Database connection established!"
 
 # Run composer install if vendor directory doesn't exist or is empty
-if [ ! -d "/var/www/vendor" ] || [ -z "$(ls -A /var/www/vendor)" ]; then
+if [ ! -d "./vendor" ] || [ -z "$(ls -A ./vendor)" ]; then
     print_status "Installing PHP dependencies..."
     cd /var/www
     composer install --no-dev --optimize-autoloader --no-interaction
@@ -66,7 +66,7 @@ else
 fi
 
 # Run npm install if node_modules doesn't exist or is empty
-if [ ! -d "/var/www/node_modules" ] || [ -z "$(ls -A /var/www/node_modules)" ]; then
+if [ ! -d "./node_modules" ] || [ -z "$(ls -A ./node_modules)" ]; then
     print_status "Installing Node.js dependencies..."
     cd /var/www
     npm install --production
@@ -157,8 +157,8 @@ server {
     }
 
     # Error and access logs
-    error_log /var/www/logs/nginx_error.log;
-    access_log /var/www/logs/nginx_access.log;
+    error_log ./logs/nginx_error.log;
+    access_log ./logs/nginx_access.log;
 }
 EOF
 else
