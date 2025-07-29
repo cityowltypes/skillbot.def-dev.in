@@ -16,12 +16,47 @@ readonly MAX_DB_WAIT_TIME=120
 readonly HEALTH_CHECK_INTERVAL=10
 readonly PHP_FPM_SOCKET="/run/php/php7.4-fpm.sock"
 
-DB_HOST=db
-DB_PORT=3306
-DB_ROOT_PASS=rootpassword123
-DB_USER=tribe_user
-DB_PASS=userpassword123
-DB_NAME=tribe_db
+# Function to load environment variables from .env file
+load_env_file() {
+    local env_file="./.env"
+    
+    if [[ -f "$env_file" ]]; then
+        print_status "Loading environment variables from $env_file"
+        
+        # Read .env file and export variables
+        while IFS='=' read -r key value; do
+            # Skip empty lines and comments
+            [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+            
+            # Remove quotes from value if present
+            value=$(echo "$value" | sed 's/^"\(.*\)"$/\1/' | sed "s/^'\(.*\)'$/\1/")
+            
+            # Export the variable
+            export "$key"="$value"
+            print_debug "Loaded: $key=$value"
+        done < <(grep -v '^[[:space:]]*$' "$env_file" | grep -v '^[[:space:]]*#')
+        
+        print_status "Environment variables loaded successfully"
+    else
+        print_warning ".env file not found at $env_file, using default values"
+    fi
+}
+
+# Default values (will be overridden by .env file if present)
+WEB_BARE_URL="${WEB_BARE_URL:-localhost}"
+WEB_URL="${WEB_URL:-http://localhost:8080}"
+WEBSITE_NAME="${WEBSITE_NAME:-tribe}"
+APP_UID="${APP_UID:-tribe}"
+TRIBE_API_SECRET_KEY="${TRIBE_API_SECRET_KEY:-default_secret}"
+DB_PORT="${DB_PORT:-3306}"
+TRIBE_PORT="${TRIBE_PORT:-8080}"
+DOCKER_EXTERNAL_TRIBE_URL="${DOCKER_EXTERNAL_TRIBE_URL:-http://localhost:8080}"
+TRIBE_SLUG="${TRIBE_SLUG:-tribe}"
+DB_HOST="${DB_HOST:-db}"
+DB_ROOT_PASS="${DB_ROOT_PASS:-rootpassword123}"
+DB_USER="${DB_USER:-tribe_user}"
+DB_PASS="${DB_PASS:-userpassword123}"
+DB_NAME="${DB_NAME:-tribe_db}"
 
 # PID files
 NGINX_PID=""
@@ -62,9 +97,9 @@ wait_for_database() {
     print_status "Waiting for database connection..."
     
     local counter=0
-    local db_host="${DB_HOST:-db}"
-    local db_user="${DB_USER:-root}"
-    local db_pass="${DB_PASS}"
+    local db_host="$DB_HOST"
+    local db_user="$DB_USER"
+    local db_pass="$DB_PASS"
     
     if [[ -z "$db_pass" ]]; then
         print_error "Database password not provided"
@@ -92,18 +127,38 @@ setup_permissions() {
     local directories=("uploads" "logs" "cache" "sessions" "tmp")
     
     for dir in "${directories[@]}"; do
+        print_debug "Processing directory: $dir"
+        
+        # Create directory if it doesn't exist
         if [[ ! -d "./$dir" ]]; then
             print_debug "Creating directory: $dir"
-            mkdir -p "./$dir"
+            mkdir -p "./$dir" || {
+                print_warning "Failed to create directory: $dir"
+                continue
+            }
         fi
-        chown -R www-data:www-data "./$dir"
-        chmod -R 755 "./$dir"
+        
+        # Try to change ownership, but don't fail if it doesn't work
+        if chown -R www-data:www-data "./$dir" 2>/dev/null; then
+            print_debug "Changed ownership of $dir to www-data:www-data"
+        else
+            print_warning "Could not change ownership of $dir (may be a volume mount)"
+        fi
+        
+        # Try to change permissions, but don't fail if it doesn't work
+        if chmod -R 755 "./$dir" 2>/dev/null; then
+            print_debug "Set permissions 755 on $dir"
+        else
+            print_warning "Could not change permissions of $dir (may be a volume mount)"
+        fi
     done
     
-    # Skip .env permission changes since it's mounted read-only
-    if [[ -f "./.env" ]]; then
-        print_debug "Found .env file (mounted read-only, skipping permission changes)"
-    fi
+    # Ensure /run/php directory exists with correct permissions
+    mkdir -p /run/php
+    chown www-data:www-data /run/php
+    chmod 755 /run/php
+    
+    print_status "File permissions setup completed"
 }
 
 # Function to validate environment
@@ -111,7 +166,7 @@ validate_environment() {
     print_status "Validating environment..."
     
     # Check required environment variables
-    local required_vars=("DB_HOST" "DB_USER" "DB_PASS" "DB_NAME")
+    local required_vars=("DB_HOST" "DB_USER" "DB_PASS" "DB_NAME" "TRIBE_PORT")
     local missing_vars=()
     
     for var in "${required_vars[@]}"; do
@@ -125,17 +180,29 @@ validate_environment() {
         return 1
     fi
     
-    # Check if .env file exists
-    if [[ ! -f "./.env" ]]; then
-        print_warning ".env file not found. Application may not work correctly."
-    fi
+    # Print loaded configuration for debugging
+    print_debug "Configuration loaded:"
+    print_debug "  WEB_BARE_URL: $WEB_BARE_URL"
+    print_debug "  WEB_URL: $WEB_URL"
+    print_debug "  WEBSITE_NAME: $WEBSITE_NAME"
+    print_debug "  APP_UID: $APP_UID"
+    print_debug "  DB_HOST: $DB_HOST"
+    print_debug "  DB_PORT: $DB_PORT"
+    print_debug "  DB_NAME: $DB_NAME"
+    print_debug "  DB_USER: $DB_USER"
+    print_debug "  TRIBE_PORT: $TRIBE_PORT"
+    print_debug "  TRIBE_SLUG: $TRIBE_SLUG"
     
     return 0
 }
 
-# Function to start PHP-FPM
+# Function to start PHP-FPM - FIXED VERSION
 start_php_fpm() {
     print_status "Starting PHP-FPM..."
+    
+    # Ensure /run/php directory exists
+    mkdir -p /run/php
+    chown www-data:www-data /run/php
     
     # Test PHP-FPM configuration
     if ! php-fpm7.4 -t; then
@@ -143,20 +210,34 @@ start_php_fpm() {
         return 1
     fi
     
-    # Start PHP-FPM
-    service php7.4-fpm start
+    # Kill any existing PHP-FPM processes
+    pkill -f php-fpm || true
+    
+    # Remove old socket if it exists
+    rm -f "$PHP_FPM_SOCKET"
+    
+    # Start PHP-FPM directly (not as a service)
+    print_debug "Starting PHP-FPM process..."
+    php-fpm7.4 --daemonize --fpm-config /etc/php/7.4/fpm/php-fpm.conf
     
     # Wait for socket to be created
     local counter=0
     while [[ ! -S "$PHP_FPM_SOCKET" && $counter -lt 30 ]]; do
+        print_debug "Waiting for PHP-FPM socket... ($counter/30)"
         sleep 1
         counter=$((counter + 1))
     done
     
     if [[ ! -S "$PHP_FPM_SOCKET" ]]; then
-        print_error "PHP-FPM socket not created!"
+        print_error "PHP-FPM socket not created at $PHP_FPM_SOCKET!"
+        print_debug "Directory contents of /run/php/:"
+        ls -la /run/php/ || true
         return 1
     fi
+    
+    # Verify socket permissions
+    chown www-data:www-data "$PHP_FPM_SOCKET" 2>/dev/null || true
+    chmod 660 "$PHP_FPM_SOCKET" 2>/dev/null || true
     
     # Get PHP-FPM PID
     PHP_FPM_PID=$(pgrep -f "php-fpm: master process" || echo "")
@@ -167,6 +248,9 @@ start_php_fpm() {
     fi
     
     print_status "PHP-FPM started successfully (PID: $PHP_FPM_PID)"
+    print_debug "PHP-FPM socket created at: $PHP_FPM_SOCKET"
+    ls -la "$PHP_FPM_SOCKET"
+    
     return 0
 }
 
@@ -174,10 +258,10 @@ start_php_fpm() {
 setup_nginx_config() {
     if [[ ! -f "/etc/nginx/conf.d/default.conf" ]]; then
         print_status "Setting up default Nginx configuration..."
-        cat > /etc/nginx/conf.d/default.conf << 'EOF'
+        cat > /etc/nginx/conf.d/default.conf << EOF
 server {
     listen 80;
-    server_name _;
+    server_name $WEB_BARE_URL _;
     root /var/www;
     index index.php index.html index.htm;
 
@@ -198,23 +282,30 @@ server {
     gzip_min_length 1024;
     gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
 
+    # Test endpoint to verify nginx is working
+    location /nginx-test {
+        access_log off;
+        return 200 "Nginx is working for $WEBSITE_NAME!\n";
+        add_header Content-Type text/plain;
+    }
+
     # Health check endpoint
     location /health.php {
         access_log off;
-        try_files $uri =404;
+        try_files \$uri =404;
         fastcgi_pass unix:/run/php/php7.4-fpm.sock;
         fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
 
     # Handle PHP files
     location ~ \.php$ {
-        try_files $uri =404;
+        try_files \$uri =404;
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
         fastcgi_pass unix:/run/php/php7.4-fpm.sock;
         fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
         
         # Increase timeouts for long-running scripts
@@ -227,28 +318,33 @@ server {
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
-        try_files $uri =404;
+        try_files \$uri =404;
         access_log off;
     }
 
     # API routes
     location /api/ {
-        try_files $uri $uri/ /api/index.php?$query_string;
+        try_files \$uri \$uri/ /api/index.php?\$query_string;
     }
 
     # Admin routes  
     location /admin/ {
-        try_files $uri $uri/ /admin/index.php?$query_string;
+        try_files \$uri \$uri/ /admin/index.php?\$query_string;
     }
 
     # phpMyAdmin
     location /phpmyadmin/ {
-        try_files $uri $uri/ /phpmyadmin/index.php?$query_string;
+        try_files \$uri \$uri/ /phpmyadmin/index.php?\$query_string;
+    }
+
+    # Tribe specific routes
+    location /$TRIBE_SLUG/ {
+        try_files \$uri \$uri/ /$TRIBE_SLUG/index.php?\$query_string;
     }
 
     # Default route handling
     location / {
-        try_files $uri $uri/ /index.php?$query_string;
+        try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
     # Security: Deny access to sensitive files
@@ -305,54 +401,90 @@ start_nginx() {
 # Function to create health check file
 create_health_check() {
     print_status "Creating health check endpoint..."
-    cat > /var/www/health.php << 'EOF'
+    cat > /var/www/health.php << EOF
 <?php
 header('Content-Type: application/json');
 
-$health = [
+\$health = [
     'status' => 'ok',
     'timestamp' => date('c'),
+    'application' => '$WEBSITE_NAME',
+    'app_uid' => '$APP_UID',
+    'tribe_slug' => '$TRIBE_SLUG',
     'services' => []
 ];
 
 // Check database connection
 try {
-    $db_host = $_ENV['DB_HOST'] ?? 'db';
-    $db_name = $_ENV['DB_NAME'] ?? '';
-    $db_user = $_ENV['DB_USER'] ?? '';
-    $db_pass = $_ENV['DB_PASS'] ?? '';
+    \$db_host = '$DB_HOST';
+    \$db_name = '$DB_NAME';
+    \$db_user = '$DB_USER';
+    \$db_pass = '$DB_PASS';
     
-    if ($db_name && $db_user && $db_pass) {
-        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
-        $health['services']['database'] = 'ok';
+    if (\$db_name && \$db_user && \$db_pass) {
+        \$pdo = new PDO("mysql:host=\$db_host;dbname=\$db_name", \$db_user, \$db_pass);
+        \$health['services']['database'] = 'ok';
     } else {
-        $health['services']['database'] = 'config_missing';
+        \$health['services']['database'] = 'config_missing';
     }
-} catch (Exception $e) {
-    $health['services']['database'] = 'error';
-    $health['status'] = 'degraded';
+} catch (Exception \$e) {
+    \$health['services']['database'] = 'error';
+    \$health['status'] = 'degraded';
 }
 
 // Check PHP-FPM
-$health['services']['php_fpm'] = 'ok';
+\$health['services']['php_fpm'] = 'ok';
 
 // Check file permissions
-$dirs = ['uploads', 'logs', 'cache', 'sessions'];
-foreach ($dirs as $dir) {
-    if (!is_writable("/var/www/$dir")) {
-        $health['services']['filesystem'] = 'error';
-        $health['status'] = 'degraded';
+\$dirs = ['uploads', 'logs', 'cache', 'sessions'];
+foreach (\$dirs as \$dir) {
+    if (!is_writable("/var/www/\$dir")) {
+        \$health['services']['filesystem'] = 'error';
+        \$health['status'] = 'degraded';
         break;
     }
 }
-if (!isset($health['services']['filesystem'])) {
-    $health['services']['filesystem'] = 'ok';
+if (!isset(\$health['services']['filesystem'])) {
+    \$health['services']['filesystem'] = 'ok';
 }
 
-http_response_code($health['status'] === 'ok' ? 200 : 503);
-echo json_encode($health, JSON_PRETTY_PRINT);
+http_response_code(\$health['status'] === 'ok' ? 200 : 503);
+echo json_encode(\$health, JSON_PRETTY_PRINT);
 EOF
-    chown www-data:www-data /var/www/health.php
+    
+    # Try to change ownership, but don't fail if it doesn't work
+    chown www-data:www-data /var/www/health.php 2>/dev/null || print_warning "Could not change ownership of health.php"
+}
+
+# Function to create a simple test PHP file
+create_test_files() {
+    print_status "Creating test files..."
+    
+    # Create a simple PHP info file for testing
+    cat > /var/www/phpinfo.php << 'EOF'
+<?php
+phpinfo();
+EOF
+    
+    # Create a simple index.php if it doesn't exist
+    if [[ ! -f "/var/www/index.php" ]]; then
+        cat > /var/www/index.php << EOF
+<?php
+echo "<h1>$WEBSITE_NAME Application is Running!</h1>";
+echo "<p>Application UID: $APP_UID</p>";
+echo "<p>Tribe Slug: $TRIBE_SLUG</p>";
+echo "<p>Web URL: $WEB_URL</p>";
+echo "<p>PHP Version: " . phpversion() . "</p>";
+echo "<p>Current Time: " . date('Y-m-d H:i:s') . "</p>";
+echo "<p><a href='/health.php'>Health Check</a></p>";
+echo "<p><a href='/phpinfo.php'>PHP Info</a></p>";
+echo "<p><a href='/phpmyadmin/'>phpMyAdmin</a></p>";
+echo "<p><a href='/nginx-test'>Nginx Test</a></p>";
+EOF
+    fi
+    
+    # Set permissions
+    chown www-data:www-data /var/www/*.php 2>/dev/null || true
 }
 
 # Function to monitor services
@@ -379,6 +511,17 @@ monitor_services() {
             fi
         fi
         
+        # Check PHP-FPM socket
+        if [[ ! -S "$PHP_FPM_SOCKET" ]]; then
+            print_warning "PHP-FPM socket missing, attempting restart..."
+            if start_php_fpm; then
+                print_status "PHP-FPM socket recreated successfully"
+            else
+                print_error "Failed to recreate PHP-FPM socket!"
+                return 1
+            fi
+        fi
+        
         print_debug "Service health check passed"
     done
 }
@@ -396,7 +539,7 @@ shutdown() {
     
     # Stop PHP-FPM
     print_status "Stopping PHP-FPM..."
-    service php7.4-fpm stop || true
+    pkill -f php-fpm || true
     
     print_status "Shutdown complete"
     exit 0
@@ -404,43 +547,57 @@ shutdown() {
 
 # Main execution
 main() {
-    print_status "Starting Tribe application container..."
+    print_status "Starting $WEBSITE_NAME application container..."
+    
+    # Load environment variables from .env file first
+    load_env_file
     
     # Set up signal handlers
     trap shutdown SIGTERM SIGINT SIGQUIT
     
     # Validate environment
     if ! validate_environment; then
+        print_error "Environment validation failed!"
         exit 1
     fi
     
     # Set up file permissions
-    setup_permissions
-    
-    # Wait for database
-    if ! wait_for_database; then
+    if ! setup_permissions; then
+        print_error "Permission setup failed!"
         exit 1
     fi
     
-    # Create health check endpoint
+    # Wait for database
+    if ! wait_for_database; then
+        print_error "Database connection failed!"
+        exit 1
+    fi
+    
+    # Create health check endpoint and test files
     create_health_check
+    create_test_files
     
     # Start PHP-FPM
     if ! start_php_fpm; then
+        print_error "PHP-FPM startup failed!"
         exit 1
     fi
     
     # Start Nginx
     if ! start_nginx; then
+        print_error "Nginx startup failed!"
         exit 1
     fi
     
-    print_status "✅ Tribe application is ready!"
+    print_status "✅ $WEBSITE_NAME application is ready!"
     print_status "Services running:"
     print_status "  - PHP-FPM: PID $PHP_FPM_PID"
     print_status "  - Nginx: PID $NGINX_PID"
-    print_status "  - Application: http://localhost:${TRIBE_PORT:-8080}"
-    print_status "  - Health check: http://localhost:${TRIBE_PORT:-8080}/health.php"
+    print_status "  - Application: $WEB_URL"
+    print_status "  - Health check: $WEB_URL/health.php"
+    print_status "  - PHP Info: $WEB_URL/phpinfo.php"
+    print_status "  - Nginx Test: $WEB_URL/nginx-test"
+    print_status "  - Local access: http://localhost:$TRIBE_PORT"
     
     # Start monitoring
     monitor_services

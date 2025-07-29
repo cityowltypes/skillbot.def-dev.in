@@ -14,6 +14,7 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 # Add user to docker group
 sudo usermod -aG docker $USER
 newgrp docker
+sudo apt install docker-compose
 
 docker --version
 docker compose version
