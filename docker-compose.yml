@@ -51,7 +51,7 @@ services:
     volumes:
       # Configuration files
       - ./.env:/var/www/.env:ro
-      - ./config/nginx:/etc/nginx/conf.d:ro
+      - ./config/nginx:/etc/nginx/conf.d
 
       # Application code (for development)
       - ./api:/var/www/api
