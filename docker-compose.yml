@@ -1,52 +1,119 @@
+version: "3.8"
+
 services:
   db:
     image: mysql:8.0.35
     container_name: ${APP_UID}_db
-    restart: 'unless-stopped'
-    user: root
-    volumes:
-      - ./lc/mysql/db:/var/lib/mysql
-      # - ./lc/mysql/mysqld.cnf:/etc/mysql/conf.d/mysqld.cnf
-      - ./:/var/www
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+    restart: unless-stopped
     environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASS}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASS}
-      - MYSQL_ROOT_PASSWORD=${DB_PASS}
       - MYSQL_DATABASE=${DB_NAME}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./config/mysql/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${DB_ROOT_PASS}",
+        ]
+      timeout: 20s
+      retries: 10
+      interval: 30s
+      start_period: 60s
     command: >
       --default-authentication-plugin=mysql_native_password
       --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO
+      --innodb-buffer-pool-size=256M
+      --max_connections=100
+    networks:
+      - app_network
 
   tribe:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - PHP_VERSION=7.4
     container_name: ${APP_UID}_tribe
-    restart: 'unless-stopped'
-    working_dir: /var/www/
+    restart: unless-stopped
+    working_dir: /var/www
     depends_on:
       db:
         condition: service_healthy
     ports:
-      - "${TRIBE_PORT}:80"
+      - "${TRIBE_PORT:-8080}:80"
     volumes:
-      - ./.env:/var/www/.env
+      # Configuration files
+      - ./.env:/var/www/.env:ro
+      - ./config/nginx:/etc/nginx/conf.d:ro
+      - ./config/phpmyadmin/config.inc.php:/var/www/phpmyadmin/config.inc.php:ro
+
+      # Application code (for development)
       - ./api:/var/www/api
       - ./theme:/var/www/theme
       - ./config:/var/www/config
       - ./custom:/var/www/custom
-      - ./uploads:/var/www/uploads
       - ./applications:/var/www/applications
-      - ./config/phpmyadmin/config.inc.php:/var/www/phpmyadmin/config.inc.php
-      - ./config/nginx:/etc/nginx/conf.d
+
+      # Persistent data
+      - uploads_data:/var/www/uploads
+      - logs_data:/var/www/logs
+      - cache_data:/var/www/cache
+      - sessions_data:/var/www/sessions
     environment:
       - PHP_VERSION=7.4
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health.php"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 60s
+    networks:
+      - app_network
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+
+volumes:
+  db_data:
+    driver: local
+    name: ${APP_UID}_db_data
+  uploads_data:
+    driver: local
+    name: ${APP_UID}_uploads
+  logs_data:
+    driver: local
+    name: ${APP_UID}_logs
+  cache_data:
+    driver: local
+    name: ${APP_UID}_cache
+  sessions_data:
+    driver: local
+    name: ${APP_UID}_sessions
 
 networks:
-  default:
+  app_network:
     driver: bridge
     name: ${APP_UID}_network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
