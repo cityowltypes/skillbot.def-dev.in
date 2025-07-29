@@ -1,48 +1,40 @@
-FROM ubuntu:20.04 as base
+FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Create non-root user early
-RUN groupadd -r appuser && useradd -r -g appuser -m -d /home/appuser appuser
 
 # Install system packages and configure timezone
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y \
         tzdata \
-        apt-utils \
         software-properties-common \
-        apt-transport-https \
-        build-essential \
         curl \
-        wget \
+        mysql-client \
         git \
         unzip \
         zip \
         vim \
-        net-tools \
-        mysql-client \
     && ln -fs /usr/share/zoneinfo/Asia/Kolkata /etc/localtime \
     && dpkg-reconfigure tzdata \
     && add-apt-repository ppa:ondrej/php \
     && apt-get update \
     && apt-get install -y \
-        php7.4-fpm=7.4.* \
-        php7.4-cli=7.4.* \
-        php7.4-mysqli=7.4.* \
-        php7.4-curl=7.4.* \
-        php7.4-mbstring=7.4.* \
-        php7.4-gd=7.4.* \
-        php7.4-zip=7.4.* \
-        php7.4-xml=7.4.* \
-        php7.4-json=7.4.* \
-        php7.4-bcmath=7.4.* \
-        php7.4-intl=7.4.* \
-        php7.4-soap=7.4.* \
-        php7.4-xsl=7.4.* \
-        nginx=1.18.* \
-        nodejs=10.* \
-        npm=6.* \
+        php7.4-fpm \
+        php7.4-cli \
+        php7.4-mysqli \
+        php7.4-curl \
+        php7.4-mbstring \
+        php7.4-gd \
+        php7.4-zip \
+        php7.4-xml \
+        php7.4-json \
+        php7.4-bcmath \
+        php7.4-intl \
+        php7.4-soap \
+        php7.4-xsl \
+        nginx \
+        nodejs \
+        npm \
         python3-pip \
         imagemagick \
         ffmpeg \
@@ -52,7 +44,7 @@ RUN apt-get update && \
         p7zip-full \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Composer with specific version
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php \
     && php7.4 /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer --version=2.2.18 \
     && rm /tmp/composer-setup.php
@@ -81,47 +73,28 @@ RUN rm -f /etc/nginx/sites-enabled/default \
 # Set working directory
 WORKDIR /var/www
 
-# Copy dependency files first (for better caching)
-COPY --chown=appuser:appuser composer.json composer.lock* ./
-COPY --chown=appuser:appuser package.json package-lock.json* ./
+# Copy application code
+COPY . .
 
-# Install PHP dependencies
-USER appuser
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
-
-# Install Node.js dependencies
-RUN npm ci --only=production
-
-# Switch back to root for system operations
-USER root
+# Install only PHP dependencies during build
+RUN if [ -f "composer.json" ]; then \
+        composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs; \
+    fi
 
 # Install phpMyAdmin
 RUN curl -L https://files.phpmyadmin.net/phpMyAdmin/5.1.4/phpMyAdmin-5.1.4-all-languages.tar.gz -o pma.tar.gz \
     && mkdir -p /var/www/phpmyadmin \
     && tar -xzf pma.tar.gz -C /var/www/phpmyadmin --strip-components=1 \
-    && rm pma.tar.gz \
-    && chown -R www-data:www-data /var/www/phpmyadmin
-
-# Copy application code (excluding sensitive files via .dockerignore)
-COPY --chown=www-data:www-data . .
+    && rm pma.tar.gz
 
 # Create necessary directories and set permissions
-RUN mkdir -p uploads logs cache sessions tmp \
-    && chown -R www-data:www-data uploads/ logs/ cache/ sessions/ tmp/ \
+RUN mkdir -p uploads logs cache sessions tmp /run/php \
+    && chown -R www-data:www-data uploads/ logs/ cache/ sessions/ tmp/ phpmyadmin/ \
     && chmod -R 755 uploads/ logs/ cache/ sessions/ tmp/
-
-# Create PHP-FPM run directory
-RUN mkdir -p /run/php \
-    && chown www-data:www-data /run/php
 
 # Copy and set up entrypoint script
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost/health.php || exit 1
-
 EXPOSE 80
-
 CMD ["/usr/local/bin/docker-entrypoint.sh"]
