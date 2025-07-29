@@ -18,7 +18,7 @@ readonly PHP_FPM_SOCKET="/run/php/php7.4-fpm.sock"
 
 # Function to load environment variables from .env file
 load_env_file() {
-    local env_file="./.env"
+    local env_file="../.env"
     
     if [[ -f "$env_file" ]]; then
         print_status "Loading environment variables from $env_file"
