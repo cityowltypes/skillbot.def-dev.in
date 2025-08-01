@@ -1,3 +1,5 @@
+# Update system
+sudo apt install -y nginx
 sudo apt update && sudo apt upgrade -y
 
 # Install Docker
@@ -14,7 +16,21 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 # Add user to docker group
 sudo usermod -aG docker $USER
 newgrp docker
-sudo apt install docker-compose
 
+# Verify installation
 docker --version
 docker compose version
+
+sudo ufw allow 22
+sudo ufw allow 80
+sudo ufw allow 8080
+sudo ufw allow 443
+sudo ufw allow 3306
+
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+sudo ufw allow 'Nginx Full'
+sudo ufw enable
+
+reboot

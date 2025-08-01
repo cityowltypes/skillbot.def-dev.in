@@ -1,7 +1,7 @@
 # Installing Docker Application on Ubuntu 24.04
 
 ```
-bash install/server.sh
+rm install.sh; curl -s https://raw.githubusercontent.com/cityowltypes/skillbot.def-dev.in/master/install/install.sh -o install.sh; chmod +x install.sh; bash install.sh;
 ```
 
 ## **Application Setup**
