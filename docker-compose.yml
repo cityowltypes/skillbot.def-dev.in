@@ -68,7 +68,7 @@ services:
     environment:
       - PHP_VERSION=7.4
       - DB_HOST=db
-      - DB_PORT=3306
+      - DB_PORT=${DB_PORT:-3306}
       - DB_USER=${DB_USER:-tribe_user}
       - DB_PASS=${DB_PASS:-userpassword123}
       - DB_NAME=${DB_NAME:-tribe_db}
