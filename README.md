@@ -8,7 +8,7 @@ rm install.sh; curl -s https://raw.githubusercontent.com/cityowltypes/skillbot.d
 
 ```bash
 # Clone or create your project directory
-cd /var/www/html
+cd /var/www
 sudo git clone https://github.com/cityowltypes/skillbot.def-dev.in.git def-skillbot
 cd def-skillbot
 cp sample.env .env

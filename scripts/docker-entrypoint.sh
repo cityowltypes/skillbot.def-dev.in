@@ -264,31 +264,35 @@ server {
     server_name $WEB_BARE_URL _;
     root /var/www;
     index index.php index.html index.htm;
-
+    
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-    # Increase client max body size for file uploads
-    client_max_body_size 1024M;
+    
+    # Increase client max body size for file uploads (matching tribe.conf)
+    client_max_body_size 128M;
     client_body_timeout 300s;
     client_header_timeout 300s;
-
+    
+    # Timeout settings (matching tribe.conf)
+    proxy_read_timeout 60;
+    fastcgi_read_timeout 60;
+    
     # Gzip compression
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
     gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
-
+    
     # Test endpoint to verify nginx is working
     location /nginx-test {
         access_log off;
         return 200 "Nginx is working for $WEBSITE_NAME!\n";
         add_header Content-Type text/plain;
     }
-
+    
     # Health check endpoint
     location /health.php {
         access_log off;
@@ -298,7 +302,58 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
-
+    
+    # Security: Disable .env and other hidden files, except .well-known (from tribe.conf)
+    location ~ /\.(?!well-known).* {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    
+    # Node.js applications - EmberJS dist and assets folder (from tribe.conf)
+    location /app/ {
+        include /etc/nginx/mime.types;
+        rewrite ^/app/([a-z0-9\-_]+)/assets/(.*)$ /applications/$1/dist/assets/$2 last;
+        rewrite ^/app/([a-z0-9\-_]+)/(.*)$ /applications/$1/dist/index.html?/$2 last;
+        try_files \$uri \$uri/;
+    }
+    
+    # Uploads handling (from tribe.conf)
+    location /uploads/ {
+        include /etc/nginx/mime.types;
+        try_files \$uri /uploads.php\$is_args\$args;
+    }
+    
+    # API.php handling with extensionless PHP support (from tribe.conf)
+    location /api.php {
+        include /etc/nginx/mime.types;
+        try_files \$uri \$uri.html \$uri/ @extensionless-php;
+    }
+    
+    location @extensionless-php {
+        rewrite ^(.*)$ $1.php last;
+    }
+    
+    # API routes (original docker.conf functionality)
+    location /api/ {
+        try_files \$uri \$uri/ /api/index.php?\$query_string;
+    }
+    
+    # Admin routes  
+    location /admin/ {
+        try_files \$uri \$uri/ /admin/index.php?\$query_string;
+    }
+    
+    # phpMyAdmin
+    location /phpmyadmin/ {
+        try_files \$uri \$uri/ /phpmyadmin/index.php?\$query_string;
+    }
+    
+    # Tribe specific routes
+    location /$TRIBE_SLUG/ {
+        try_files \$uri \$uri/ /$TRIBE_SLUG/index.php?\$query_string;
+    }
+    
     # Handle PHP files
     location ~ \.php$ {
         try_files \$uri =404;
@@ -308,12 +363,12 @@ server {
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
         
-        # Increase timeouts for long-running scripts
-        fastcgi_read_timeout 300;
+        # Timeout settings matching tribe.conf
+        fastcgi_read_timeout 60;
         fastcgi_send_timeout 300;
         fastcgi_connect_timeout 300;
     }
-
+    
     # Handle static files
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 1y;
@@ -321,45 +376,25 @@ server {
         try_files \$uri =404;
         access_log off;
     }
-
-    # API routes
-    location /api/ {
-        try_files \$uri \$uri/ /api/index.php?\$query_string;
-    }
-
-    # Admin routes  
-    location /admin/ {
-        try_files \$uri \$uri/ /admin/index.php?\$query_string;
-    }
-
-    # phpMyAdmin
-    location /phpmyadmin/ {
-        try_files \$uri \$uri/ /phpmyadmin/index.php?\$query_string;
-    }
-
-    # Tribe specific routes
-    location /$TRIBE_SLUG/ {
-        try_files \$uri \$uri/ /$TRIBE_SLUG/index.php?\$query_string;
-    }
-
-    # Default route handling
+    
+    # Default route handling (from tribe.conf - more flexible than original)
     location / {
-        try_files \$uri \$uri/ /index.php?\$query_string;
+        include /etc/nginx/mime.types;
+        try_files \$uri \$uri/ /index.php\$is_args\$args;
     }
-
-    # Security: Deny access to sensitive files
-    location ~ /\. {
+    
+    # Security: Deny access to .htaccess files (from tribe.conf)
+    location ~ /\.ht {
         deny all;
-        access_log off;
-        log_not_found off;
     }
-
+    
+    # Security: Deny access to sensitive files (from original docker.conf)
     location ~ /(composer\.(json|lock)|package\.(json|lock)|\.env|\.git)$ {
         deny all;
         access_log off;
         log_not_found off;
     }
-
+    
     # Error and access logs
     error_log /var/www/logs/nginx_error.log warn;
     access_log /var/www/logs/nginx_access.log;
