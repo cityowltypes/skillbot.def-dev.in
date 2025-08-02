@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit on any error and enable debug mode if needed
-set -e
+# set -e
 [[ "${DEBUG:-false}" == "true" ]] && set -x
 
 # Colors for output
@@ -18,7 +18,7 @@ readonly PHP_FPM_SOCKET="/run/php/php7.4-fpm.sock"
 
 # Function to load environment variables from .env file
 load_env_file() {
-    local env_file="../.env"
+    local env_file="/var/www/.env"
     
     if [[ -f "$env_file" ]]; then
         print_status "Loading environment variables from $env_file"
@@ -261,9 +261,19 @@ setup_nginx_config() {
         cat > /etc/nginx/conf.d/default.conf << EOF
 server {
     listen 80;
-    server_name $WEB_BARE_URL _;
+    server_name $WEB_BARE_URL;
     root /var/www;
-    index index.php index.html index.htm;
+    index index.html index.htm index.php;
+
+    error_log /var/www/logs/error.log;
+    access_log /var/www/logs/access.log;
+    
+    # Security: Disable .env and other hidden files, except .well-known (from tribe.conf)
+    location ~ /\.(?!well-known).* {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
     
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -279,44 +289,6 @@ server {
     # Timeout settings (matching tribe.conf)
     proxy_read_timeout 60;
     fastcgi_read_timeout 60;
-    
-    # Gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
-    
-    # Test endpoint to verify nginx is working
-    location /nginx-test {
-        access_log off;
-        return 200 "Nginx is working for $WEBSITE_NAME!\n";
-        add_header Content-Type text/plain;
-    }
-    
-    # Health check endpoint
-    location /health.php {
-        access_log off;
-        try_files \$uri =404;
-        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        include fastcgi_params;
-    }
-    
-    # Security: Disable .env and other hidden files, except .well-known (from tribe.conf)
-    location ~ /\.(?!well-known).* {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
-    
-    # Node.js applications - EmberJS dist and assets folder (from tribe.conf)
-    location /app/ {
-        include /etc/nginx/mime.types;
-        rewrite ^/app/([a-z0-9\-_]+)/assets/(.*)$ /applications/$1/dist/assets/$2 last;
-        rewrite ^/app/([a-z0-9\-_]+)/(.*)$ /applications/$1/dist/index.html?/$2 last;
-        try_files \$uri \$uri/;
-    }
     
     # Uploads handling (from tribe.conf)
     location /uploads/ {
@@ -334,70 +306,22 @@ server {
         rewrite ^(.*)$ $1.php last;
     }
     
-    # API routes (original docker.conf functionality)
-    location /api/ {
-        try_files \$uri \$uri/ /api/index.php?\$query_string;
-    }
-    
-    # Admin routes  
-    location /admin/ {
-        try_files \$uri \$uri/ /admin/index.php?\$query_string;
-    }
-    
-    # phpMyAdmin
-    location /phpmyadmin/ {
-        try_files \$uri \$uri/ /phpmyadmin/index.php?\$query_string;
-    }
-    
-    # Tribe specific routes
-    location /$TRIBE_SLUG/ {
-        try_files \$uri \$uri/ /$TRIBE_SLUG/index.php?\$query_string;
-    }
-    
-    # Handle PHP files
-    location ~ \.php$ {
-        try_files \$uri =404;
-        fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        include fastcgi_params;
-        
-        # Timeout settings matching tribe.conf
-        fastcgi_read_timeout 60;
-        fastcgi_send_timeout 300;
-        fastcgi_connect_timeout 300;
-    }
-    
-    # Handle static files
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        try_files \$uri =404;
-        access_log off;
-    }
-    
     # Default route handling (from tribe.conf - more flexible than original)
     location / {
         include /etc/nginx/mime.types;
         try_files \$uri \$uri/ /index.php\$is_args\$args;
+    }
+
+    #all .php files to use php fpm
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
     }
     
     # Security: Deny access to .htaccess files (from tribe.conf)
     location ~ /\.ht {
         deny all;
     }
-    
-    # Security: Deny access to sensitive files (from original docker.conf)
-    location ~ /(composer\.(json|lock)|package\.(json|lock)|\.env|\.git)$ {
-        deny all;
-        access_log off;
-        log_not_found off;
-    }
-    
-    # Error and access logs
-    error_log /var/www/logs/nginx_error.log warn;
-    access_log /var/www/logs/nginx_access.log;
 }
 EOF
     else
