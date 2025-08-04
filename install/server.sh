@@ -10,6 +10,7 @@ ufw allow 3306;
 ufw allow 443;
 ufw allow 587;
 echo "y" | ufw enable;
+yes | add-apt-repository ppa:ondrej/php;
 apt-get install -y git;
 apt-get install -y mysql-server;
 apt-get install -y php7.4;
