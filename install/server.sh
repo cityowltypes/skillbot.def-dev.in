@@ -1,7 +1,6 @@
 apt update;
 apt upgrade -y;
 apt-get install lsb-release ca-certificates apt-transport-https software-properties-common -y;
-add-apt-repository ppa:ondrej/php;
 ufw allow OpenSSH;
 ufw allow Postfix;
 ufw allow 80;
@@ -54,7 +53,6 @@ echo 'expire_logs_days = 3' | tee -a /etc/mysql/mysql.conf.d/mysqld.cnf;
 /sbin/swapon /var/swap.1;
 service php7.4-fpm restart;
 apachectl stop;
-npm i;
 apt-get update;
 cd /var/www/html
 sudo git clone https://github.com/cityowltypes/skillbot.def-dev.in.git skillbot.def-dev.in
@@ -70,4 +68,6 @@ wget https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz
 tar -xzf phpMyAdmin-latest-all-languages.tar.gz
 mv phpMyAdmin-*-all-languages phpmyadmin
 sudo rm phpMyAdmin-latest-all-languages.tar.gz
+yes | composer update
+npm i
 sudo cp sample.env .env
