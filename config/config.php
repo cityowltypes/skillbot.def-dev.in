@@ -14,8 +14,6 @@ if ($_ENV['ALLOW_CROSS_ORIGIN'] === 'true') {
     if ($_ENV['ENV'] == 'prod') {
         $allowed_origins = [
             $_ENV['WEB_URL'],
-            $_ENV['DOCKER_INTERNAL_TRIBE_URL'],
-            $_ENV['DOCKER_EXTERNAL_TRIBE_URL'],
         ];
 
 

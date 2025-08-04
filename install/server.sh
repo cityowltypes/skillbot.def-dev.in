@@ -7,6 +7,7 @@ ufw allow Postfix;
 ufw allow 80;
 ufw allow 8080;
 ufw allow 3000;
+ufw allow 3306;
 ufw allow 443;
 ufw allow 587;
 echo "y" | ufw enable;
@@ -36,6 +37,7 @@ apt-get install -y poppler-utils;
 apt-get install -y python3-pip;
 apt-get install -y imagemagick;
 apt-get install -y ffmpeg;
+apt-get install -y npm;
 systemctl disable --now apache2;
 systemctl reload nginx;
 echo "ALTER USER 'mysql_root_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'mysql_root_pass'; FLUSH PRIVILEGES; exit;" | mysql;
@@ -52,4 +54,20 @@ echo 'expire_logs_days = 3' | tee -a /etc/mysql/mysql.conf.d/mysqld.cnf;
 /sbin/swapon /var/swap.1;
 service php7.4-fpm restart;
 apachectl stop;
+npm i;
 apt-get update;
+cd /var/www/html
+sudo git clone https://github.com/cityowltypes/skillbot.def-dev.in.git skillbot.def-dev.in
+cd skillbot.def-dev.in
+sudo chown www-data: uploads
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'usrpass123'; FLUSH PRIVILEGES;"
+sudo mysql -u root -pusrpass123 -e "CREATE DATABASE skillbot;"
+wget https://tribe.junction.express/uploads/2025/08-August/05-Tue/data-linked_689108ff85cb0.zip
+unzip data-linked_689108ff85cb0.zip
+sudo rm data-linked_689108ff85cb0.zip
+sudo mysql -u root -pusrpass123 skillbot < data-linked.sql
+wget https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz
+tar -xzf phpMyAdmin-latest-all-languages.tar.gz
+mv phpMyAdmin-*-all-languages phpmyadmin
+sudo rm phpMyAdmin-latest-all-languages.tar.gz
+sudo cp sample.env .env

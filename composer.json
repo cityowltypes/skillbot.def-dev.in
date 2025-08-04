@@ -22,6 +22,10 @@
             "type": "git",
             "url": "https://github.com/wil-ldf-ire/core.git"
         },
+        "tribe/core": {
+            "type": "git",
+            "url": "https://github.com/cityowltypes/def-tribe-core.git"
+        },
         "wildfire/api": {
             "type": "git",
             "url": "https://github.com/wil-ldf-ire/api.git"
